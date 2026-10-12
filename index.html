@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-build="v7.13-theme-worlds-review"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze Game 3D — Theme Worlds Review</title><meta name="description" content="Explore seven shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
+<html lang="en" data-build="v7.16-forest-alarm-monster-rollback"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze Game 3D — Theme Worlds Review</title><meta name="description" content="Explore seven shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
 <style id="maze-boot-style">html,body{margin:0;min-height:100%;background:#070d0e}
 #maze-boot{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:28px;color:#dce9e2;background:radial-gradient(ellipse at 48% 40%,#18333780,transparent 66%),repeating-linear-gradient(0deg,#91c5bc04 0 1px,transparent 1px 4px),#070d0e;font:14px/1.5 Arial,Helvetica,sans-serif;box-sizing:border-box;color-scheme:dark}
 #maze-boot *{box-sizing:border-box}#maze-boot-panel{width:min(430px,100%);border-top:1px solid #729b9670;padding-top:25px}#maze-boot-brand{margin:0 0 34px;color:#c9dcc2;letter-spacing:.19em;font-size:13px;font-weight:700}#maze-boot-brand b{float:right;color:#6f9792;font-size:11px;font-weight:400;letter-spacing:.08em}#maze-boot h1{margin:0 0 7px;font-size:24px;font-weight:400;letter-spacing:-.02em}#maze-boot-meta{min-height:22px;margin:0;color:#91b2ac;font-size:12px}#maze-boot-track{height:11px;margin:25px 0 11px;border:1px solid #4f716b;background:#050b0c;padding:2px;box-shadow:inset 0 1px 3px #0009}#maze-boot-fill{height:5px;width:0;background:#b7d9a1;box-shadow:0 0 10px #a9d49735}#maze-boot-bottom{display:flex;justify-content:space-between;gap:16px;color:#75928d;font-size:12px;font-variant-numeric:tabular-nums}#maze-boot-percent{color:#c3d9b9}#maze-boot-retry{margin-top:22px;padding:9px 18px;border:1px solid #7caaa2;background:#18332e;color:#daebdf;font:inherit;cursor:pointer}#maze-boot-retry[hidden]{display:none}#maze-boot-note{margin:25px 0 0;color:#5e7a76;font-size:11px}#maze-boot[data-error] #maze-boot-fill{background:#d4967f}</style><style id="maze-voice-style">
@@ -6698,10 +6698,11 @@ function navigationGraph(level){
  // Only immutable furnishings and door jambs constrain the room graph. Door
  // leaves remain physical obstacles but must not remove their own open route.
  const roomColliders=[...new Set([...(furniture||[]),...(roomSource||[]).filter(b=>b.survival||b.roomDoorJamb)])].filter(b=>!b.enemyPassThrough&&!b.renderDoor&&!b.serviceLeaf&&!b.closetDoorLeaf);
- // Reserve the hinge-side footprint of a fully open leaf on either side. This
- // prevents a path turning across its tip immediately after the portal, while
- // the centre of the opening always remains available for opening the door.
- for(const room of [...(level.survivalRooms||[]),...(level.forestInteriorRooms||[])]){const d=room.door;if(!d)continue;const half=(d.width||2)/2,hinge=half-.12,length=half*2-.24,x=d.x-d.dz*hinge,z=d.z+d.dx*hinge;roomColliders.push({minX:x-(d.dx?length:.08),maxX:x+(d.dx?length:.08),minZ:z-(d.dz?length:.08),maxZ:z+(d.dz?length:.08)});}
+ // Room routes use the real jambs and furniture; the live leaf colliders
+ // still stop the enemy until a door is physically open. Previously a static
+ // 3.5 m-wide "open-leaf" clearance rectangle was added at every hinge,
+ // including smashed exterior doors. Multiple adjacent hinges could cut off
+ // a physically open aisle inside Forest houses. Do not create fake walls.
 
  indexNavigationColliders(routeColliders);indexNavigationColliders(roomColliders);
 
@@ -14636,8 +14637,8 @@ class HostCommands{
  // elapsed-time ledger: capping unused credit made a short stall permanently
  // delay every later input, interaction and catch test.
  advance(elapsed){this.externalClock=true;if(Number.isFinite(elapsed)&&elapsed>0)this.clock+=elapsed;return this.clock;}
- _peer(id,p){let peer=this.peers.get(id);if(!peer){const ack=Math.max(0,p?.lastInputSeq||0);peer={ack,originAck:ack,queue:new Map(),received:0,latestSeq:ack,lastReceivedAt:null,lastFreshAt:null,starved:0};this.peers.set(id,peer);}return peer;}
- _earned(peer){return Math.max(0,Math.floor(this.clock/STEP+1e-7)-(peer.ack-peer.originAck));}
+ _peer(id,p){let peer=this.peers.get(id);if(!peer){const ack=Math.max(0,p?.lastInputSeq||0);peer={ack,originAck:ack,originTick:Math.max(0,Math.floor(this.clock/STEP+1e-7)-12),queue:new Map(),received:0,latestSeq:ack,lastReceivedAt:null,lastFreshAt:null,starved:0};this.peers.set(id,peer);}return peer;}
+ _earned(peer){return Math.max(0,Math.floor(this.clock/STEP+1e-7)-(peer.originTick||0)-(peer.ack-peer.originAck));}
  _pending(peer){let count=0;while(peer.queue.has(peer.ack+count+1))count++;return count;}
  _received(peer,seq){if(seq>peer.latestSeq){peer.latestSeq=seq;peer.lastFreshAt=this.clock;}peer.lastReceivedAt=this.clock;}
  push(id,input,p){const peer=this._peer(id,p),seq=input?.seq;if(!Number.isSafeInteger(seq)||seq<=peer.ack||seq>peer.ack+MAX_HISTORY)return false;if(!peer.queue.has(seq))peer.queue.set(seq,command(input,seq));this._received(peer,seq);return true;}
@@ -17054,7 +17055,7 @@ global.MazeLobbyStage=MazeLobbyStage;
       this.players = listOf(players);
       this.selfId = String(selfId ?? this.selfId);
       const specId = typeof spectated === 'object' ? idOf(spectated) : String(spectated ?? '');
-      const signature = JSON.stringify([this.selfId, specId, this.players.map((p, i) => [idOf(p), nameOf(p), colorOf(p, i), alive(p)])]);
+      const signature = JSON.stringify([this.selfId, specId, this.players.map((p, i) => [idOf(p), nameOf(p), colorOf(p, i), alive(p), !!p.loading])]);
       if (signature === this._teamSignature) { this._updatePlayerList(); return; }
       this._teamSignature = signature;
       this.team.replaceChildren();
@@ -17062,7 +17063,7 @@ global.MazeLobbyStage=MazeLobbyStage;
         const row = el('div', 'coop-team-row' + (alive(p) ? '' : ' coop-team-dead') + (idOf(p) === specId ? ' coop-team-watching' : ''));
         const dot = el('span', 'coop-team-dot');
         dot.style.background = colorOf(p, i);
-        row.append(dot, el('span', 'coop-team-name', nameOf(p) + (idOf(p) === this.selfId ? ' (you)' : '')), el('span', 'coop-team-state', alive(p) ? '' : 'OUT'));
+        row.append(dot, el('span', 'coop-team-name', nameOf(p) + (idOf(p) === this.selfId ? ' (you)' : '') + (p.loading ? ' (Loading)' : '')), el('span', 'coop-team-state', p.loading ? 'LOADING' : alive(p) ? '' : 'OUT'));
         this.team.append(row);
       }
       this.team.classList.toggle('hidden', !this.players.length);
@@ -17089,9 +17090,9 @@ global.MazeLobbyStage=MazeLobbyStage;
           this._playerRows.set(id, row); this.playerTableBody.append(row);
         }
         row.children[0].children[0].style.background = colorOf(p, i);
-        row.children[0].children[1].textContent = nameOf(p) + (id === this.selfId ? ' (you)' : '');
+        row.children[0].children[1].textContent = nameOf(p) + (id === this.selfId ? ' (you)' : '') + (p.loading ? ' (Loading)' : '');
         row.children[1].className = alive(p) ? 'coop-player-alive' : 'coop-player-out';
-        row.children[1].textContent = p.spectator ? 'Spectating' : alive(p) ? (this.mode === 'lobby' ? 'Ready' : 'Alive') : 'Out';
+        row.children[1].textContent = p.spectator ? 'Spectating' : p.loading ? 'Loading' : alive(p) ? (this.mode === 'lobby' ? 'Ready' : 'Alive') : 'Out';
         const host = p.isHost || p.host || id === String(this.room?.hostId ?? '') || (this.isHost && id === this.selfId);
         const ping = p.pingMs ?? p.ping;
         const hasPing = ping !== null && ping !== undefined && Number.isFinite(Number(ping));
@@ -19764,15 +19765,42 @@ class MazeAlarmClocks{
   // Expiry applies before target selection too, including a resumed tab that
   // skipped directly past the bell window without an intervening world tick.
   this.step(time,null);
+  // Each alarm can be temporarily disregarded if the enemy has truly made
+  // no navigational progress. This preserves decoy attraction while avoiding
+  // a 120-second standstill at an inaccessible point.
+  if(e.alarmIgnoredUntil)for(const [id,until] of e.alarmIgnoredUntil)if(time>=until||!this.clocks.has(id))e.alarmIgnoredUntil.delete(id);
   let focus=e.alarmFocus&&this.clocks.get(e.alarmFocus);
-  if(!ringing(focus,time)||focus.ringAt<=(e.alarmIgnoreBefore??-Infinity))focus=null;
-  for(const c of this.clocks.values())if(ringing(c,time)&&c.ringAt>(e.alarmIgnoreBefore??-Infinity)&&(!focus||c.ringAt>focus.ringAt||c.ringAt===focus.ringAt&&distance(e,c)<distance(e,focus)))focus=c;
-  e.alarmFocus=focus?.id||null;if(!focus)return;
+  if(!ringing(focus,time)||focus.ringAt<=(e.alarmIgnoreBefore??-Infinity)||(e.alarmIgnoredUntil?.get(focus.id)??0)>time)focus=null;
+  for(const c of this.clocks.values())if(ringing(c,time)&&c.ringAt>(e.alarmIgnoreBefore??-Infinity)&&!(e.alarmIgnoredUntil?.get(c.id)>time)&&(!focus||c.ringAt>focus.ringAt||c.ringAt===focus.ringAt&&distance(e,c)<distance(e,focus)))focus=c;
+  e.alarmFocus=focus?.id||null;if(!focus){e.alarmProgress=null;return;}
   e.alarmAngryUntil=Math.max(e.alarmAngryUntil||0,time+SEARCH_SECONDS);e.alarmAngry=true;
-  if(distance(e,focus)<1.02&&root.MazeCore.enemyContactRayClear(this.level,e,focus)){this._discover(focus,e,time);return;}
-  if(e.state==='hunting'&&time-e.lastSeen<.65)return;
-  if(e.closetAction?.resumeAlarmId===focus.id)return;
-  const target=this._lockedHouseApproach(focus,e,time)||focus;
+  if(distance(e,focus)<1.02&&root.MazeCore.enemyContactRayClear(this.level,e,focus)){e.alarmProgress=null;this._discover(focus,e,time);return;}
+  if(e.state==='hunting'&&time-e.lastSeen<.65){e.alarmProgress=null;return;}
+  if(e.closetAction?.resumeAlarmId===focus.id){e.alarmProgress=null;return;}
+  const entry=this._lockedHouseApproach(focus,e,time),target=entry||focus;
+  // Track REAL displacement as well as approach distance, so walking around
+  // corners is never mistaken for being stuck. A change from a locked-door
+  // approach to the clock itself resets the detection window.
+  const stage=entry?'house-door':'clock',remaining=distance(e,target);
+  let progress=e.alarmProgress;
+  if(!progress||progress.id!==focus.id||progress.stage!==stage){
+   progress=e.alarmProgress={id:focus.id,stage,x:e.x,z:e.z,near:remaining,at:time};
+  }else if(distance(e,progress)>.85||progress.near-remaining>.5){
+   progress.x=e.x;progress.z=e.z;progress.near=remaining;progress.at=time;
+  }else if(time-progress.at>=4.5){
+   const attempts=(e.alarmFailedVisits?.get(focus.id)||0)+1;
+   (e.alarmFailedVisits||(e.alarmFailedVisits=new Map())).set(focus.id,attempts);
+   const retryAt=Math.min(focus.ringAt+RING_SECONDS,time+Math.min(50,10+attempts*9));
+   (e.alarmIgnoredUntil||(e.alarmIgnoredUntil=new Map())).set(focus.id,retryAt);
+   e.alarmFocus=null;e.alarmProgress=null;
+   // A clock that cannot be reached should trigger an angry LOCAL search,
+   // not force Goku to keep choosing the exact same impossible path.
+   const C=root.MazeCore;C.setEnemyInvestigation?.(e,{x:e.x,z:e.z},time,8);
+   if(!C.beginEnemySearch?.(this.level,e,time)){
+    e.state='wandering';e.lastTarget=null;e.path=[];e.repath=0;e.patrol=null;
+   }
+   return;
+  }
   if(!e.lastTarget||distance(e.lastTarget,target)>.25||e.searchPlan||e.state!=='investigating')root.MazeCore.alertAlarmClock?.(this.level,e,target,time);
   else e.investigateUntil=Math.max(e.investigateUntil,time+10);
  }
@@ -20084,6 +20112,10 @@ root.MazeClientHealth={MouseGuard,FrameStats};
 })(typeof window!=='undefined'?window:globalThis);
 </script>
 <script>MazeBoot.advance(2076);</script>
+
+
+
+
 <script>
 
 
@@ -20822,7 +20854,7 @@ function bindUI(){
  for(const event of ['pointerup','pointercancel'])mapCanvas.addEventListener(event,()=>mapDrag=null);
  const context=document.modelContext;if(context?.registerTool){try{Promise.resolve(context.registerTool({name:'get_maze_status',title:'Read maze status',description:'Read the current maze, cleared count, phase, and tablet battery.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(input){if(!input||Object.keys(input).length)throw new Error('This tool takes no arguments.');return{phase:state.mode,maze:state.score+1,cleared:state.score,theme:state.env.theme.name,tabletSeconds:Math.ceil(tabletCharge()),hidden:state.player.hidden};}})).catch(()=>{});}catch(e){}}
  // Read-only performance / geometry diagnostics; player-free mode is a separate startup path.
- window.MazeDiagnostics={getStatus:()=>({build:'V7.13 · Theme Worlds',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable},performance:{...clientFrames.status(),simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
+ window.MazeDiagnostics={getStatus:()=>({build:'V7.13 · Theme Worlds',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable},performance:{...clientFrames.status(),simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
 }
 function look(dx,dy){if(!Number.isFinite(dx)||!Number.isFinite(dy)||inventoryIsOpen()||survivalBlocked())return;const s=.00055+settings.sensitivity*.000032;if(mp?.dead){coopSpectatorOrientation();mp.spectatorYaw+=dx*s;mp.spectatorPitch=C.clamp(mp.spectatorPitch-dy*s,-Math.PI/2,Math.PI/2);return;}const p=state.player,inversion=MazeBerryGameplay.mouseMultiplier(p,state.time);p.yaw-=dx*s*inversion;p.pitch=C.clamp(p.pitch-dy*s*inversion,-1.43,1.25);}
 // Service passages occupy real half-cells; presentation and interaction use
@@ -21055,10 +21087,10 @@ function weaponHit(p,aim){
  const targets=[];
  if(e)targets.push({...e,id:'enemy:shotgun',kind:'enemy',radius:.43,height:2.05});
  if(mp?.net.isHost)for(const other of mp.players.values()){
-  if(other.id===p.id||!MazeCoopSimulation.alive(other))continue;
+  if(other.id===p.id||!MazeCoopSimulation.alive(other)||!mp.readyPeers.has(other.id))continue;
   // A short received-input projection avoids hitting an obsolete host body.
   // Positions still come solely from earned, collision-checked host commands.
-  const verified=mp.commands?.projectPlayer?mp.commands.projectPlayer(state.level,other,mp.players,coopContext(),24).player:other;
+  const verified=mp.commands?.projectPlayer?mp.commands.projectPlayer(state.level,other,coopActivePlayers(),coopContext(),24).player:other;
   targets.push({...verified,kind:'player',radius:MazeCoopSimulation.RADIUS,height:MazeCoopSimulation.bodyHeight(verified)});
  }
  const right=new T.Vector3(Math.cos(p.yaw),0,-Math.sin(p.yaw)),up=new T.Vector3().crossVectors(right,forward),inService=!!serviceCellAt(p);
@@ -21123,9 +21155,17 @@ function weaponBind(){
 let mp=null,coopUI=null,coopVoice=null;
 const MP_STEP=1/60,MP_SNAPSHOT=1/20,MP_WIPE_SECONDS=5;
 function coopLive(){return !!mp&&mp.running&&!mp.ended;}
-function coopAlive(){return mp?[...mp.players.values()].filter(MazeCoopSimulation.alive):[];}
+// Ready is an epoch-scoped game state, separate from alive/dead.  A loading
+// survivor stays spawned in the safe room, but cannot obstruct navigation,
+// be hunted, take damage, or make the lift wait for their client to load.
+function coopAlive(){return mp?[...mp.players.values()].filter(p=>MazeCoopSimulation.alive(p)&&mp.readyPeers.has(p.id)):[];}
+function coopActivePlayers(){return new Map(coopAlive().map(p=>[p.id,p]));}
+function coopPendingAlive(){return !!mp&&[...mp.players.values()].some(p=>MazeCoopSimulation.alive(p)&&!mp.readyPeers.has(p.id));}
 function coopViewing(){return mp?.ending?.focus||(mp?.dead?(mp.players.get(mp.spectated)||state.player):state.player);}
-function coopTeam(){if(!mp)return[];return mp.net.players.map(meta=>({...meta,...(mp.players.get(meta.id)||{}),pingMs:meta.pingMs}));}
+function coopTeam(){if(!mp)return[];return mp.net.players.map(meta=>{const p=mp.players.get(meta.id)||{};return{...meta,...p,pingMs:meta.pingMs,loading:mp.epoch!==null&&meta.connected!==false&&meta.alive!==false&&!meta.spectator&&p.alive!==false&&!p.dead&&!mp.readyPeers.has(meta.id)};});}
+// A monotonic status revision avoids late control packets making someone appear
+// to be loading again after they joined. Never transmit loading as a death flag.
+function coopSendLoadingStatus(to=null){if(!mp?.net.isHost||!mp.epoch)return;const event={type:'loading-status',epoch:mp.epoch,rev:++mp.loadingStatusRev,ready:[...mp.readyPeers]};mp.net.sendControl(event,to);coopUI?.updateTeam(coopTeam(),mp.net.id,mp.spectated);}
 function coopLevelPlayers(){return[...mp.players.values()].map(p=>({...MazeCoopSimulation.snapshotPlayer(p),inventory:MI.encode(p),survival:typeof MS!=='undefined'?MS.encode(p):null,berryState:{t:mp.time,c:MazeBerryGameplay.carry(p,mp.time)}}));}
 function coopInventoryAction(action){
  if(!coopLive()||mp.dead||mp.ending||!action||mp.inventoryPending.size>=8)return false;
@@ -21150,9 +21190,18 @@ function coopProcessSurvival(action,expired=false){
 }
 function coopAction(from,a){
  if(!mp?.net.isHost||!a)return;
+ if(!['ready','request-level','world-repair'].includes(a.kind)&&!mp.readyPeers.has(from))return;
  if(a.kind==='ready'&&a.epoch===mp.epoch){
   if(a.map!==mp.world?.staticHash){const tries=mp.mapRetries.get(from)||0;mp.mapRetries.set(from,tries+1);if(tries<1)mp.net.sendControl({type:'repair-map',epoch:mp.epoch,spec:{...mp.spec,players:coopLevelPlayers()}},from);else mp.net.sendControl({type:'map-error'},from);return;}
-  mp.readyPeers.add(from);coopTryBegin();if(mp.running){coopSendWorld(true);mp.net.sendControl({type:'begin-level',epoch:mp.epoch,time:mp.time},from);}
+  const newlyReady=!mp.readyPeers.has(from);mp.readyPeers.add(from);
+  // This client finishes loading independently. The host is already running;
+  // transfer the latest doors, items and survivor state before letting it act.
+  if(mp.running){
+   coopSendLoadingStatus();coopSendWorld(true);
+   mp.net.sendControl({type:'begin-level',epoch:mp.epoch,time:mp.time},from);
+   coopSendSnapshot(true);
+   if(mp.dead&&!mp.spectated)coopCycleSpectator(0);
+  }else if(newlyReady)coopTryBegin();
  }else if(a.kind==='request-level'&&mp.spec&&!mp.loading)mp.net.sendControl({type:'load-level',...mp.spec,players:coopLevelPlayers()},from);
  else if(a.kind==='world-repair'&&a.epoch===mp.epoch){if(mp.time>=mp.worldFullAt){mp.worldFullAt=mp.time+1;coopSendWorld(true);}}
  else if(a.kind==='inventory'&&a.epoch===mp.epoch&&mp.running&&!mp.ending){
@@ -21327,7 +21376,7 @@ function coopUpdateAudio(dt,p,e){
  audio.updateRemoteSteps(dt,sources,{silent,occlusion:point=>C.wallTransmission(state.level,listener,point)});
 }
 
-function coopNewSession(){return{net:MazeNetwork,room:null,players:new Map(),inputs:new Map(),readyPeers:new Set(),visuals:null,running:false,loading:false,ended:false,ending:null,lastDeath:null,dead:false,left:false,epoch:null,spec:null,time:0,accumulator:0,sendAt:0,inputAt:0,seq:0,history:[],actions:[],worldFrames:[],lastSnapshotAt:0,lastHostTime:0,localPaused:false,inHostAction:false,spectated:null,spectatorYaw:null,spectatorPitch:.12,spectatorDistance:2.7,readyToken:0,handledDeaths:new Set(),deadPlayers:new Set(),revivalRoll:null,transitionUntil:0,prediction:new MazeCoopPrediction.Client(),commands:new MazeCoopPrediction.HostCommands(),clock:new MazeStateCodec.Clock(),world:null,worldRepairAt:0,worldAuditAt:0,worldMismatchAt:0,worldFullAt:0,mapRetries:new Map(),visualError:{x:0,y:0,z:0},netCorrections:{count:0,max:0},lastCommand:null,weaponNonce:0,weaponAck:0,weaponSeen:new Map(),weaponPending:new Map(),weaponWorldRevision:-1,inventoryNonce:0,inventorySeen:new Map(),inventoryPending:new Map(),inventoryMismatchAt:0,survivalNonce:0,survivalSeen:new Map(),survivalPending:new Map()};}
+function coopNewSession(){return{net:MazeNetwork,room:null,players:new Map(),inputs:new Map(),readyPeers:new Set(),loadingStatusRev:0,loadingStatusSeen:-1,visuals:null,running:false,loading:false,ended:false,ending:null,lastDeath:null,dead:false,left:false,epoch:null,spec:null,time:0,accumulator:0,sendAt:0,inputAt:0,seq:0,history:[],actions:[],worldFrames:[],lastSnapshotAt:0,lastHostTime:0,localPaused:false,inHostAction:false,spectated:null,spectatorYaw:null,spectatorPitch:.12,spectatorDistance:2.7,readyToken:0,handledDeaths:new Set(),deadPlayers:new Set(),revivalRoll:null,transitionUntil:0,prediction:new MazeCoopPrediction.Client(),commands:new MazeCoopPrediction.HostCommands(),clock:new MazeStateCodec.Clock(),world:null,worldRepairAt:0,worldAuditAt:0,worldMismatchAt:0,worldFullAt:0,mapRetries:new Map(),visualError:{x:0,y:0,z:0},netCorrections:{count:0,max:0},lastCommand:null,weaponNonce:0,weaponAck:0,weaponSeen:new Map(),weaponPending:new Map(),weaponWorldRevision:-1,inventoryNonce:0,inventorySeen:new Map(),inventoryPending:new Map(),inventoryMismatchAt:0,survivalNonce:0,survivalSeen:new Map(),survivalPending:new Map()};}
 function coopVoiceState(){
  const active=!!mp&&!mp.left&&!!mp.net.room&&mp.net.players.some(p=>p.id===mp.net.id&&p.connected!==false)&&state.mode!=='mp-disconnected';
  const players=active?coopTeam():[],local=players.find(p=>p.id===mp?.net.id)||null;
@@ -21371,8 +21420,8 @@ function initMultiplayer(){
  coopUI.callbacks.playerList=coopVoicePlayerList;
  coopUI.init();
  MazeNetwork.addEventListener('roster',e=>coopRoster(e.detail));
- MazeNetwork.addEventListener('started',()=>{if(!mp)return;mp.ended=false;mp.ending=null;mp.lastDeath=null;mp.running=false;mp.readyPeers.clear();mp.handledDeaths.clear();mp.deadPlayers.clear();mp.revivalRoll=null;mp.history=[];mp.epoch=null;coopUI.hide();if(mp.net.isHost)coopHostLevel(0);else{state.mode='loading';show('loading');$('loadingText').textContent='Waiting for the host’s maze…';}});
- MazeNetwork.addEventListener('input',e=>{if(!mp?.net.isHost||!mp.running||mp.ending)return;const {from,payload}=e.detail,p=mp.players.get(from);if(!p||!MazeCoopSimulation.alive(p)||!payload||payload.epoch!==mp.epoch)return;mp.commands.enqueue(from,payload,p);});
+ MazeNetwork.addEventListener('started',()=>{if(!mp)return;mp.ended=false;mp.ending=null;mp.lastDeath=null;mp.running=false;mp.readyPeers.clear();mp.loadingStatusRev=0;mp.loadingStatusSeen=-1;mp.handledDeaths.clear();mp.deadPlayers.clear();mp.revivalRoll=null;mp.history=[];mp.epoch=null;coopUI.hide();if(mp.net.isHost)coopHostLevel(0);else{state.mode='loading';show('loading');$('loadingText').textContent='Waiting for the host’s maze…';}});
+ MazeNetwork.addEventListener('input',e=>{if(!mp?.net.isHost||!mp.running||mp.ending)return;const {from,payload}=e.detail,p=mp.players.get(from);if(!p||!MazeCoopSimulation.alive(p)||!mp.readyPeers.has(from)||!payload||payload.epoch!==mp.epoch)return;mp.commands.enqueue(from,payload,p);});
  MazeNetwork.addEventListener('action',e=>coopAction(e.detail.from,e.detail.payload));
  MazeNetwork.addEventListener('latency',e=>{if(mp&&!mp.net.isHost&&e.detail.id===mp.net.hostId)mp.clock.rtt=Math.min(3,Math.max(0,e.detail.ms/1000));});
  MazeNetwork.addEventListener('control',e=>coopControl(e.detail.payload));
@@ -21402,7 +21451,7 @@ function coopRoster({room,players}){
   for(const meta of players)if(!mp.players.has(meta.id)){const spectator=coopCreateRosterSpectator(meta);mp.players.set(meta.id,spectator);inventoryStateChanged(spectator);}
   mp.net.sendControl({type:'load-level',...mp.spec,players:coopLevelPlayers()});
  }
- if(mp.running&&mp.net.isHost){state.exit.setPassengers(coopAlive());if(!coopAlive().length)coopEndRun();}
+ if(mp.running&&mp.net.isHost){state.exit.setPassengers(coopAlive());if(!coopAlive().length&&!coopPendingAlive())coopEndRun();}
  if(mp.net.isHost&&mp.epoch&&mp.spec&&!mp.loading&&!mp.running&&!mp.ended)coopTryBegin();
  coopUI.updateTeam(coopTeam(),mp.net.id,mp.spectated);
 }
@@ -21417,7 +21466,7 @@ function coopFloorRevival(score){
  mp.revivalRoll={epoch:mp.epoch,score,id};return id;
 }
 async function coopHostLevel(score){
- if(!mp?.net.isHost||mp.loading)return;const session=mp,chosen=coopFloorRevival(score);mp.loading=true;mp.running=false;mp.ended=false;mp.readyPeers.clear();
+ if(!mp?.net.isHost||mp.loading)return;const session=mp,chosen=coopFloorRevival(score);mp.loading=true;mp.running=false;mp.ended=false;mp.readyPeers.clear();mp.loadingStatusRev=0;mp.loadingStatusSeen=-1;
  // The roster must admit input again before anyone receives the next floor.
  // Publishing it while loading also prevents the roster callback starting it.
  const revivedPlayer=chosen&&mp.net.revivePlayer(chosen,score)?chosen:null;if(revivedPlayer)mp.deadPlayers.delete(revivedPlayer);
@@ -21425,7 +21474,7 @@ async function coopHostLevel(score){
  try{await coopLoadLevel(spec,true);if(mp!==session||mp.left)return;mp.spec={...spec,players:coopLevelPlayers()};mp.net.sendControl({type:'load-level',...mp.spec});mp.readyPeers.add(mp.net.id);coopTryBegin();}catch(e){if(mp===session){coopUI.error('The multiplayer maze could not load. '+e.message);state.mode='mp-disconnected';show('loading',false);coopUI.showDisconnected('The maze could not load. Return to the main menu.');}}
 }
 async function coopLoadLevel(spec,isHost=false){
- if(!mp||mp.epoch===spec.epoch)return;const previousBerryTime=state.time;inputClearLevelUI();const session=mp,token=++mp.readyToken;mp.epoch=spec.epoch;mp.loading=true;mp.running=false;mp.spec=spec;mp.history=[];mp.actions=[];mp.worldFrames=[];mp.time=0;mp.lastHostTime=0;mp.accumulator=0;mp.sendAt=0;mp.inputAt=0;mp.handledDeaths.clear();mp.elevatorCallHeard=null;mp.prowlerHeard=0;mp.doorBreakHeard=new Set();mp.doorCueHeard=0;mp.doorCueSerial=0;mp.consumeCueHeard=0;mp.consumeCueSerial=0;audio.resetRemoteSteps();mp.ending=null;mp.lastDeath=null;mp.transitionUntil=0;state.mode='loading';state.score=spec.score;show('menu',false);show('pauseScreen',false);show('transition',false);show('deathScreen',false);show('loading');$('loadingText').textContent='Preparing the team and maze…';coopUI.hide();exitLock();
+ if(!mp||mp.epoch===spec.epoch)return;const previousBerryTime=state.time;inputClearLevelUI();const session=mp,token=++mp.readyToken;mp.epoch=spec.epoch;mp.loading=true;mp.running=false;mp.readyPeers.clear();mp.loadingStatusSeen=-1;mp.spec=spec;mp.history=[];mp.actions=[];mp.worldFrames=[];mp.time=0;mp.lastHostTime=0;mp.accumulator=0;mp.sendAt=0;mp.inputAt=0;mp.handledDeaths.clear();mp.elevatorCallHeard=null;mp.prowlerHeard=0;mp.doorBreakHeard=new Set();mp.doorCueHeard=0;mp.doorCueSerial=0;mp.consumeCueHeard=0;mp.consumeCueSerial=0;audio.resetRemoteSteps();mp.ending=null;mp.lastDeath=null;mp.transitionUntil=0;state.mode='loading';state.score=spec.score;show('menu',false);show('pauseScreen',false);show('transition',false);show('deathScreen',false);show('loading');$('loadingText').textContent='Preparing the team and maze…';coopUI.hide();exitLock();
  await Promise.all([actor.load(assets.player),gokuActor.load(assets.gokuModel),MazeShotgunModel.load()]);if(mp!==session||token!==mp.readyToken)return;
  const previousPlayers=mp.players;buildLevel(spec.theme,spec.seed,spec.supplyPlayers);state.enemy.kind='enemy';actor.hide();state.flashlight=false;mp.world=new MazeWorldSync({level:state.level,safe:state.safe,closets:state.closets,serviceDoors:state.serviceDoors,wardrobes:state.wardrobes,exit:state.exit});mp.prediction.reset();mp.commands.reset();mp.seq=0;mp.clock=new MazeStateCodec.Clock();mp.visualError={x:0,y:0,z:0};mp.lastCommand=null;mp.worldRepairAt=0;mp.worldAuditAt=0;mp.worldMismatchAt=0;mp.worldFullAt=0;mp.mapRetries.clear();mp.weaponNonce=0;mp.weaponAck=0;mp.weaponSeen.clear();mp.weaponPending.clear();mp.weaponWorldRevision=-1;mp.inventoryNonce=0;mp.inventorySeen.clear();mp.inventoryPending.clear();mp.inventoryMismatchAt=0;mp.survivalNonce=0;mp.survivalSeen.clear();mp.survivalPending.clear();
  if(!mp.visuals)mp.visuals=new MazeCoopVisuals(scene,assets,settings.quality);mp.visuals.resetInterpolation();mp.visuals.clearGibs();
@@ -21438,16 +21487,29 @@ async function coopLoadLevel(spec,isHost=false){
  await Promise.all(roster.filter(p=>p.connected!==false).map(meta=>mp.visuals.add(meta.id,meta.slot,meta.id===mp.net.id?{localActor:actor,tablet,torch}:{})));if(mp!==session||token!==mp.readyToken)return;
  weaponWarmup([...mp.visuals.entries.values()].map(entry=>entry.actor));for(const p of mp.players.values())inventoryStateChanged(p);await warmLevelGraphics();if(mp!==session||token!==mp.readyToken)return;
  for(const p of mp.players.values()){const rig=mp.visuals.getActor(p.id);if(rig&&p.id!==mp.net.id)rig.resolveAimTarget=(eye,direction,out)=>{const previous=state.player;state.player=p;try{return resolveAimTarget(eye,direction,out);}finally{state.player=previous;}};}
- state.player=mp.players.get(mp.net.id);for(const p of mp.players.values()){tabletSetEquipped(p,false);tabletInventoryChanged(p);}state.putAway=.7;tabletSpawnBatteries([...mp.players.values()]);mp.dead=!MazeCoopSimulation.alive(state.player);state.exit.setPassengers(isHost?coopAlive():null);mp.loading=false;mp.localPaused=false;mp.inputs.clear();state.mode='mp-waiting';$('loadingText').textContent='Waiting for every player to finish loading…';coopUI.updateTeam(coopTeam(),mp.net.id,mp.spectated);
+ state.player=mp.players.get(mp.net.id);for(const p of mp.players.values()){tabletSetEquipped(p,false);tabletInventoryChanged(p);}state.putAway=.7;tabletSpawnBatteries([...mp.players.values()]);mp.dead=!MazeCoopSimulation.alive(state.player);state.exit.setPassengers(isHost?coopAlive():null);mp.loading=false;mp.localPaused=false;mp.inputs.clear();state.mode='mp-waiting';$('loadingText').textContent='Joining the host’s live maze…';coopUI.updateTeam(coopTeam(),mp.net.id,mp.spectated);
  for(const p of mp.players.values())mp.visuals.setVisible(p.id,MazeCoopSimulation.alive(p));
  if(!isHost){if(mp.pendingWorld?.epoch===mp.epoch){coopReceiveWorld(mp.pendingWorld);mp.pendingWorld=null;}mp.net.sendAction({kind:'ready',epoch:mp.epoch,map:mp.world.staticHash});if(mp.pendingBegin?.epoch===mp.epoch){const begin=mp.pendingBegin;mp.pendingBegin=null;coopBegin(begin);}}
 }
-function coopTryBegin(){if(!mp?.net.isHost||mp.loading||mp.running||mp.ended)return;const waiting=mp.net.players.filter(p=>p.connected!==false&&!mp.readyPeers.has(p.id));if(waiting.length){$('loadingText').textContent='Waiting for '+waiting.map(p=>p.name).join(', ')+'…';return;}coopSendWorld(true);const event={type:'begin-level',epoch:mp.epoch,time:0};mp.net.sendControl(event);coopBegin(event);}
-function coopBegin(event){if(!mp||event.epoch!==mp.epoch)return;if(mp.loading){mp.pendingBegin=event;return;}if(mp.running)return;coopUI?.hidePlayerList(false);delete mp.voiceListWasPaused;mp.running=true;mp.ended=false;mp.localPaused=false;mp.voiceListOpen=false;state.skipUnlockPause=false;show('settingsScreen',false);show('pauseScreen',false);mp.time=event.time||0;mp.lastHostTime=mp.time;mp.lastSnapshotAt=performance.now()/1000;mp.clock.observe(mp.time,mp.lastSnapshotAt);mp.backgroundAt=performance.now();state.time=mp.time;state.mode=mp.time<15?'planning':'playing';state.planRemaining=Math.max(0,15-mp.time);mp.accumulator=0;lastFrame=performance.now();show('loading',false);show('hud');show('crosshair',!mp.dead);show('touchControls',touch&&!mp.dead);coopUI.hide();audio.unlock();if(!mp.dead){mp.spectated=null;coopUI.showSpectator(null,false);requestLock();}else coopCycleSpectator(0);const revived=mp.time===0&&mp.spec?.revivedPlayer?mp.players.get(mp.spec.revivedPlayer):null;announce(revived&&MazeCoopSimulation.alive(revived)?revived.id===mp.net.id?'You were revived. You have only your flashlight.':revived.name+' was revived in the safe room.':'Stay together. Every survivor must board the elevator.',5);}
+function coopTryBegin(){
+ if(!mp?.net.isHost||mp.loading||mp.running||mp.ended||!mp.readyPeers.has(mp.net.id))return;
+ // Do not wait for remote map/model loads. The host starts its own world now.
+ // Peers get their own targeted begin-level only AFTER their verified ready.
+ coopSendLoadingStatus();coopSendWorld(true);
+ coopBegin({type:'begin-level',epoch:mp.epoch,time:0});
+}
+function coopBegin(event){if(!mp||event.epoch!==mp.epoch)return;if(mp.loading){mp.pendingBegin=event;return;}if(mp.running)return;
+ mp.readyPeers.add(mp.net.id);if(!mp.net.isHost)mp.readyPeers.add(mp.net.hostId);
+ coopUI?.hidePlayerList(false);delete mp.voiceListWasPaused;mp.running=true;mp.ended=false;mp.localPaused=false;mp.voiceListOpen=false;state.skipUnlockPause=false;show('settingsScreen',false);show('pauseScreen',false);mp.time=event.time||0;mp.lastHostTime=mp.time;mp.lastSnapshotAt=performance.now()/1000;mp.clock.observe(mp.time,mp.lastSnapshotAt);mp.backgroundAt=performance.now();state.time=mp.time;state.mode=mp.time<15?'planning':'playing';state.planRemaining=Math.max(0,15-mp.time);mp.accumulator=0;lastFrame=performance.now();show('loading',false);show('hud');show('crosshair',!mp.dead);show('touchControls',touch&&!mp.dead);coopUI.hide();audio.unlock();if(!mp.dead){mp.spectated=null;coopUI.showSpectator(null,false);requestLock();}else coopCycleSpectator(0);const revived=mp.time===0&&mp.spec?.revivedPlayer?mp.players.get(mp.spec.revivedPlayer):null;announce(revived&&MazeCoopSimulation.alive(revived)?revived.id===mp.net.id?'You were revived. You have only your flashlight.':revived.name+' was revived in the safe room.':'Stay together. Every survivor must board the elevator.',5);}
 function coopControl(event){
  if(!mp||!event)return;
  if(event.type==='load-level'){if(event.epoch===mp.epoch)return;coopLoadLevel(event,false).catch(e=>{coopUI.showDisconnected('Could not load the host’s maze: '+e.message);show('loading',false);});}
  else if(event.type==='begin-level')coopBegin(event);
+ else if(event.type==='loading-status'&&event.epoch===mp.epoch&&Number.isSafeInteger(event.rev)&&event.rev>mp.loadingStatusSeen&&Array.isArray(event.ready)&&event.ready.length<=4&&event.ready.every(id=>typeof id==='string'&&mp.net.players.some(p=>p.id===id))){
+  mp.loadingStatusSeen=event.rev;mp.readyPeers=new Set(event.ready);
+  if(mp.running)mp.readyPeers.add(mp.net.id);
+  coopUI?.updateTeam(coopTeam(),mp.net.id,mp.spectated);
+ }
  else if(event.type==='elevator-call')coopElevatorCall(event);
  else if(event.type==='door-cue')coopDoorCue(event);
  else if(event.type==='consume-cue')coopConsumeCue(event);
@@ -21483,9 +21545,12 @@ function coopHostTick(dt){
  if(mp.transitionUntil){mp.time+=dt;if(mp.time>=mp.transitionUntil){mp.transitionUntil=0;coopHostLevel(state.score);}return;}
  mp.time+=dt;state.time=mp.time;
  if(!mp.dead){const input=MazeCoopPrediction.command(coopInput());mp.commands.push(mp.net.id,input,state.player);}
- MazeCoopSimulation.stepCommandRounds(state.level,mp.players,mp.commands.rounds(mp.players,dt,{maxRounds:mp.accumulator>MP_STEP*2+1e-9?1:6}),dt,{...coopContext(),forestHazards:state.forestHazards});
+ // A player who has not loaded is a stationary, invulnerable avatar rather
+ // than a participant in movement/collision reconciliation or AI sensing.
+ const activePlayers=coopActivePlayers();
+ MazeCoopSimulation.stepCommandRounds(state.level,activePlayers,mp.commands.rounds(activePlayers,dt,{maxRounds:mp.accumulator>MP_STEP*2+1e-9?1:6}),dt,{...coopContext(),forestHazards:state.forestHazards});
  if(state.mode==='planning'){state.planRemaining=Math.max(0,15-mp.time);if(!state.planRemaining){state.mode='playing';state.safe.unlock();announce('Door unlocked — press R when you are ready.',4);}}
- weaponStep(dt,[...mp.players.values()],true);if(typeof survivalStep==='function')survivalStep(dt,null,true);if(typeof tabletTickPlayer==='function')for(const p of coopAlive())tabletTickPlayer(p,dt);
+ weaponStep(dt,[...mp.players.values()],true);if(typeof survivalStep==='function')survivalStep(dt,[...activePlayers.values()],true);if(typeof tabletTickPlayer==='function')for(const p of activePlayers.values())tabletTickPlayer(p,dt);
  const pendingActions=mp.actions;mp.actions=[];for(const action of pendingActions){const id=typeof action==='string'?action:action.id,p=mp.players.get(id);if(action.received&&performance.now()-action.received>3000){if(action.survival&&p)coopProcessSurvival(action,true);if(action.inventory&&p)coopProcessInventory(action,true);if(action.weapon&&p){p.shotgunAck=Math.max(p.shotgunAck||0,action.nonce);mp.net.sendControl({type:'weapon-ack',epoch:mp.epoch,time:mp.time,nonce:action.nonce,accepted:false,weapon:MazeStateCodec.weapon(p),inventoryRevision:p.inventory?.revision||0},id);}continue;}if(p&&MazeCoopSimulation.alive(p)&&(action.seq||0)>p.lastInputSeq){mp.actions.push(action);continue;}if(action.survival)coopProcessSurvival(action);else if(action.inventory)coopProcessInventory(action);else if(action.weapon)coopProcessWeapon(action);else{coopInteract(id,action.target,action.view);coopSendWorld();}}
  const alive=coopAlive(),bodies=[...alive,state.enemy];state.exit.setPassengers(alive);state.safe.update(dt,bodies);for(const c of state.movingDoors){c.update(dt,bodies);if(!c.isMoving())state.movingDoors.delete(c);}
  const oldPhase=state.exit.phase,result=state.exit.update(dt,bodies,dt);if(oldPhase!==state.exit.phase){state.visibilityTick=0;state.shadowDirty=true;}
@@ -21495,18 +21560,18 @@ function coopHostTick(dt){
   // caught up, against newer verified movement already received from a client.
   // Replaying on copies preserves world/player collision and grants no extra
   // movement time or immunity based on a claimed ping or client position.
-  if(mp.accumulator<=MP_STEP*2+1e-9)for(const id of contacts){const p=mp.players.get(id),contact=mp.commands.projectPlayer(state.level,p,mp.players,coopContext(),96).player;if(Math.hypot(state.enemy.x-contact.x,state.enemy.z-contact.z)<1.08&&C.rayClear(state.level,state.enemy.x,state.enemy.z,contact.x,contact.z))coopKill(id,contact);}
+  if(mp.accumulator<=MP_STEP*2+1e-9)for(const id of contacts){const p=mp.players.get(id),contact=mp.commands.projectPlayer(state.level,p,activePlayers,coopContext(),96).player;if(Math.hypot(state.enemy.x-contact.x,state.enemy.z-contact.z)<1.08&&C.rayClear(state.level,state.enemy.x,state.enemy.z,contact.x,contact.z))coopKill(id,contact);}
  }
  forestAfterAI(dt);syncClosetDoors();
  if(result.departed){audio.exit();show('transition');$('transition').style.opacity='0';$('transitionText').textContent=`FLOOR ${state.score+1} CLEARED`;}
  if(['rising','complete'].includes(state.exit.phase))for(const p of coopAlive()){p.y=state.exit.height;p.grounded=true;p.velocityY=0;}
  if(result.complete&&!mp.transitionUntil){state.score++;mp.transitionUntil=mp.time+.65;$('transitionText').textContent=`FLOOR ${state.score} CLEARED`;}
- if(!coopAlive().length)coopEndRun();
+ if(!coopAlive().length&&!coopPendingAlive())coopEndRun();
 }
 function coopPredictTick(dt){
  if(mp.dead||!mp.running)return;
  weaponStep(dt,[state.player],false);
- const input=mp.prediction.predict(state.level,state.player,coopInput(),mp.players,coopContext(true));mp.history=mp.prediction.history;
+ const input=mp.prediction.predict(state.level,state.player,coopInput(),coopActivePlayers(),coopContext(true));mp.history=mp.prediction.history;
  if(input){const previous=mp.lastCommand,edge=!previous||input.jump||['forward','right','run','crouched','flashlight','flashlightHeld','focus','interactHeld'].some(k=>input[k]!==previous[k]);mp.lastCommand=input;coopFlushInputs(edge);}
 }
 function coopFlushInputs(force=false){
@@ -21521,7 +21586,7 @@ function coopInteract(id,targetSpec=null,view=null){
  try{const target=targetSpec?interactionFindTarget(targetSpec,p,camera):interactionTarget(p,camera);if(!target)return;if(target.kind==='lift'&&target.action?.kind==='depart'&&!state.exit.teamStatus().ready){const team=state.exit.teamStatus(),text=`Waiting for ${team.missing} living ${team.missing===1?'teammate':'teammates'} to board.`;mp.net.sendControl({type:'notice',to:id,text});if(id===mp.net.id)announce(text,3);return;}interact({kind:target.kind,id:target.id});}
  finally{state.player=oldPlayer;state.tabletFocus=oldFocus;camera.position.copy(position);camera.quaternion.copy(rotation);camera.updateMatrixWorld(true);mp.inHostAction=false;}
 }
-function coopKill(id,contact,details={}){const p=mp?.players.get(id);if(!mp?.net.isHost||!p||!MazeCoopSimulation.alive(p))return;const at=details.gib===false?survivalCorpseContact(p,contact):contact||p,event={type:'player-died',epoch:mp.epoch,id,slot:p.slot,x:at.x,y:at.y,z:at.z,yaw:at.yaw,crouched:at.crouched,seed:crypto.getRandomValues(new Uint32Array(1))[0],time:mp.time,gib:details.gib!==false,reason:details.reason||'Fatal attack',variant:details.variant??0};if(event.gib)inventoryDropOnDeath(p,at);coopApplyDeath(event);mp.net.sendControl(event);coopSendWorld();}
+function coopKill(id,contact,details={}){const p=mp?.players.get(id);if(!mp?.net.isHost||!p||!MazeCoopSimulation.alive(p)||!mp.readyPeers.has(id))return;const at=details.gib===false?survivalCorpseContact(p,contact):contact||p,event={type:'player-died',epoch:mp.epoch,id,slot:p.slot,x:at.x,y:at.y,z:at.z,yaw:at.yaw,crouched:at.crouched,seed:crypto.getRandomValues(new Uint32Array(1))[0],time:mp.time,gib:details.gib!==false,reason:details.reason||'Fatal attack',variant:details.variant??0};if(event.gib)inventoryDropOnDeath(p,at);coopApplyDeath(event);mp.net.sendControl(event);coopSendWorld();}
 function coopApplyDeath(event){
  if(!mp||mp.handledDeaths.has(event.id))return;mp.handledDeaths.add(event.id);const p=mp.players.get(event.id);mp.lastDeath={...event,yaw:event.yaw??p?.yaw??0,crouched:event.crouched??p?.crouched??false};if(p){if(typeof survivalApplyDeath==='function')survivalApplyDeath(event,p);p.x=event.x;p.y=event.y;p.z=event.z;p.alive=false;p.dead=true;p.speed=0;mp.deadPlayers.add(event.id);}
  if(event.gib!==false)mp.visuals?.spawnGibs(event);mp.visuals?.setVisible(event.id,false);
@@ -21556,7 +21621,7 @@ function coopReceiveSnapshot(wire){
  const now=performance.now()/1000;mp.lastSnapshotAt=now;mp.lastHostTime=packet.time;mp.clock.observe(packet.time,now);mp.time=packet.time;state.time=packet.time;state.score=packet.score;state.planRemaining=packet.planRemaining;state.mode=mp.ending?'mp-wipe':packet.phase;
  for(const sample of packet.players){let p=mp.players.get(sample.id);if(!p){p={...sample};mp.players.set(sample.id,p);}const wasAlive=MazeCoopSimulation.alive(p);forestProtectSnapshot(p,sample,packet.time);
   if(sample.id===mp.net.id&&sample.alive&&sample.connected!==false&&!mp.dead){
-   const weaponBefore=MazeStateCodec.readWeapon(MazeStateCodec.weapon(p)),correction=mp.prediction.reconcile(state.level,p,sample,packet.players,coopContext(true));mp.history=mp.prediction.history;coopReconcileWeapon(p,sample,mp.clock.age(packet.time,now),weaponBefore);
+   const weaponBefore=MazeStateCodec.readWeapon(MazeStateCodec.weapon(p)),correction=mp.prediction.reconcile(state.level,p,sample,packet.players.filter(q=>mp.readyPeers.has(q.id)),coopContext(true));mp.history=mp.prediction.history;coopReconcileWeapon(p,sample,mp.clock.age(packet.time,now),weaponBefore);
    if(!correction.ignored&&correction.distance>.002){mp.netCorrections.count++;mp.netCorrections.max=Math.max(mp.netCorrections.max,correction.distance);const o=mp.visualError;
     if(correction.distance<1.25&&!['rising','complete'].includes(state.exit.phase)){o.x-=correction.x;o.y-=correction.y;o.z-=correction.z;if(Math.hypot(o.x,o.y,o.z)>1.5||C.collision(state.level,p.x+o.x,p.z+o.z,.34,state.level.roomColliders,false))o.x=o.y=o.z=0;}
     else o.x=o.y=o.z=0;
@@ -22019,7 +22084,7 @@ function forestFatal(p,reason){
  survivalApplyDeath(event,p);p.dead=true;p.alive=false;survivalSoloDeath(reason);
 }
 function forestBeforeAI(){state.alarmClocks?.step(state.time,state.enemy);}
-function forestAfterAI(dt){state.forestHazards?.step(dt,survivalPlayers(),state.enemy,state.time);}
+function forestAfterAI(dt){state.forestHazards?.step(dt,mp?.net.isHost?coopAlive():survivalPlayers(),state.enemy,state.time);}
 function forestWorldState(force=false){
  const h=state.forestHazards?.state(state.time,force),all=state.alarmClocks?.encode(),c=all&&(force||all[0]!==forestSentClockRevision)?all:null;
  const berries=state.berryBushes,b=berries&&(force||berries.revision!==forestSentBerryRevision)?berries.encode():null;
@@ -22178,7 +22243,7 @@ function survivalBatSwing(p){
   if(distance>2.1||distance<.01||direction.dot(delta.multiplyScalar(1/distance))<.65||!interactionVisible(view.origin,centre))return;
   targets.push({kind,other,distance,id:String(other.id||kind)});
  };
- if(mp)for(const other of mp.players.values())if(other!==p&&MazeCoopSimulation.alive(other))addBody(other,'player');
+ if(mp)for(const other of mp.players.values())if(other!==p&&MazeCoopSimulation.alive(other)&&mp.readyPeers.has(other.id))addBody(other,'player');
  if(type==='axe'){
   if(state.enemy)addBody(state.enemy,'enemy');
   const door=houseDoorRayHit(view.origin,direction,2.1);if(door)targets.push({...door,id:String(door.ref.p.id)});
