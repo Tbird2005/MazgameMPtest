@@ -15127,7 +15127,7 @@ const styleName=value=>Object.hasOwn(legendaryStyles,value)?value:null;
 function stylePalette(value){const s=legendaryStyles[styleName(value)];return s?{...s,cssA:hex(s.a),cssB:hex(s.b)}:null;}
 function acquireLegendaryEnvironment(){
  if(!legendaryEnvironment){const faces=[];for(let i=0;i<6;i++){const canvas=document.createElement('canvas');canvas.width=canvas.height=32;const ctx=canvas.getContext('2d'),gradient=ctx.createLinearGradient(0,0,32,32);gradient.addColorStop(0,'#2b3640');gradient.addColorStop(.45,'#83909b');gradient.addColorStop(1,'#19242c');ctx.fillStyle=gradient;ctx.fillRect(0,0,32,32);ctx.fillStyle=i===2?'#f7f4e6':'#dae5e8';ctx.fillRect(i%2?21:4,0,4,32);ctx.fillStyle='#a9bbc3';ctx.fillRect(0,6,32,2);faces.push(canvas);}const texture=new T.CubeTexture(faces);texture.colorSpace=T.SRGBColorSpace;texture.needsUpdate=true;texture.name='Shared 32px legendary cloth reflection';legendaryEnvironment={texture,refs:0};}
- const entry=legendaryEnvironment;entry.refs++;let released=false;return{texture:entry.texture,release(){if(released)return;released=true;if(--entry.refs===0){entry.texture.dispose();if(legendaryEnvironment===entry)legendaryEnvironment=null;}}};
+ const entry=legendaryEnvironment;entry.refs++;let released=false;return{texture:entry.texture,release(){if(released)return;released=true;if(entry.refs>0)--entry.refs; /* Tiny cubemap stays resident for re-equips. */}};
 }
 const OUTFIT=new Set(['traje','brazalete']);
 const paletteIndex=(n,fallback=4)=>Number.isInteger(n)&&n>=0&&n<palettes.length?n:fallback;
@@ -15160,7 +15160,7 @@ function variant(record,source,index,kind,style=null){
    if(red<16||blue<16)return source;
    const changed=recolorPixels(data,index,style);context.putImageData(pixels,0,0);
    const texture=source.clone();texture.source=new T.Source(canvas);texture.needsUpdate=true;
-   textures.set(key,{texture,refs:0,changed});
+   textures.set(key,{texture,refs:0,changed,legendary:!!style});
   }catch{return source;}
  }
  const entry=textures.get(key);if(!record.keys.has(key)){record.keys.add(key);entry.refs++;}return entry.texture;
@@ -15171,14 +15171,14 @@ function finishMask(record,part,style){
  if(!textures.has(key)){
   const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(source.image,0,0,w,h);const pixels=ctx.getImageData(0,0,w,h),data=pixels.data;
   for(let i=0;i<data.length;i+=4){const r=data[i],g=data[i+1],b=data[i+2],affected=data[i+3]>0&&Math.max(r,g,b)-Math.min(r,g,b)>=35&&Math.max(r,b)>=g*1.25;data[i]=255;data[i+1]=Math.round(255*(affected?definition.roughness:part.base.roughness));data[i+2]=Math.round(255*(affected?definition.metalness:part.base.metalness));data[i+3]=255;}
-  ctx.putImageData(pixels,0,0);const texture=source.clone();texture.source=new T.Source(canvas);texture.colorSpace=T.NoColorSpace;texture.needsUpdate=true;texture.name='Cloth-only '+style+' finish mask';textures.set(key,{texture,refs:0});
+  ctx.putImageData(pixels,0,0);const texture=source.clone();texture.source=new T.Source(canvas);texture.colorSpace=T.NoColorSpace;texture.needsUpdate=true;texture.name='Cloth-only '+style+' finish mask';textures.set(key,{texture,refs:0,legendary:true});
  }
  const entry=textures.get(key);if(!record.keys.has(key)){record.keys.add(key);entry.refs++;}return entry.texture;
 }
 function restoreFinish(part){const m=part.material,b=part.base;if(b.color)m.color.copy(b.color);m.roughness=b.roughness;m.metalness=b.metalness;m.roughnessMap=b.roughnessMap;m.metalnessMap=b.metalnessMap;m.envMap=b.envMap;m.envMapIntensity=b.envMapIntensity;}
 const materialKind=m=>m?.name==='oro'?'trim':m?.map&&m.name==='traje'?'cloth':m?.map&&m.name==='ojos'?'iris':null;
 function createRecord(actor){
- const record={actor,meshes:[],materials:[],keys:new Set(),signature:null,base:4,worn:true,outfitPalette:4,outfitStyle:null,environment:null,inventoryKnown:false};
+ const record={actor,meshes:[],materials:[],keys:new Set(),signature:null,base:4,worn:true,outfitPalette:4,outfitStyle:null,environment:null,inventoryKnown:false,reflectionLight:1};
  for(const mesh of actor.meshes||[]){
   const original=mesh.material,list=Array.isArray(original)?original:[original],name=meshName(mesh),relevant=list.some(materialKind);
   record.meshes.push({mesh,name,visible:mesh.visible,outfit:OUTFIT.has(name),original,owned:null});
@@ -15206,12 +15206,12 @@ function apply(actor,p={}){
    // `oro` belongs only to the loaded costume accessories. The player loader
    // has already deleted the unwanted wrist/shoulder rings and chest bells.
    // Clone per wearer; borrowing a rare outfit must never tint another rig.
-   if(style){const finish=legendaryStyles[style];part.material.color.set(hex(style==='prism'?finish.b:finish.a));part.material.roughness=finish.roughness;part.material.metalness=1;part.material.roughnessMap=null;part.material.metalnessMap=null;part.material.envMap=record.environment.texture;part.material.envMapIntensity=finish.environment;}
+   if(style){const finish=legendaryStyles[style];part.material.color.set(hex(style==='prism'?finish.b:finish.a));part.material.roughness=finish.roughness;part.material.metalness=1;part.material.roughnessMap=null;part.material.metalnessMap=null;part.material.envMap=record.environment.texture;part.material.envMapIntensity=finish.environment*record.reflectionLight;}
    part.material.needsUpdate=true;continue;
   }
   const target=part.kind==='iris'?(worn?palette:base):part.outfit&&worn?palette:base;
   part.material.map=variant(record,part.map,target,part.kind,style);restoreFinish(part);
-  if(style&&part.kind==='cloth'){const mask=finishMask(record,part,style);part.material.roughness=mask?1:legendaryStyles[style].roughness;part.material.metalness=mask?1:legendaryStyles[style].metalness;part.material.roughnessMap=mask;part.material.metalnessMap=mask;part.material.envMap=record.environment.texture;part.material.envMapIntensity=legendaryStyles[style].environment;}
+  if(style&&part.kind==='cloth'){const mask=finishMask(record,part,style);part.material.roughness=mask?1:legendaryStyles[style].roughness;part.material.metalness=mask?1:legendaryStyles[style].metalness;part.material.roughnessMap=mask;part.material.metalnessMap=mask;part.material.envMap=record.environment.texture;part.material.envMapIntensity=legendaryStyles[style].environment*record.reflectionLight;}
   part.material.needsUpdate=true;
  }
  record.signature=signature;return true;
@@ -15220,11 +15220,48 @@ function clear(actor){
  global.MazeBackpackVisuals?.dispose(actor);
  const record=records.get(actor);if(!record)return;record.environment?.release();
  for(const part of record.meshes){if(part.outfit)part.mesh.visible=part.visible;if(part.owned){part.mesh.material=part.original;for(const material of part.owned)material.dispose();}}
- for(const key of record.keys){const entry=textures.get(key);if(entry&&--entry.refs<=0){entry.texture.dispose();textures.delete(key);}}
+ for(const key of record.keys){const entry=textures.get(key);if(entry&&--entry.refs<=0&&!entry.legendary){entry.texture.dispose();textures.delete(key);}}
  records.delete(actor);materialsChanged(actor);
 }
-function inspect(actor){const r=records.get(actor);return r?{base:r.base,worn:r.worn,outfitPalette:r.outfitPalette,outfitStyle:r.outfitStyle,hidden:r.meshes.filter(m=>m.outfit&&!m.mesh.visible).map(m=>m.name),mapped:r.materials.map(m=>({mesh:m.name,kind:m.kind,outfit:m.outfit,color:m.material.color?.getHexString(),roughness:m.material.roughness,metalness:m.material.metalness,legendary:!!m.material.envMap&&m.material.envMap===r.environment?.texture}))}:null;}
-global.MazeAppearance={palettes,legendaryStyles,stylePalette,acquireLegendaryEnvironment,apply,clear,inspect,recolorPixels};
+// Reflection maps are indirect environment light, not glowing/emissive ink.
+// Scale only that indirect term; real flashlights and ceiling lights continue
+// creating specular highlights through Three.js' normal direct-light path.
+function shadeLegendary(actor,light){
+ const record=records.get(actor);if(!record||!record.outfitStyle)return;
+ light=Math.max(0,Math.min(1,Number.isFinite(light)?light:0));
+ if(Math.abs(record.reflectionLight-light)<.012)return;
+ record.reflectionLight=light;
+ const intensity=legendaryStyles[record.outfitStyle].environment*light;
+ for(const part of record.materials)if(part.kind==='cloth'&&part.outfit||part.kind==='trim'){
+  if(part.material.envMap===record.environment?.texture)part.material.envMapIntensity=intensity;
+ }
+ // Updating this uniform does not mark materials dirty or rebuild shaders.
+}
+function shadeDroppedLegendary(group,light){
+ if(!group?.userData.outfitStyle)return;
+ light=Math.max(0,Math.min(1,Number.isFinite(light)?light:0));
+ for(const mesh of group.children){const m=mesh.material;if(!m?.envMap)continue;
+  if(!Number.isFinite(m.userData.mazeLegendaryBaseIntensity))m.userData.mazeLegendaryBaseIntensity=m.envMapIntensity;
+  m.envMapIntensity=m.userData.mazeLegendaryBaseIntensity*light;
+ }
+}
+// CPU-precompute each palette and metalness mask once while graphics loading.
+// Rare textures remain cached at zero references to avoid generation/upload
+// spikes each time a player swaps a legendary outfit.
+function prewarm(actor,style){
+ style=styleName(style);if(!actor?.ready||!style)return false;
+ const record=records.get(actor)||createRecord(actor),temporary={keys:new Set()};
+ for(const part of record.materials){
+  if(part.kind==='trim')continue;
+  variant(temporary,part.map,record.base,part.kind,style);
+  if(part.kind==='cloth'&&part.outfit)finishMask(temporary,part,style);
+ }
+ for(const key of temporary.keys){const entry=textures.get(key);if(entry)entry.refs=Math.max(0,entry.refs-1);}
+ return true;
+}
+function inspect(actor){const r=records.get(actor);return r?{base:r.base,worn:r.worn,outfitPalette:r.outfitPalette,outfitStyle:r.outfitStyle,reflectionLight:r.reflectionLight,hidden:r.meshes.filter(m=>m.outfit&&!m.mesh.visible).map(m=>m.name),mapped:r.materials.map(m=>({mesh:m.name,kind:m.kind,outfit:m.outfit,color:m.material.color?.getHexString(),roughness:m.material.roughness,metalness:m.material.metalness,envMapIntensity:m.material.envMapIntensity,legendary:!!m.material.envMap&&m.material.envMap===r.environment?.texture}))}:null;}
+function cacheStats(){return{variants:textures.size,legendary:[...textures.values()].filter(e=>e.legendary).length,cubemap:!!legendaryEnvironment,reflectionRefs:legendaryEnvironment?.refs||0};}
+global.MazeAppearance={palettes,legendaryStyles,stylePalette,acquireLegendaryEnvironment,apply,clear,inspect,recolorPixels,prewarm,shadeLegendary,shadeDroppedLegendary,cacheStats};
 })(window);
 
 </script><script>MazeBoot.advance(11014);</script>
@@ -15823,7 +15860,7 @@ function acquireTemplate(url){
  let entry=templates.get(url);
  if(!entry){
   const actor=new global.MazePlayer(new T.Scene());entry={actor,refs:0,promise:null};templates.set(url,entry);
-  entry.promise=actor.load(url).then(()=>{actor.face?.restorePose();actor._restorePoseOffsets?.();return actor;});
+  entry.promise=actor.load(url).then(()=>{actor.face?.restorePose();actor._restorePoseOffsets?.();const styles=['gold','chrome','prism'];const prepare=()=>{if(!actor.ready||!styles.length)return;global.MazeAppearance?.prewarm(actor,styles.shift());if(styles.length){if(typeof requestIdleCallback==='function')requestIdleCallback(prepare,{timeout:2000});else setTimeout(prepare,75);}};if(typeof requestIdleCallback==='function')requestIdleCallback(prepare,{timeout:1800});else setTimeout(prepare,100);return actor;});
  }
  entry.refs++;let released=false;
  return{promise:entry.promise,release(){if(released)return;released=true;entry.refs--;if(entry.refs)return;const dispose=()=>{if(entry.refs||templates.get(url)!==entry)return;templates.delete(url);global.MazeAppearance?.clear(entry.actor);entry.actor.dispose();};entry.promise.then(dispose,dispose);}};
@@ -21101,9 +21138,36 @@ function applyServiceActorLight(group,p){
  const amount=serviceCellAt(p)?1:0;
  for(const m of cache.materials){MazeEnvironment.shadeServiceMaterial(m,T,amount);MazeBackroomsLighting.shadeMaterial(m,T,state.env?.backroomsLighting||null);}
 }
+function legendaryLightAt(p){
+ if(!p||!state.env)return 1;
+ let ambient=0;
+ if(state.level?.poolVariant==='dark')ambient=0;
+ else if(state.env.backroomsLighting){const level=state.env.backroomsLighting.sample(p.x,p.z);ambient=Math.max(0,Math.min(1,level))**1.55*.86;}
+ else if(state.level?.outdoor)ambient=Math.min(1,(hemi?.intensity||0)*.67+(sun?.intensity||0)*.21);
+ else ambient=Math.min(.38,(hemi?.intensity||0)*.17+(sun?.intensity||0)*.11);
+ if(serviceCellAt(p))ambient*=.025; // The roof blocks exterior sky and reflections.
+ // Nearby real fixtures supply a little low-frequency room reflection. This
+ // complements their directional PBR glints without lighting other rooms.
+ for(const light of [safeLight,...pointLights]){
+  if(!light||!light.visible||light.intensity<=.01||light.distance<=0)continue;
+  const dx=light.position.x-p.x,dz=light.position.z-p.z;
+  const dy=light.position.y-(p.y||0)-1;
+  const distance=Math.hypot(dx,dy,dz),reach=Math.min(light.distance,9);
+  if(distance>=reach)continue;
+  // Do not let a fixture on the far side of a solid maze wall make chrome glow.
+  if(state.level&&C.rayClear&&!C.rayClear(state.level,p.x,p.z,light.position.x,light.position.z))continue;
+  const proximity=(1-distance/reach)**2;
+  ambient+=Math.min(1,light.intensity/12)*proximity*.8;
+ }
+ return Math.max(0,Math.min(1,ambient));
+}
 function updateServiceActorLighting(){
- applyServiceActorLight(actor?.group,state.player);applyServiceActorLight(gokuActor?.group||goku,state.enemy);
- if(mp?.visuals)for(const p of mp.players.values())if(p.id!==mp.net.id){applyServiceActorLight(mp.visuals.getActor(p.id)?.group,p);mp.visuals.setServiceLighting(p.id,state.level.poolVariant==='dark'||!!serviceCellAt(p));}
+ applyServiceActorLight(actor?.group,state.player);MazeAppearance.shadeLegendary(actor,legendaryLightAt(state.player));
+ applyServiceActorLight(gokuActor?.group||goku,state.enemy);
+ if(mp?.visuals)for(const p of mp.players.values())if(p.id!==mp.net.id){const rig=mp.visuals.getActor(p.id);applyServiceActorLight(rig?.group,p);MazeAppearance.shadeLegendary(rig,legendaryLightAt(p));mp.visuals.setServiceLighting(p.id,state.level.poolVariant==='dark'||!!serviceCellAt(p));}
+ for(const drop of state.inventoryDrops||[])if(drop.item?.type==='outfit'&&MazeAppearance.stylePalette(drop.item.style)){
+  MazeAppearance.shadeDroppedLegendary(drop.model?.group||drop.group,legendaryLightAt(drop));
+ }
 }
 function constrainServiceCeiling(p){
  if(!serviceCellAt(p))return;
@@ -22763,6 +22827,50 @@ function survivalRoomAt(p){
  return state.level.survivalRoomLookup?.get(key)||(state.level.survivalRooms||[]).find(room=>room.cells.some(c=>c.x===x&&c.z===z))||null;
 }
 function survivalWaterFloorAt(p){return state.theme==='poolrooms'?.8:0;}
+// Precompile the two reflective skinned-material combinations while the
+// loading cover is up. Keep the tiny compile proxies alive so the renderer
+// doesn't evict the linked programs as soon as the player's usual costume
+// is restored. All texture sources are shared, never duplicated per player.
+const legendaryRendererWarmCache=new WeakMap();
+function warmLegendaryRenderer(){
+ if(!renderer||!scene||!actor?.ready||!window.MazeAppearance)return false;
+ let remembered=legendaryRendererWarmCache.get(renderer);if(!remembered){remembered=new Map();legendaryRendererWarmCache.set(renderer,remembered);}
+ const lightList=[];scene.traverseVisible(o=>{if(o.isLight&&o.layers.test(camera.layers))lightList.push(o);});
+ const key=[settings.quality,renderer.outputColorSpace,renderer.toneMapping,!!scene.fog,...lightList.map(o=>o.type+':'+Number(o.castShadow)),!!state.env?.backroomsLighting].join('|');
+ if(remembered.has(key))return false;
+ const original=actor.group.visible,player=state.player;
+ const cacheEntry={scene:new T.Scene(),materials:[],proxies:[],textures:[],lights:[]};
+ let succeeded=false;const destination=renderer.getRenderTarget(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest(),shadowAuto=renderer.shadowMap.autoUpdate,shadowDirty=renderer.shadowMap.needsUpdate;
+ const target=new T.WebGLRenderTarget(8,8,{depthBuffer:true,stencilBuffer:false});
+ try{
+  MazeAppearance.apply(actor,{slot:player?.slot??4,inventory:{outfit:{type:'outfit',palette:4,style:'gold'}}});
+  applyServiceActorLight(actor.group,player);
+  cacheEntry.scene.fog=scene.fog;cacheEntry.scene.background=scene.background;
+  const included=new Set();
+  for(const mesh of actor.meshes||[]){
+   if(!mesh?.isMesh||!mesh.material)continue;
+   const mats=Array.isArray(mesh.material)?mesh.material:[mesh.material];
+   for(const mat of mats)if(mat.envMap&&mat.map&&!included.has('cloth')||mat.envMap&&!mat.map&&!included.has('trim')){
+    const kind=mat.map?'cloth':'trim';included.add(kind);
+    const duplicate=mat.clone();duplicate.onBeforeCompile=mat.onBeforeCompile;duplicate.customProgramCacheKey=mat.customProgramCacheKey;
+    const proxy=mesh.clone(false);proxy.material=duplicate;proxy.frustumCulled=false;proxy.castShadow=false;proxy.visible=true;cacheEntry.scene.add(proxy);cacheEntry.proxies.push(proxy);cacheEntry.materials.push(duplicate);
+   }
+  }
+  if(!cacheEntry.proxies.length)return false;
+  for(const light of lightList){const copy=light.clone(false);light.getWorldPosition(copy.position);light.getWorldQuaternion(copy.quaternion);copy.castShadow=light.castShadow;cacheEntry.scene.add(copy);cacheEntry.lights.push(copy);if(copy.target)cacheEntry.scene.add(copy.target);}
+  const lens=camera.clone();lens.layers.enableAll();lens.position.set(0,1,3);lens.lookAt(0,1,0);lens.updateMatrixWorld(true);
+  renderer.setRenderTarget(target);renderer.setViewport(0,0,8,8);renderer.setScissor(0,0,8,8);renderer.setScissorTest(true);renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=false;
+  renderer.compile(cacheEntry.scene,lens);renderer.render(cacheEntry.scene,lens);
+  const gl=renderer.getContext(),pixel=new Uint8Array(4);gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);
+  remembered.set(key,cacheEntry);succeeded=true;
+ }catch(error){console.warn('Legendary outfit shader prewarm deferred:',error?.message||error);return false;
+ }finally{
+  renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);renderer.setRenderTarget(destination);renderer.shadowMap.autoUpdate=shadowAuto;renderer.shadowMap.needsUpdate=shadowDirty;
+  target.dispose();actor.group.visible=original;MazeAppearance.apply(actor,player);applyServiceActorLight(actor.group,player);MazeAppearance.shadeLegendary(actor,legendaryLightAt(player));
+  if(!succeeded){for(const m of cacheEntry.materials)m.dispose();cacheEntry.scene.clear();}
+ }
+ return succeeded;
+}
 // Prepare the level's loaded graphics behind its loading cover. Screen and
 // reflection targets need different shader variants. Small batches let the
 // browser paint progress and process multiplayer heartbeats between draws.
@@ -22782,6 +22890,14 @@ async function warmLevelGraphics(){
  // Furnished-room routes are immutable; build their graph before the first
  // enemy pursuit instead of paying that cost on a gameplay frame.
  C.prepareNavigation?.(state.level);
+ // Spread the three one-time CPU texture conversions over separate tasks.
+ for(const style of ['gold','chrome','prism']){
+  MazeAppearance.prewarm(actor,style);
+  await new Promise(resolve=>setTimeout(resolve,0));if(!valid())return false;
+ }
+ // Linked metallic shaders and their textures are warmed in the same render
+ // configuration the floor uses, rather than when someone first equips them.
+ warmLegendaryRenderer();
  await new Promise(resolve=>setTimeout(resolve,0));if(!valid())return false;
  flashlightOcclusion?.prepareDepth?.();
  const renderables=[],lightParents=new Set();scene.traverse(o=>{if(o.isMesh||o.isLine||o.isPoints||o.isSprite)renderables.push(o);if(o.isLight)for(let parent=o.parent;parent&&parent!==scene;parent=parent.parent)lightParents.add(parent);});
