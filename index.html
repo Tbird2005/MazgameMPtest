@@ -6831,7 +6831,7 @@ function backroomsRayBlocked(index,x1,z1,x2,z2,endpointKey,seeThroughElevatorGat
  }
  return false;
 }
-function rayClear(level, x1, z1, x2, z2, { targetSolid = false, allowSafe = false, renderDoorways = false, seeThroughElevatorGates = false } = {}) {
+function rayClear(level, x1, z1, x2, z2, { targetSolid = false, allowSafe = false, renderDoorways = false, seeThroughElevatorGates = false, ignoreRoomDoorLeafId = null } = {}) {
   if (![x1, z1, x2, z2].every(Number.isFinite)) return false;
   const dx = x2 - x1, dz = z2 - z1;
   if (!Number.isFinite(dx) || !Number.isFinite(dz)) return false;
@@ -6848,7 +6848,7 @@ function rayClear(level, x1, z1, x2, z2, { targetSolid = false, allowSafe = fals
     if(!list)continue;
     for(let i=0;i<list.length;i++){
       const barrier=list[i];
-      if(barrier.enabled===false||barrier.visionTransparent||(targetSolid&&barrier.ownerKey===endpointKey)||(seeThroughElevatorGates&&barrier.elevatorGate===true))continue;
+      if(barrier.enabled===false||barrier.visionTransparent||(ignoreRoomDoorLeafId!==null&&barrier.roomDoorLeaf&&barrier.roomDoorId===ignoreRoomDoorLeafId)||(targetSolid&&barrier.ownerKey===endpointKey)||(seeThroughElevatorGates&&barrier.elevatorGate===true))continue;
       // OBB is the authority for a rotating leaf; do not assume a custom OBB
       // also supplied a synchronized AABB. Static barriers can use this reject.
       const obb=barrier.sightOBB;
@@ -7379,6 +7379,7 @@ function moveEnemyToward(level,e,target,speed,dt){
  if(!e.navigationTarget||Math.hypot(target.x-e.navigationTarget.x,target.z-e.navigationTarget.z)>.35){e.navigationTarget={x:target.x,z:target.z};e.repath=0;}
  target=enemyRoomDoorTarget(level,e,target,dt);if(!target)return;
  target=enemyClosetDoorTarget(level,e,target,dt);if(!target)return;
+ if(e.serviceDoorRecovery?.phase==='backoff')target=e.serviceDoorRecovery;
  const colliders=level.roomColliders||level.safeColliders||[],region=enemyLocalRegion(level,e,target),contact=target===e.lastTarget&&['hunting','investigating'].includes(e.state);
  let direct=enemyDirectGoal(level,e,target,colliders,contact);
  const localBlocked=!direct&&region&&!roomNavigationClear(level,e,target,colliders);
@@ -7417,7 +7418,7 @@ function maybeRoutineClosetSearch(level,e,time){if(time<e.nextRoutineCheck)retur
 // enemy advances its recovery clock exactly once per authoritative tick.
 function updateEnemyKnockdown(e,dt,time){
  if(!(e.knockdownRemaining>0))return false;
- e.roomDoorClearance=null;e.roomDoorClearanceRetry=0;e.closetDoorClearance=null;e.closetDoorClearanceRetry=0;e.closetDoorProbe=null;e.localApproach=null;
+ e.roomDoorClearance=null;e.roomDoorClearanceRetry=0;e.serviceDoorRecovery=null;e.closetDoorClearance=null;e.closetDoorClearanceRetry=0;e.closetDoorProbe=null;e.localApproach=null;
  e.knockdownRemaining=Math.max(0,e.knockdownRemaining-(Number.isFinite(dt)?clamp(dt,0,.10):0));
  e.moving=false;e.speed=0;e.chasing=false;e.path=[];e.repath=0;
  e.awareness=0;e.exposure=0;e.lastSenseTime=time;e.senseAt=time+ENEMY_TUNING.senseInterval;
@@ -16736,12 +16737,12 @@ global.MazeLobbyStage=MazeLobbyStage;
       this.spectatorNext.setAttribute('aria-label', 'Spectate next living teammate');
       const target = el('div', 'coop-spectator-target');
       target.append(this.spectatorPrev, this.spectatorName, this.spectatorNext);
-      this.spectatorView = this._button('View: Third person', () => this.callbacks.spectatorView?.(), 'coop-spectator-toggle');
+      this.spectatorView = this._button('View: Orbit', () => this.callbacks.spectatorView?.(), 'coop-spectator-toggle');
       this.spectatorNight = this._button('Night vision: ON', () => this.callbacks.spectatorNight?.(), 'coop-spectator-toggle');
-      this.spectatorView.setAttribute('aria-label', 'Toggle first-person and third-person spectating');
+      this.spectatorView.setAttribute('aria-label', 'Cycle orbit, third-person follow, and first-person spectator cameras');
       this.spectatorNight.setAttribute('aria-label', 'Toggle spectator night vision');
       const spectatorOptions=el('div','coop-spectator-options');spectatorOptions.append(this.spectatorView,this.spectatorNight);
-      this.spectatorNote=el('span', 'coop-spectator-note', '← / → teammate · C / B view · F / D-pad ↑ night vision · Wheel zoom');
+      this.spectatorNote=el('span', 'coop-spectator-note', 'LMB / RMB or ← / → teammate · C / B camera · F night vision · Esc releases cursor · Click game to relock · Wheel zoom');
       this.spectator.append(this.spectatorLabel, target, spectatorOptions, this.spectatorNote);
       this.playerList = el('aside', 'coop-player-list hidden');
       this.playerList.setAttribute('aria-label', 'Connected players and ping');
@@ -17224,12 +17225,12 @@ global.MazeLobbyStage=MazeLobbyStage;
       if (wasOpen) this.callbacks.playerList?.(false, resume);
     }
 
-    updateSpectatorOptions(view='third', night=true) {
+    updateSpectatorOptions(view='orbit', night=true) {
       if(!this.spectatorView||!this.spectatorNight)return;
-      const first=view==='first';
-      this.spectatorView.textContent=first?'View: First person':'View: Third person';
+      const names={orbit:'Orbit (free)',third:'Third person (follow)',first:'First person'};
+      this.spectatorView.textContent='Camera: '+(names[view]||names.orbit);
+      this.spectatorView.setAttribute('aria-label','Spectator camera: '+(names[view]||names.orbit)+'. Activate to cycle to the next view.');
       this.spectatorNight.textContent=night?'Night vision: ON':'Night vision: OFF';
-      this.spectatorView.setAttribute('aria-pressed',String(first));
       this.spectatorNight.setAttribute('aria-pressed',String(!!night));
     }
 
@@ -18867,7 +18868,7 @@ function create(room,level=null){
   const ux=p.dz*c-p.dx*s,uz=-p.dx*c-p.dz*s;b.sightOBB={x:p.x-p.dz*.88+ux*width/2,z:p.z+p.dx*.88+uz*width/2,ux,uz,halfWidth:width/2,halfDepth:.067};return b;};
  const ownerKey=C.key(p.inside.x,p.inside.z),jambs=[-1,1].map(side=>({...worldBounds(side<0?-1:.88,side<0?-.88:1,-.14,.14),enabled:true,ownerKey,roomDoorJamb:true}));
  let open=0,desired=0,swing=1,targetSwing=1;p.doorLocked=house&&p.doorLocked===true;p.doorLockPending=false;p.doorBroken=false;
- const leaf={...leafBounds(0),enabled:true,ownerKey,serviceLeaf:true,renderDoor:true,renderOpen:0,roomDoorLeaf:true},colliders=[...jambs,leaf];
+ const leaf={...leafBounds(0),enabled:true,ownerKey,roomDoorId:p.id,serviceLeaf:true,renderDoor:true,renderOpen:0,roomDoorLeaf:true},colliders=[...jambs,leaf];
  const overlaps=(b,actors)=>actors.some(a=>{if(!a||a.alive===false||a.dead||a.connected===false)return false;const r=(a.kind==='enemy'||a.isEnemy||a.searchedClosets instanceof Map)? .56:.34,dx=a.x-C.clamp(a.x,b.minX,b.maxX),dz=a.z-C.clamp(a.z,b.minZ,b.maxZ);return dx*dx+dz*dz<r*r-1e-8;});
  // Closing an internal door nudges a touching body into nearby clear floor.
  // Test the entire movement against real walls/furniture before committing;
@@ -20447,6 +20448,7 @@ function inputBack(){
  if(mp?.voiceListOpen||inputVisible(coopUI?.playerList)){coopUI.hidePlayerList(true);return;}
  if(inputVisible($('settingsScreen'))){$('closeSettings').click();return;}
  if(state.tabletFocus){state.skipUnlockPause=state.locked;tabletStowFocused();return;}
+ if(mp?.dead&&coopLive()&&!mp.localPaused&&!mp.ending){if(document.pointerLockElement===$('world'))exitLock();return;} // Escape releases spectator cursor; use the pause button for menus.
  if(active()){pause();return;}
  if(state.mode==='paused'||mp?.localPaused&&coopLive()){resume();return;}
  if(coopUI?.mode&&inputVisible(coopUI.overlay))coopUI._close?.();
@@ -21036,9 +21038,10 @@ function bindUI(){
  for(const name of ['volume','sensitivity','quality']){const el=$(name);el.value=settings[name];el.oninput=()=>{settings[name]=name==='quality'?el.value:Number(el.value);$('volumeOut').value=settings.volume+'%';$('sensitivityOut').value=settings.sensitivity+'%';audio.setVolume(settings.volume/100);$('deathVideo').volume=settings.volume/100;if(name==='quality')setQuality();saveSettings();};}$('volumeOut').value=settings.volume+'%';$('sensitivityOut').value=settings.sensitivity+'%';
  $('themeSelect').onchange=()=>{if(state.mode!=='menu')return;try{const theme=$('themeSelect').value==='random'?'garden':$('themeSelect').value;buildLevel(theme,C.hashSeed('maze3d-title'));}catch(e){fatal(e);}};
  addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();resizeRender();resizeTabletView();state.visibilityTick=0;state.shadowTick=0;state.shadowDirty=true;});
- document.addEventListener('pointerlockchange',()=>{mouseGuard.reset();const was=state.locked,skip=state.skipUnlockPause;state.skipUnlockPause=false;state.locked=document.pointerLockElement===$('world');inputUpdateCaptureHint();if(was&&!state.locked&&performance.now()>inputIgnoreUnlockUntil&&active()&&!skip&&!inventoryIsOpen()&&!survivalBlocked()&&!mp?.voiceListOpen){if(state.tabletFocus)setTabletFocus(false);else pause();}});
+ document.addEventListener('pointerlockchange',()=>{mouseGuard.reset();const was=state.locked,skip=state.skipUnlockPause;state.skipUnlockPause=false;state.locked=document.pointerLockElement===$('world');inputUpdateCaptureHint();if(was&&!state.locked&&performance.now()>inputIgnoreUnlockUntil&&active()&&!skip&&!inventoryIsOpen()&&!survivalBlocked()&&!mp?.voiceListOpen&&!mp?.dead){if(state.tabletFocus)setTabletFocus(false);else pause();}});
  document.addEventListener('pointerlockerror',()=>{state.locked=document.pointerLockElement===$('world');inputUpdateCaptureHint();});
  $('world').addEventListener('click',inputRecoverCamera);
+ $('world').addEventListener('pointerdown',event=>{if(!mp?.dead||!coopLive()||mp.ending||mp.localPaused||document.pointerLockElement!==$('world')||state.tabletFocus||inventoryIsOpen()||survivalBlocked()||event.ctrlKey||event.metaKey)return;if(event.button===0||event.button===2){event.preventDefault();coopCycleSpectator(event.button===0?-1:1);}},false);
  document.addEventListener('mousemove',event=>{if(!active()||document.hidden||!document.hasFocus()||document.pointerLockElement!==$('world')||state.tabletFocus||inventoryIsOpen()||survivalBlocked()||inputMenuRoot())return;state.locked=true;const move=mouseGuard.read(event.movementX,event.movementY,.00055+settings.sensitivity*.000032,performance.now(),settings.mouseProtection);if(move)look(move.x,move.y);});
  document.addEventListener('keydown',event=>{if(event.defaultPrevented||MazeInput.isCapturing()||MazeInput.isTextTarget(event.target)||event.target?.closest?.('button,a'))return;if(event.code==='Enter'&&state.mode==='menu'){event.preventDefault();startRun();}});
  addEventListener('blur',()=>{mouseGuard.reset();resetMovementInput();if(active())pause();});document.addEventListener('visibilitychange',()=>{if(document.hidden&&active())pause();});
@@ -21059,7 +21062,7 @@ function bindUI(){
  // Read-only performance / geometry diagnostics; player-free mode is a separate startup path.
  window.MazeDiagnostics={getStatus:()=>({build:'V7.13 · Theme Worlds',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable},performance:{...clientFrames.status(),simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
 }
-function look(dx,dy){if(!Number.isFinite(dx)||!Number.isFinite(dy)||inventoryIsOpen()||survivalBlocked())return;const s=.00055+settings.sensitivity*.000032;if(mp?.dead){return;}const p=state.player,inversion=MazeBerryGameplay.mouseMultiplier(p,state.time);p.yaw-=dx*s*inversion;p.pitch=C.clamp(p.pitch-dy*s*inversion,-1.43,1.25);}
+function look(dx,dy){if(!Number.isFinite(dx)||!Number.isFinite(dy)||inventoryIsOpen()||survivalBlocked())return;const s=.00055+settings.sensitivity*.000032;if(mp?.dead){if(coopLive()&&!mp.ending&&!mp.localPaused&&mp.spectatorView==='orbit'){mp.spectatorYaw=(Number.isFinite(mp.spectatorYaw)?mp.spectatorYaw:0)-dx*s;mp.spectatorPitch=C.clamp((Number.isFinite(mp.spectatorPitch)?mp.spectatorPitch:.12)-dy*s,-1.12,1.12);}return;}const p=state.player,inversion=MazeBerryGameplay.mouseMultiplier(p,state.time);p.yaw-=dx*s*inversion;p.pitch=C.clamp(p.pitch-dy*s*inversion,-1.43,1.25);}
 // Service passages occupy real half-cells; presentation and interaction use
 // the same footprint that navigation and collision use.
 const serviceMaterialCache=new WeakMap();
@@ -21101,8 +21104,14 @@ function serviceDoorLight(door,map){
  return Math.max(map.get(C.key(p.floorX,p.floorZ))||0,cell?map.get(C.key(cell.parentX,cell.parentZ))||0:0);
 }
 function serviceDoorReachable(door,p){
- const d=door.p,along=(p.x-d.x)*d.dx+(p.z-d.z)*d.dz,side=along>=0?1:-1;
- return C.rayClear(state.level,p.x,p.z,d.x+d.dx*side*.20,d.z+d.dz*side*.20);
+ const d=door.p;if(!p||![p.x,p.z,d.x,d.z,d.dx,d.dz].every(Number.isFinite))return false;
+ const along=(p.x-d.x)*d.dx+(p.z-d.z)*d.dz,across=(p.x-d.x)*d.dz-(p.z-d.z)*d.dx,side=along>=0?1:-1;
+ // Interact only from the actual approach lane, never through a sidewall.
+ // The *same* door's swinging leaf can mask its own handle/portal, so it
+ // must not block the short line of interaction; jambs and all other walls
+ // remain hard barriers. A closed door must still be reopenable from either face.
+ if(Math.hypot(p.x-d.x,p.z-d.z)>2.85||Math.abs(across)>1.48)return false;
+ return C.rayClear(state.level,p.x,p.z,d.x+d.dx*side*.54,d.z+d.dz*side*.54,{ignoreRoomDoorLeafId:d.id});
 }
 function nearestServiceDoor(){
  const p=state.player;
@@ -21110,17 +21119,43 @@ function nearestServiceDoor(){
 }
 function syncServiceDoors(){
  const e=state.enemy;if(!e||e.knockdownRemaining>0||!state.serviceDoors.length)return;
- // Closed access doors remain route candidates. Open only the actual portal
- // ahead of this actor; proximity through an adjacent wall is insufficient.
- const upcoming=new Set((e.path||[]).slice(0,3).map(p=>p.serviceDoorId).filter(Boolean));
+ const upcoming=new Set((e.path||[]).slice(0,5).map(p=>p.serviceDoorId).filter(Boolean));
+ const target=e.state==='hunting'||e.state==='investigating'?e.lastTarget:e.searchPlan?.target||e.patrol||e.navigationTarget;
  for(const d of state.serviceDoors){
-  const clearance=e.roomDoorClearance;
-  if(clearance?.doorId===d.p.id){
-   if(clearance.phase==='close'&&Math.hypot(e.x-d.p.x,e.z-d.p.z)<=2.7&&serviceDoorReachable(d,e)&&d.setOpen(false,e)){state.movingDoors.add(d);state.visibilityTick=0;state.shadowDirty=true;doorSound(d,false);}
+  const p=d.p,dx=e.x-p.x,dz=e.z-p.z,distance=Math.hypot(dx,dz),along=dx*p.dx+dz*p.dz,
+   across=dx*p.dz-dz*p.dx,targetAlong=target?(target.x-p.x)*p.dx+(target.z-p.z)*p.dz:0;
+  const clearance=e.roomDoorClearance,recover=e.serviceDoorRecovery;
+  if(clearance?.doorId===p.id){
+   if(clearance.phase==='close'&&distance<=2.7&&serviceDoorReachable(d,e)&&d.setOpen(false,e)){state.movingDoors.add(d);state.visibilityTick=0;state.shadowDirty=true;doorSound(d,false);}
    continue;
   }
-  if(!upcoming.has(d.p.id)||Math.hypot(e.x-d.p.x,e.z-d.p.z)>2.4||!serviceDoorReachable(d,e))continue;
+  if(recover?.id===p.id){
+   if(recover.phase==='backoff'){
+    // An opening leaf may have stopped against the pursuer's capsule. Let
+    // it close while he steps back, then re-open from his new position.
+    if(d.wantsOpen()&&d.setOpen(false,e)){state.movingDoors.add(d);state.shadowDirty=true;doorSound(d,false);}
+    if(Math.hypot(e.x-recover.x,e.z-recover.z)<.24||state.time>=recover.until){recover.phase='reopen';recover.until=state.time+4;e.path=[];e.repath=0;}
+    continue;
+   }
+   if(p.doorPassable){e.serviceDoorRecovery=null;e.path=[];e.repath=0;}
+   else if(state.time>recover.until){e.serviceDoorRecovery=null;e.path=[];e.repath=0;}
+   else if(serviceDoorReachable(d,e)&&d.setOpen(true,e)){state.movingDoors.add(d);state.visibilityTick=0;state.shadowDirty=true;doorSound(d,true);}
+   continue;
+  }
+  const between=target&&Number.isFinite(targetAlong)&&
+   (along*targetAlong<-.12||Math.abs(along)<.3&&Math.abs(targetAlong)>1.2)&&
+   Math.abs(across)<1.5&&['hunting','investigating'].includes(e.state);
+  // The path can be emptied by a blocked segment while a player shuts a
+  // door. Recover the immediate doorway from the target's opposite side;
+  // never assume a path node must survive each replan before opening a door.
+  if(!upcoming.has(p.id)&&!between)continue;
+  if(distance>2.65||!serviceDoorReachable(d,e))continue;
   if(d.setOpen(true,e)){state.movingDoors.add(d);state.visibilityTick=0;state.shadowDirty=true;doorSound(d,true);}
+  if(p.doorBlocked&&!p.doorPassable&&Math.abs(along)<1.25){
+   const side=along>=0?1:-1,candidates=[1.65,2.0,2.35].map(dist=>({x:p.x+p.dx*side*dist,z:p.z+p.dz*side*dist}));
+   const retreat=candidates.find(v=>C.enemyNavigationClear(state.level,e,v)&&!C.collision(state.level,v.x,v.z,.56,state.level.roomColliders||[],true));
+   if(retreat){e.serviceDoorRecovery={id:p.id,x:retreat.x,z:retreat.z,phase:'backoff',until:state.time+2.4};e.path=[];e.repath=0;}
+  }
  }
 }
 function serviceDoorNoise(door){
@@ -21606,7 +21641,7 @@ function coopUpdateAudio(dt,p,e){
  audio.updateRemoteSteps(dt,sources,{silent,occlusion:point=>C.wallTransmission(state.level,listener,point)});
 }
 
-function coopNewSession(){return{net:MazeNetwork,room:null,players:new Map(),inputs:new Map(),readyPeers:new Set(),loadingStatusRev:0,loadingStatusSeen:-1,visuals:null,running:false,loading:false,ended:false,ending:null,lastDeath:null,dead:false,left:false,epoch:null,spec:null,time:0,accumulator:0,sendAt:0,inputAt:0,seq:0,history:[],actions:[],worldFrames:[],lastSnapshotAt:0,lastHostTime:0,localPaused:false,inHostAction:false,spectated:null,spectatorYaw:null,spectatorPitch:.12,spectatorDistance:2.7,spectatorView:'third',spectatorNight:true,departed:new Map(),readyToken:0,handledDeaths:new Set(),deadPlayers:new Set(),revivalRoll:null,transitionUntil:0,prediction:new MazeCoopPrediction.Client(),commands:new MazeCoopPrediction.HostCommands(),clock:new MazeStateCodec.Clock(),world:null,worldRepairAt:0,worldAuditAt:0,worldMismatchAt:0,worldFullAt:0,mapRetries:new Map(),visualError:{x:0,y:0,z:0},netCorrections:{count:0,max:0},lastCommand:null,weaponNonce:0,weaponAck:0,weaponSeen:new Map(),weaponPending:new Map(),weaponWorldRevision:-1,inventoryNonce:0,inventorySeen:new Map(),inventoryPending:new Map(),inventoryMismatchAt:0,survivalNonce:0,survivalSeen:new Map(),survivalPending:new Map()};}
+function coopNewSession(){return{net:MazeNetwork,room:null,players:new Map(),inputs:new Map(),readyPeers:new Set(),loadingStatusRev:0,loadingStatusSeen:-1,visuals:null,running:false,loading:false,ended:false,ending:null,lastDeath:null,dead:false,left:false,epoch:null,spec:null,time:0,accumulator:0,sendAt:0,inputAt:0,seq:0,history:[],actions:[],worldFrames:[],lastSnapshotAt:0,lastHostTime:0,localPaused:false,inHostAction:false,spectated:null,spectatorYaw:null,spectatorPitch:.12,spectatorDistance:2.7,spectatorView:'orbit',spectatorNight:true,departed:new Map(),readyToken:0,handledDeaths:new Set(),deadPlayers:new Set(),revivalRoll:null,transitionUntil:0,prediction:new MazeCoopPrediction.Client(),commands:new MazeCoopPrediction.HostCommands(),clock:new MazeStateCodec.Clock(),world:null,worldRepairAt:0,worldAuditAt:0,worldMismatchAt:0,worldFullAt:0,mapRetries:new Map(),visualError:{x:0,y:0,z:0},netCorrections:{count:0,max:0},lastCommand:null,weaponNonce:0,weaponAck:0,weaponSeen:new Map(),weaponPending:new Map(),weaponWorldRevision:-1,inventoryNonce:0,inventorySeen:new Map(),inventoryPending:new Map(),inventoryMismatchAt:0,survivalNonce:0,survivalSeen:new Map(),survivalPending:new Map()};}
 function coopVoiceState(){
  const active=!!mp&&!mp.left&&!!mp.net.room&&mp.net.players.some(p=>p.id===mp.net.id&&p.connected!==false)&&state.mode!=='mp-disconnected';
  const players=active?coopTeam():[],local=players.find(p=>p.id===mp?.net.id)||null;
@@ -21938,7 +21973,14 @@ spectatorNightLight.intensity=0; // Installed when the main Three.js scene is cr
 function coopSpectatorOrientation(){if(mp&&!Number.isFinite(mp.spectatorYaw))mp.spectatorYaw=Number.isFinite(camera.rotation.y)?camera.rotation.y:0;}
 function coopToggleSpectatorView(){
  if(!mp?.dead||!mp.running||mp.ending)return;
- mp.spectatorView=mp.spectatorView==='first'?'third':'first';
+ // The original mouse-orbit camera remains a real third option.
+ // Preserve its orientation instead of overwriting it with the watched yaw.
+ const was=mp.spectatorView;
+ mp.spectatorView=was==='orbit'?'third':was==='third'?'first':'orbit';
+ if(mp.spectatorView==='orbit'&&was!=='orbit'){
+  mp.spectatorYaw=Number.isFinite(camera.rotation.y)?camera.rotation.y:mp.spectatorYaw;
+  mp.spectatorPitch=C.clamp(Number.isFinite(camera.rotation.x)?camera.rotation.x:.12,-1.12,1.12);
+ }
  coopUI?.updateSpectatorOptions(mp.spectatorView,mp.spectatorNight);
  state.visibilityTick=0;
 }
@@ -21949,7 +21991,7 @@ function coopToggleSpectatorNight(){
  state.visibilityTick=0;
 }
 function coopSpectatorWheel(event){
- if(event.ctrlKey||event.metaKey||!mp?.dead||!coopLive()||mp.ending||mp.localPaused||!state.locked||state.tabletFocus||inventoryIsOpen()||survivalBlocked())return;
+ if(event.ctrlKey||event.metaKey||!mp?.dead||!coopLive()||mp.ending||mp.localPaused||(!state.locked&&event.target!==$('world'))||state.tabletFocus||inventoryIsOpen()||survivalBlocked())return;
  event.preventDefault();const scroll=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);
  coopSpectatorZoom(Math.exp(C.clamp(scroll*.0015,-2,2)));
 }
@@ -21986,18 +22028,22 @@ function coopSpectatorCamera(dt){
  else if(head){head.updateWorldMatrix(true,false);focus.setFromMatrixPosition(head.matrixWorld);}
  else{const origin=model?.group.position||target;focus.set(origin.x,(origin.y||0)+(target.crouched?.80:1.22),origin.z);}
  const yaw=Number.isFinite(target.yaw)?target.yaw:0,pitch=C.clamp(Number.isFinite(target.pitch)?target.pitch:0,-1.35,1.2),lift=state.exit&&['rising','complete'].includes(state.exit.phase)&&state.exit.inside(target)?state.exit.height:0;
- mp.spectatorYaw=yaw;mp.spectatorPitch=pitch; // Spatial audio follows the same view as the camera.
- if(mp.spectatorView==='first'&&!mp.ending){
-  // Place the lens at the actual rendered eye and use the host-verified
-  // facing/pitch. The watched head is hidden only in this local spectator view.
+ // Follow cameras are controlled by the watched teammate, whereas orbit
+ // retains its own yaw/pitch and responds to spectator mouse/right stick.
+ const view=mp.spectatorView||'orbit';
+ if(view==='first'&&!mp.ending){
+  mp.spectatorYaw=yaw;mp.spectatorPitch=pitch;
   camera.position.copy(focus);camera.rotation.set(pitch,yaw,0,'YXZ');
  }else{
-  // Third person is locked to the watched person's heading, not spectator
-  // mouse orbit. Retract toward their eye if a wall or door blocks the lens.
-  const distance=C.clamp(Number.isFinite(mp.spectatorDistance)?mp.spectatorDistance:2.7,orbit.min,orbit.max),followPitch=C.clamp(pitch,-.65,.65);
-  orbit.desired.set(focus.x+Math.sin(yaw)*distance,focus.y+.40-Math.sin(followPitch)*distance*.50,focus.z+Math.cos(yaw)*distance);
+  const distance=C.clamp(Number.isFinite(mp.spectatorDistance)?mp.spectatorDistance:2.7,orbit.min,orbit.max),free=view==='orbit'&&!mp.ending;
+  const viewYaw=free?(Number.isFinite(mp.spectatorYaw)?mp.spectatorYaw:yaw):yaw;
+  const viewPitch=free?C.clamp(Number.isFinite(mp.spectatorPitch)?mp.spectatorPitch:.12,-1.12,1.12):C.clamp(pitch,-.65,.65);
+  if(!free){mp.spectatorYaw=yaw;mp.spectatorPitch=pitch;}
+  orbit.desired.set(focus.x+Math.sin(viewYaw)*distance*Math.cos(viewPitch),focus.y+.40-Math.sin(viewPitch)*distance*.50,focus.z+Math.cos(viewYaw)*distance*Math.cos(viewPitch));
   coopSpectatorSweep(focus,orbit.desired,lift,camera.position);
-  camera.rotation.set(followPitch,yaw,0,'YXZ');
+  // The free orbit always looks back toward the watched player, including
+  // when wall collision shortens the boom; follow view still faces their yaw.
+  if(free&&camera.position.distanceToSquared(focus)>.01)camera.lookAt(focus);else camera.rotation.set(viewPitch,viewYaw,0,'YXZ');
  }
  camera.updateMatrixWorld(true);
  flash.intensity=0;tablet.group.visible=false;torch.group.visible=false;actor.group.visible=false;
