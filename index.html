@@ -27,7 +27,7 @@
 .coop-spectator-toggle:focus-visible{outline:2px solid #c6ffbc;outline-offset:2px}
 </style></head><body><section id="maze-boot" role="status" aria-live="polite" aria-label="Loading Maze Game 3D"><div id="maze-boot-panel"><p id="maze-boot-brand">MAZE GAME / 3D <b>INITIALIZING</b></p><h1 id="maze-boot-title">Receiving game data</h1><p id="maze-boot-meta">Your game is arriving. Keep this tab open.</p><div id="maze-boot-track" role="progressbar" aria-label="Game data received" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="maze-boot-fill"></div></div><div id="maze-boot-bottom"><span id="maze-boot-eta">Estimating remaining time…</span><span id="maze-boot-percent">0%</span></div><button id="maze-boot-retry" type="button" hidden>Reload game</button><p id="maze-boot-note">Progress updates as game data arrives.</p></div></section><script>(function(w,d){
 'use strict';
-const total=21820466,start=performance.now(),parts=Object.create(null),byId=id=>d.getElementById(id),root=byId('maze-boot');
+const total=21922222,start=performance.now(),parts=Object.create(null),byId=id=>d.getElementById(id),root=byId('maze-boot');
 let bytes=0,done=false,failed=false,received=false,initialized=false,last=0,watch=null,timer=null;
 const title=byId('maze-boot-title'),meta=byId('maze-boot-meta'),eta=byId('maze-boot-eta'),percent=byId('maze-boot-percent'),track=byId('maze-boot-track'),fill=byId('maze-boot-fill');
 function units(n){return(n/1000000).toFixed(1)+' MB';}
@@ -6791,7 +6791,9 @@ function blocksSight(level,x,z){const t=level.get(x,z);if(t===VOID||t===WALL)ret
 function backroomsVisibilityIndex(barriers){
  const rows=new Map(),boxes=[],dynamic=[];
  for(const b of barriers){
-  if(!b.backrooms||b.sightOBB||b.collisionOBB||![b.minX,b.maxX,b.minZ,b.maxZ].every(Number.isFinite)||b.minX>b.maxX||b.minZ>b.maxZ){dynamic.push(b);continue;}
+  // Built from live bounds once per visibility query, so all axis-aligned
+  // architecture can use this grid. Articulated leaves retain the OBB path.
+  if(b.roomDoorLeaf||b.sightOBB||b.collisionOBB||![b.minX,b.maxX,b.minZ,b.maxZ].every(Number.isFinite)||b.minX>b.maxX||b.minZ>b.maxZ){dynamic.push(b);continue;}
   const x0=tileAt(b.minX),xN=tileAt(b.maxX),z0=tileAt(b.minZ),zN=tileAt(b.maxZ);
   if((xN-x0+1)*(zN-z0+1)>1024){dynamic.push(b);continue;}
   const id=boxes.length;boxes.push(b);
@@ -6842,7 +6844,7 @@ function rayClear(level, x1, z1, x2, z2, { targetSolid = false, allowSafe = fals
   // AI sight and hundreds of visibility rays; keep it allocation-free.
   const rayMinX=Math.min(x1,x2),rayMaxX=Math.max(x1,x2),rayMinZ=Math.min(z1,z2),rayMaxZ=Math.max(z1,z2);
   const endpointKey=targetSolid?key(endX,endZ):null;
-  const sightIndex=level.backrooms&&level._backroomsVisibilityIndex?.source===level.sightBarriers?level._backroomsVisibilityIndex:null;
+  const sightIndex=level._backroomsVisibilityIndex?.source===level.sightBarriers?level._backroomsVisibilityIndex:null;
   for(let listIndex=0;listIndex<2;listIndex++){
     const list=listIndex===0?(sightIndex?sightIndex.dynamic:level.sightBarriers):level.maintenance?.colliders;
     if(!list)continue;
@@ -7608,7 +7610,7 @@ function tileVisibility(level, player, time, memory, options = {}) {
     b.maxX >= player.x - reach && b.minX <= player.x + reach &&
     b.maxZ >= player.z - reach && b.minZ <= player.z + reach);
   const sightLevel=Object.create(level);sightLevel.sightBarriers=localBarriers;
-  if(level.backrooms)sightLevel._backroomsVisibilityIndex=backroomsVisibilityIndex(localBarriers);
+  if(localBarriers.length>32)sightLevel._backroomsVisibilityIndex=backroomsVisibilityIndex(localBarriers);
   // Reject rays behind ordinary grid walls before scanning the detailed
   // door/curved-wall bounds. This keeps full-length views inexpensive in a
   // maze: distant occluded rooms do not traverse every detailed collider.
@@ -7730,7 +7732,7 @@ root.MazeCore=api;if(typeof module!=='undefined'&&module.exports)module.exports=
 })(typeof window!=='undefined'?window:globalThis);
 
 
-</script><script>MazeBoot.advance(101459);</script><script>
+</script><script>MazeBoot.advance(137003);</script><script>
 /* Seeded forest topology, continuous trail ribbons, and inhabited-scale cabins.
    Every obstacle, support surface and room portal has an explicit world footprint. */
 (function(root){
@@ -14669,6 +14671,9 @@ root.MazeCoopSimulation={RADIUS,HEIGHT,CROUCH_HEIGHT,alive,bodyHeight,chooseFloo
 'use strict';
 const S=root.MazeCoopSimulation,STEP=1/60,MAX_HISTORY=360,PACKET_TICKS=96,MAX_ROUNDS=6,ANGLE=32767/Math.PI;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+// Commands are immutable after quantization. Retransmitting unacknowledged
+// history reuses its six wire fields, including the missing-prefix recovery.
+const encodedCommands=new WeakMap();
 const values=players=>players instanceof Map?[...players.values()]:Array.isArray(players)?players:Object.values(players||{});
 const clone=p=>({...S.snapshotPlayer(p)});
 function replayContext(context,offset){const time=Number.isFinite(context.time)?context.time:0,remaining=Number.isFinite(context.planRemaining)?context.planRemaining:Math.max(0,15-time);return{...context,time:time+offset,phase:context.phase==='planning'&&offset+1e-8>=remaining?'playing':context.phase};}
@@ -14676,7 +14681,7 @@ function encode(input){
  return[Math.round(clamp(input.forward,-1,1)*127),Math.round(clamp(input.right,-1,1)*127),(input.run?1:0)|(input.crouched?2:0)|(input.jump?4:0)|(input.flashlight?8:0)|(input.focus?16:0)|(input.flashlightHeld?32:0)|(input.interactHeld?64:0),Math.round(clamp(input.yaw,-Math.PI,Math.PI)*ANGLE),Math.round(clamp(input.pitch,-Math.PI,Math.PI)*ANGLE),Math.round(clamp(input.lean,-1,1)*127)];
 }
 function decode(seq,fields){return{seq,forward:fields[0]/127,right:fields[1]/127,run:!!(fields[2]&1),crouched:!!(fields[2]&2),jump:!!(fields[2]&4),flashlight:!!(fields[2]&8),flashlightHeld:!!(fields[2]&32)||!!(fields[2]&8),focus:!!(fields[2]&16),interactHeld:!!(fields[2]&64),yaw:fields[3]/ANGLE,pitch:fields[4]/ANGLE,lean:fields[5]/127};}
-function command(raw={},seq=raw.seq){const clean=S.cleanInput({...raw,seq});return decode(clean.seq,encode(clean));}
+function command(raw={},seq=raw.seq){const clean=S.cleanInput({...raw,seq}),fields=encode(clean),input=decode(clean.seq,fields);encodedCommands.set(input,fields);return input;}
 function validRun(run){return Array.isArray(run)&&run.length===8&&run.every(Number.isSafeInteger)&&run[0]>0&&run[1]>0&&run[1]<=PACKET_TICKS&&Math.abs(run[2])<=127&&Math.abs(run[3])<=127&&run[4]>=0&&run[4]<=127&&Math.abs(run[5])<=32767&&Math.abs(run[6])<=32767&&Math.abs(run[7])<=127;}
 class HostCommands{
  constructor(){this.reset();}
@@ -14701,17 +14706,17 @@ class HostCommands{
  }
  rounds(players,dt=STEP,options={}){
   dt=Number.isFinite(dt)?Math.max(0,dt):0;if(!this.externalClock)this.clock+=dt;
-  const requested=typeof options==='number'?options:options.maxRounds,limit=clamp(Math.floor(Number.isFinite(requested)?requested:MAX_ROUNDS),1,MAX_ROUNDS),rounds=Array.from({length:limit},()=>new Map()),living=values(players).filter(S.alive),ids=new Set(living.map(p=>p.id));
+  const requested=typeof options==='number'?options:options.maxRounds,limit=clamp(Math.floor(Number.isFinite(requested)?requested:MAX_ROUNDS),1,MAX_ROUNDS),rounds=[],living=values(players).filter(S.alive),ids=new Set(living.map(p=>p.id));
   for(const p of living){
    const peer=this._peer(p.id,p),count=Math.min(limit,this._earned(peer));
    if(!peer.queue.has(peer.ack+1)||count<1){peer.starved+=dt;if(peer.starved>.15)p.speed=0;continue;}peer.starved=0;
    // Catch up only verified contiguous commands, at most six per world step.
    // During a world-clock catch-up the caller uses maxRounds:1 so the body and
    // pursuer advance together instead of racing through different timelines.
-   for(let n=0;n<count;n++){const input=peer.queue.get(peer.ack+1);if(!input)break;peer.queue.delete(++peer.ack);rounds[n].set(p.id,input);}
+   for(let n=0;n<count;n++){const input=peer.queue.get(peer.ack+1);if(!input)break;peer.queue.delete(++peer.ack);(rounds[n]||(rounds[n]=new Map())).set(p.id,input);}
   }
   for(const id of this.peers.keys())if(!ids.has(id))this.peers.delete(id);
-  return rounds.filter(round=>round.size);
+  return rounds;
  }
  status(id,rttMs=0){
   const p=this.peers.get(id);if(!p)return null;const pendingTicks=this._pending(p),earnedTicks=this._earned(p),backlogTicks=Math.max(0,p.latestSeq-p.ack),receiveSilenceMs=p.lastReceivedAt===null?this.clock*1000:Math.max(0,this.clock-p.lastReceivedAt)*1000;
@@ -14752,7 +14757,7 @@ class Client{
   // a long interruption. Both are real commands; the host never skips a gap.
   const inputs=this.history.length>PACKET_TICKS?[...this.history.slice(0,PACKET_TICKS-16),...this.history.slice(-16)]:this.history;
   for(const input of inputs){
-   const fields=encode(input);if(previous&&previous[0]+previous[1]===input.seq&&fields.every((v,i)=>v===previous[i+2]))previous[1]++;
+   const fields=encodedCommands.get(input)||encode(input);if(previous&&previous[0]+previous[1]===input.seq&&fields.every((v,i)=>v===previous[i+2]))previous[1]++;
    else{previous=[input.seq,1,...fields];commands.push(previous);}
   }
   return{epoch,seq:this.seq,commands};
@@ -14773,7 +14778,7 @@ class Client{
 root.MazeCoopPrediction={STEP,MAX_HISTORY,PACKET_TICKS,MAX_ROUNDS,command,HostCommands,Client};
 })(typeof window!=='undefined'?window:globalThis);
 
-</script><script>MazeBoot.advance(10469);</script>
+</script><script>MazeBoot.advance(10789);</script>
 <script>
 (function(root){
 'use strict';
@@ -14801,7 +14806,12 @@ function readHazards(v){
 }
 function player(p,anim){
  const flags=(p.alive!==false&&!p.dead?1:0)|(p.crouched?2:0)|(p.grounded?4:0)|(p.flashlight?8:0)|(p.focus?16:0)|(p.connected!==false?32:0)|(p.holding?64:0)|(p.torchWanted?128:0);
- return[p.slot,q(p.x,1000),q(p.y,1000),q(p.z,1000),q(angle(p.yaw),10000),q(p.pitch,10000),q(p.speed,100),q(p.velocityY,1000),q(p.lean,10000),flags,p.lastInputSeq||0,p.lastJumpSeq??-1,anim||null,weapon(p),p.inventory?.revision||0,stamina(p),hazards(p)];
+ const energy=stamina(p),trap=hazards(p),row=[p.slot,q(p.x,1000),q(p.y,1000),q(p.z,1000),q(angle(p.yaw),10000),q(p.pitch,10000),q(p.speed,100),q(p.velocityY,1000),q(p.lean,10000),flags,p.lastInputSeq||0,p.lastJumpSeq??-1,anim||null,weapon(p),p.inventory?.revision||0];
+ // The existing decoder already accepts these shorter rows. Omit only exact
+ // wire defaults; recovery ledgers, spent stamina and trap state remain exact.
+ if(trap.some(value=>value!==0&&value!==''))row.push(energy,trap);
+ else if(energy[0]!==3840000||energy[1]!==0)row.push(energy);
+ return row;
 }
 function readPlayer(row,roster){
  if(!Array.isArray(row)||![14,15,16,17].includes(row.length)||!row.slice(0,12).every(finite))return null;
@@ -14833,7 +14843,7 @@ class Clock{
 root.MazeStateCodec={stamina,readStamina,weapon,readWeapon,hazards,readHazards,player,readPlayer,enemy,readEnemy,snapshot,readSnapshot,Clock};
 })(typeof window!=='undefined'?window:globalThis);
 
-</script><script>MazeBoot.advance(7394);</script>
+</script><script>MazeBoot.advance(7709);</script>
 <script>
 (function(global){
 'use strict';
@@ -14908,24 +14918,30 @@ class MazeWorldSync{
   });});
   this.revision=0;this.hash=0;this.rows=null;this.play=null;this.lastFull=-Infinity;this.lastCheckpoint=-Infinity;this.semantic=null;this.needsRepair=false;this.predictedDoors=new Map();this.predictionClock=0;
  }
- _read(item){
+ _read(item,out=[]){
   const s=item.prop.snapshot(true);
-  if(item.type===0)return[quant(s.progress),Number(!!s.desired)|(Number(!!s.unlocked)<<1)|(Number(!!s.blocked)<<2)];
-  if(item.type===1||item.type===3){const house=item.type===3&&item.prop.p?.roomKind==='house';return[quant(s.open),Number(!!s.desired)|(Number(s.swing<0)<<1)|(Number(!!s.blocked)<<2)|(Number(!!s.enemyDoor)<<3)|(Number(item.type===3&&s.desired&&s.targetSwing!==undefined&&s.targetSwing!==s.swing)<<4)|(Number(house&&!!s.locked)<<5)|(Number(house&&!!s.lockPending)<<6)|(Number(house&&!!s.broken)<<7)];}
+  if(item.type===0){out[0]=quant(s.progress);out[1]=Number(!!s.desired)|(Number(!!s.unlocked)<<1)|(Number(!!s.blocked)<<2);return out;}
+  if(item.type===1||item.type===3){const house=item.type===3&&item.prop.p?.roomKind==='house';out[0]=quant(s.open);out[1]=Number(!!s.desired)|(Number(s.swing<0)<<1)|(Number(!!s.blocked)<<2)|(Number(!!s.enemyDoor)<<3)|(Number(item.type===3&&s.desired&&s.targetSwing!==undefined&&s.targetSwing!==s.swing)<<4)|(Number(house&&!!s.locked)<<5)|(Number(house&&!!s.lockPending)<<6)|(Number(house&&!!s.broken)<<7);return out;}
   const team=s.team,teamCode=team?1+clamp(team.alive|0,0,4)+(clamp(team.inside|0,0,4)<<3):0;
-  return[Math.max(0,PHASES.indexOf(s.phase)),quant(s.gate),Math.round(Math.max(0,s.phaseTime)*1000),Number(!!s.gateBlocked),teamCode,Math.max(0,TEXTS.indexOf(s.lastText||(s.phase==='arrival'?'ARRIVAL / LOBBY':s.phase==='absent'||s.phase==='calling'?'':'LIFT READY')))];
+  out[0]=Math.max(0,PHASES.indexOf(s.phase));out[1]=quant(s.gate);out[2]=Math.round(Math.max(0,s.phaseTime)*1000);out[3]=Number(!!s.gateBlocked);out[4]=teamCode;out[5]=Math.max(0,TEXTS.indexOf(s.lastText||(s.phase==='arrival'?'ARRIVAL / LOBBY':s.phase==='absent'||s.phase==='calling'?'':'LIFT READY')));return out;
  }
  _semantic(row,item){return item.type!==2?[row[1],Number(row[0]===0),Number(row[0]===MAX)]:[row[0],row[3],row[4],row[5],Number(row[1]===0),Number(row[1]===MAX)];}
  _moving(row,item){return item.type!==2?!(row[1]&4)&&(item.type!==0||(row[1]&2))&&(row[0]!==((row[1]&1)?MAX:0)||item.type===3&&!!(row[1]&16)):[1,2,3,5,6,7].includes(row[0]);}
  capture(time,{force=false}={}){
-  const current=this.items.map(item=>this._read(item)),semantic=current.map((r,i)=>this._semantic(r,this.items[i]));
   const full=force||!this.rows||time-this.lastFull>=10,checkpoint=time-this.lastCheckpoint>=1;
   const updates=[];
-  for(let i=0;i<current.length;i++)if(full||!sameRows(semantic[i],this.semantic[i])||checkpoint&&this._moving(current[i],this.items[i]))updates.push([i,...current[i]]);
+  if(!this.captureRows)this.captureRows=this.items.map(()=>[]);
+  for(let i=0;i<this.items.length;i++){
+   const item=this.items[i],row=this._read(item,this.captureRows[i]),old=this.rows?.[i];
+   const changed=!old||(item.type!==2?row[1]!==old[1]||(row[0]===0)!==(old[0]===0)||(row[0]===MAX)!==(old[0]===MAX):row[0]!==old[0]||row[3]!==old[3]||row[4]!==old[4]||row[5]!==old[5]||(row[1]===0)!==(old[1]===0)||(row[1]===MAX)!==(old[1]===MAX));
+   if(full||changed||checkpoint&&this._moving(row,item))updates.push([i,...row]);
+  }
   if(!updates.length)return null;
   const base=this.revision;this.revision++;
-  if(full){this.rows=current;this.semantic=semantic;this.lastFull=time;}
-  else for(const [index,...row]of updates){this.rows[index]=row;this.semantic[index]=semantic[index];}
+  // Wire packets own their arrays: later scratch writes cannot alter an
+  // asynchronous reliable send, full repair, or an earlier checksum.
+  if(full){this.rows=this.captureRows.map(row=>row.slice());this.lastFull=time;}
+  else for(const [index,...row]of updates)this.rows[index]=row;
   if(checkpoint)this.lastCheckpoint=time;
   this.hash=hashNumbers(this.rows);
   return full?{v:1,n:this.revision,h:this.hash,m:this.staticHash,f:this.rows.map(r=>r.slice())}:{v:1,n:this.revision,b:base,h:this.hash,d:updates};
@@ -15002,7 +15018,7 @@ class MazeWorldSync{
   this.predictedDoors.set(index,{rollback,expires:this.predictionClock+1.8,age:previous?.age||0});this._apply(index);return true;
  }
  advance(dt){if(!this.play||!Number.isFinite(dt)||dt<=0)return;dt=Math.min(2,dt);this.predictionClock+=dt;for(const[index,pending]of this.predictedDoors){this._advanceModel(this.items[index],pending.rollback,dt);pending.age+=dt;if(this.predictionClock>=pending.expires){this.play[index]=pending.rollback;this.predictedDoors.delete(index);this._apply(index);}}
-for(let i=0;i<this.items.length;i++){const item=this.items[i],model=this.play[i];if(this._moving(this._encode(model,item),item)){this._advanceModel(item,model,dt);this._apply(i);}}}
+for(let i=0;i<this.items.length;i++){const item=this.items[i],model=this.play[i],flags=model[1],progress=item.type!==2?quant(model[0]):0,moving=item.type!==2?!(flags&4)&&(item.type!==0||(flags&2))&&(progress!==((flags&1)?MAX:0)||item.type===3&&!!(flags&16)):[1,2,3,5,6,7].includes(model[0]);if(moving){this._advanceModel(item,model,dt);this._apply(i);}}}
  _restoreStatic(item){for(const [index,minX,maxX,minZ,maxZ,enabled]of item.staticBounds){const c=item.prop.colliders[index];Object.assign(c,{minX,maxX,minZ,maxZ});if(enabled!==null)c.enabled=enabled;}for(const [index,enabled]of item.fixedEnabled)item.prop.colliders[index].enabled=enabled;}
  audit(){
   if(!this.play)return{ok:true,repaired:false,rows:[]};
@@ -15024,7 +15040,7 @@ MazeWorldSync.staticHash=staticHash;MazeWorldSync.hashRows=hashNumbers;
 global.MazeWorldSync=MazeWorldSync;
 })(typeof window!=='undefined'?window:globalThis);
 
-</script><script>MazeBoot.advance(15141);</script>
+</script><script>MazeBoot.advance(17151);</script>
 <script>
 /* Compact stitched canvas backpack, shared modeled geometry. Attachment is
    calculated from the skin's immutable bind matrices, never an active pose. */
@@ -15238,6 +15254,7 @@ function shadeLegendary(actor,light){
  }
  // Updating this uniform does not mark materials dirty or rebuild shaders.
 }
+function hasLegendary(actor){return !!records.get(actor)?.outfitStyle;}
 function shadeDroppedLegendary(group,light){
  if(!group?.userData.outfitStyle)return;
  light=Math.max(0,Math.min(1,Number.isFinite(light)?light:0));
@@ -15262,10 +15279,10 @@ function prewarm(actor,style){
 }
 function inspect(actor){const r=records.get(actor);return r?{base:r.base,worn:r.worn,outfitPalette:r.outfitPalette,outfitStyle:r.outfitStyle,reflectionLight:r.reflectionLight,hidden:r.meshes.filter(m=>m.outfit&&!m.mesh.visible).map(m=>m.name),mapped:r.materials.map(m=>({mesh:m.name,kind:m.kind,outfit:m.outfit,color:m.material.color?.getHexString(),roughness:m.material.roughness,metalness:m.material.metalness,envMapIntensity:m.material.envMapIntensity,legendary:!!m.material.envMap&&m.material.envMap===r.environment?.texture}))}:null;}
 function cacheStats(){return{variants:textures.size,legendary:[...textures.values()].filter(e=>e.legendary).length,cubemap:!!legendaryEnvironment,reflectionRefs:legendaryEnvironment?.refs||0};}
-global.MazeAppearance={palettes,legendaryStyles,stylePalette,acquireLegendaryEnvironment,apply,clear,inspect,recolorPixels,prewarm,shadeLegendary,shadeDroppedLegendary,cacheStats};
+global.MazeAppearance={palettes,legendaryStyles,stylePalette,acquireLegendaryEnvironment,apply,clear,inspect,recolorPixels,prewarm,hasLegendary,shadeLegendary,shadeDroppedLegendary,cacheStats};
 })(window);
 
-</script><script>MazeBoot.advance(11014);</script>
+</script><script>MazeBoot.advance(13490);</script>
 <script>
 /* Co-op presentation. The host owns gameplay and collision. Compact state
    drives each receiver's local animation/IK; full-pose transport remains
@@ -19161,17 +19178,42 @@ keepActorReceivers(global.MazePlayer);keepActorReceivers(global.MazeGoku);
 class MazeFlashlightOcclusion {
  constructor(renderer,scene,getState,getQuality){
   this.renderer=renderer;this.scene=scene;this.getState=getState;this.getQuality=getQuality;this.level=null;this.slots=new Map();this.proxy=new T.Scene();this.depth=new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking,side:T.DoubleSide});this.geometry=new T.BoxGeometry(1,1,1);this.staticMesh=null;this.dynamicMesh=null;this.dynamicCapacity=0;this.matrix=new T.Matrix4();this.position=new T.Vector3();this.scale=new T.Vector3();this.rotation=new T.Quaternion();this.axis=new T.Vector3(0,1,0);this.target=new T.Vector3();this.clearColor=new T.Color();this.viewport=new T.Vector4();this.scissor=new T.Vector4();this.lightPosition=new T.Vector3();this.direction=new T.Vector3();this.forestBatches=[];this.forestIndex=new Map();this.forestFrustum=new T.Frustum();this.forestView=new T.Matrix4();this.doorLevel=null;this.doorRows=[];this.doorRoots=[];this.doorSkip=new Set();this.furnitureWorld=null;this.furnitureRoots=[];this.furnitureRows=[];this.furnitureSkip=new Set();this.dynamicSignature='';this.revision=0;this.stats={updates:0,draws:0,active:0,staticBoxes:0,dynamicBoxes:0,forestCapacity:0,forestBatches:0,forestInstances:0,forestDraws:0,forestTriangles:0,furnitureCapacity:0,furnitureMeshes:0,furnitureTriangles:0};
+  this.boundsScratch=new T.Box3();this.matrixScratch=new T.Matrix4();this.staticRows=[];this.staticIndex=new Map();this.staticSeen=new Set();this.staticSelection=[];this.forestSeen=new Set();this.dynamicCandidates=null;
   const original=renderer.render;this.originalRender=original;
   renderer.render=(world,camera)=>{if(world===this.scene){this.update();}return original.call(renderer,world,camera);};
   for(const light of scene.children)if(light.isSpotLight)this._configure(light,this.getQuality()==='high'?768:this.getQuality()==='low'?384:512);
  }
  _mesh(capacity){const mesh=new T.InstancedMesh(this.geometry,this.depth,Math.max(1,capacity));mesh.frustumCulled=false;mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);this.proxy.add(mesh);return mesh;}
  _put(mesh,index,x,y,z,w,h,d,yaw=0){this.position.set(x,y,z);this.scale.set(Math.max(.001,w),Math.max(.001,h),Math.max(.001,d));this.rotation.setFromAxisAngle(this.axis,yaw);this.matrix.compose(this.position,this.rotation,this.scale);mesh.setMatrixAt(index,this.matrix);}
+ _indexStatic(){
+  // Keep immutable source matrices separate from the per-light compact buffer.
+  // A conservative world-space AABB preserves every shadow-casting surface.
+  this.staticRows.length=0;this.staticIndex.clear();this.staticSeen.clear();this.staticSelection.length=0;
+  const unit=new T.Box3(new T.Vector3(-.5,-.5,-.5),new T.Vector3(.5,.5,.5));
+  for(let i=0;i<this.staticMesh.count;i++){
+   const matrix=new T.Matrix4();this.staticMesh.getMatrixAt(i,matrix);const row={index:i,matrix,bounds:unit.clone().applyMatrix4(matrix).expandByScalar(.0001)};this.staticRows.push(row);
+   for(let z=Math.floor(row.bounds.min.z/8);z<=Math.floor(row.bounds.max.z/8);z++)for(let x=Math.floor(row.bounds.min.x/8);x<=Math.floor(row.bounds.max.x/8);x++){const key=x+','+z;let cell=this.staticIndex.get(key);if(!cell){cell=[];this.staticIndex.set(key,cell);}cell.push(row);}
+  }
+ }
+ _selectStatic(light){
+  const mesh=this.staticMesh;if(!mesh)return;
+  const camera=light.shadow.camera,halfHeight=Math.tan(T.MathUtils.degToRad(camera.fov*.5)),reach=camera.far*Math.sqrt(1+halfHeight*halfHeight*(1+camera.aspect*camera.aspect)),seen=this.staticSeen,selected=this.staticSelection;seen.clear();selected.length=0;light.getWorldPosition(this.position);
+  this.forestFrustum.setFromProjectionMatrix(this.forestView.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse));mesh.count=0;
+  for(let z=Math.floor((this.position.z-reach)/8);z<=Math.floor((this.position.z+reach)/8);z++)for(let x=Math.floor((this.position.x-reach)/8);x<=Math.floor((this.position.x+reach)/8);x++)for(const row of this.staticIndex.get(x+','+z)||[]){
+   if(seen.has(row))continue;seen.add(row);if(this.forestFrustum.intersectsBox(row.bounds))selected.push(row);
+  }
+  // Preserve source draw order at coplanar joins, including packed depth ties.
+  selected.sort((a,b)=>a.index-b.index);for(const row of selected)mesh.setMatrixAt(mesh.count++,row.matrix);
+  if(mesh.count){mesh.instanceMatrix.clearUpdateRanges();mesh.instanceMatrix.addUpdateRange(0,mesh.count*16);mesh.instanceMatrix.needsUpdate=true;}
+  this.stats.staticVisible=mesh.count;this.stats.staticTriangles=mesh.count*12;
+ }
  _clearForest(){
+  this.forestSeen.clear();
   for(const batch of this.forestBatches){this.proxy.remove(batch.mesh);batch.mesh.dispose();}
   this.forestBatches.length=0;this.forestIndex.clear();for(const k of['forestCapacity','forestBatches','forestInstances','forestDraws','forestTriangles'])this.stats[k]=0;
  }
  _clearFurniture(){
+  this.dynamicCandidates=null;
   // Only wrappers belong to this pass; the visible world owns its geometry.
   for(const row of this.furnitureRows){this.proxy.remove(row.mesh);if(row.ownedGeometry)row.mesh.geometry.dispose();}
   this.furnitureRows.length=0;this.furnitureRoots.length=0;this.furnitureSkip.clear();this.furnitureWorld=null;
@@ -19203,8 +19245,7 @@ class MazeFlashlightOcclusion {
   const world=state.survivalWorld||null;let changed=world!==this.furnitureWorld;if(changed)this._buildFurniture(world);
   // Static beds and counters need no per-frame matrix walk. Animated cabinet
   // and wardrobe roots include every hinge, also after a network snapshot.
-  for(const group of this.furnitureRoots)group.updateWorldMatrix(true,true);
-  for(const row of this.furnitureRows){if(!row.moving)continue;const active=!row.source.isMesh||row.source.visible!==false;if(active===row.active&&row.matrix.equals(row.source.matrixWorld))continue;row.active=active;row.matrix.copy(row.source.matrixWorld);row.mesh.matrix.copy(row.matrix);row.bounds.copy(row.mesh.geometry.boundingBox).applyMatrix4(row.matrix);changed=true;}
+  for(const row of this.furnitureRows){if(!row.moving)continue;row.source.updateWorldMatrix(true,false);const active=!row.source.isMesh||row.source.visible!==false;if(active===row.active&&row.matrix.equals(row.source.matrixWorld))continue;row.active=active;row.matrix.copy(row.source.matrixWorld);row.mesh.matrix.copy(row.matrix);row.bounds.copy(row.mesh.geometry.boundingBox).applyMatrix4(row.matrix);changed=true;}
   if(changed)this.revision++;
  }
  _selectFurniture(light){
@@ -19213,6 +19254,7 @@ class MazeFlashlightOcclusion {
   this.stats.furnitureMeshes=count;this.stats.furnitureTriangles=triangles;
  }
  _clearDoors(){
+  this.dynamicCandidates=null;
   for(const row of this.doorRows){this.proxy.remove(row.mesh);if(row.ownedGeometry)row.mesh.geometry.dispose();if(row.mesh.isInstancedMesh)row.mesh.dispose();}
   this.doorRows.length=0;this.doorRoots.length=0;this.doorSkip.clear();this.doorLevel=null;
  }
@@ -19242,9 +19284,8 @@ class MazeFlashlightOcclusion {
  }
  _syncDoors(state){
   let changed=this.doorLevel!==state.level;if(changed)this._buildDoors(state);
-  for(const root of this.doorRoots)root.updateWorldMatrix(true,true);
-  const bounds=new T.Box3(),matrix=new T.Matrix4();
-  for(const row of this.doorRows){const active=row.source.visible!==false,version=row.instanced?row.source.instanceMatrix.version:0;if(active===row.active&&row.matrix.equals(row.source.matrixWorld)&&version===row.version)continue;
+  const bounds=this.boundsScratch,matrix=this.matrixScratch;
+  for(const row of this.doorRows){row.source.updateWorldMatrix(true,false);const active=row.source.visible!==false,version=row.instanced?row.source.instanceMatrix.version:0;if(active===row.active&&row.matrix.equals(row.source.matrixWorld)&&version===row.version)continue;
    row.active=active;row.version=version;row.matrix.copy(row.source.matrixWorld);row.mesh.matrix.copy(row.matrix);
    if(row.instanced){row.mesh.count=row.source.count;row.bounds.makeEmpty();for(let i=0;i<row.source.count;i++){row.source.getMatrixAt(i,matrix);matrix.premultiply(row.matrix);bounds.copy(row.source.geometry.boundingBox).applyMatrix4(matrix);row.bounds.union(bounds);}}
    else row.bounds.copy(row.mesh.geometry.boundingBox).applyMatrix4(row.matrix);changed=true;
@@ -19275,7 +19316,7 @@ class MazeFlashlightOcclusion {
  }
  _selectForest(light){
   if(!this.forestBatches.length)return;
-  const camera=light.shadow.camera,reach=light.distance>0?Math.min(light.distance,camera.far):camera.far,seen=new Set();light.getWorldPosition(this.position);
+  const camera=light.shadow.camera,reach=light.distance>0?Math.min(light.distance,camera.far):camera.far,seen=this.forestSeen;seen.clear();light.getWorldPosition(this.position);
   this.forestFrustum.setFromProjectionMatrix(this.forestView.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse));
   for(const batch of this.forestBatches)batch.mesh.count=0;
   for(let z=Math.floor((this.position.z-reach)/8);z<=Math.floor((this.position.z+reach)/8);z++)for(let x=Math.floor((this.position.x-reach)/8);x<=Math.floor((this.position.x+reach)/8);x++)for(const row of this.forestIndex.get(x+','+z)||[]){
@@ -19291,18 +19332,20 @@ class MazeFlashlightOcclusion {
   const seen=new Set();if(!forest)for(const cell of level.tiles||[]){if(cell.type===C.WALL){const k=C.key(cell.x,cell.z);if(!seen.has(k)){seen.add(k);solids.push(cell);}}else if(cell.type!==C.VOID)for(const[dx,dz]of C.DIRS){const x=cell.x+dx,z=cell.z+dz,k=C.key(x,z);if(level.get(x,z)===C.VOID&&!seen.has(k)){seen.add(k);solids.push({x,z});}}}
   // Rounded walls never move. Cache their oriented faces in the static depth
   // batch once, instead of rebuilding and hashing hundreds of faces per frame.
-  const curves=[...new Set([...(environment?.cornerColliders||[]),...(environment?.backroomsShadowBounds||[]),...(level.roomColliders||[]).filter(b=>b.survivalWall&&!b.furniture&&!b.windowGlass&&!b.renderDoor&&!b.serviceLeaf&&!b.roomDoorLeaf),...(level.maintenance?.colliders||[])])].filter(b=>b.enabled!==false),service=level.maintenance?.cells||[];this.staticSkip=new Set(curves);const shadowCurves=curves.filter(b=>!b.flashlightParts),parts=curves.flatMap(b=>b.flashlightParts||[]);this.staticMesh=this._mesh(solids.length+service.length*2+shadowCurves.length);let index=0;for(const b of solids){let height=3.6;if(level.backrooms?.heightMap)for(const[dx,dz]of[[0,0],...C.DIRS])height=Math.max(height,level.backrooms.heightMap.get(C.key(b.x+dx,b.z+dz))||3.6);this._put(this.staticMesh,index++,b.x*C.CELL,height/2,b.z*C.CELL,C.CELL,height,C.CELL);}for(const c of service){this._put(this.staticMesh,index++,c.x,-.08,c.z,2,.16,2);this._put(this.staticMesh,index++,c.x,2.66,c.z,2,.12,2);}for(const b of shadowCurves){const o=b.sightOBB,minY=b.minY??0,maxY=b.maxY??(b.maintenance?2.6:3.6);if(o)this._put(this.staticMesh,index++,o.x,(minY+maxY)/2,o.z,o.halfWidth*2,maxY-minY,o.halfDepth*2,Math.atan2(-o.uz,o.ux));else this._put(this.staticMesh,index++,(b.minX+b.maxX)/2,(minY+maxY)/2,(b.minZ+b.maxZ)/2,b.maxX-b.minX,maxY-minY,b.maxZ-b.minZ);}this.staticMesh.count=index;this.staticMesh.instanceMatrix.needsUpdate=true;this.stats.staticBoxes=index;if(forest||parts.length)this._buildForest(environment,parts);this.revision++;this.dynamicSignature='';
+  const curves=[...new Set([...(environment?.cornerColliders||[]),...(environment?.backroomsShadowBounds||[]),...(level.roomColliders||[]).filter(b=>b.survivalWall&&!b.furniture&&!b.windowGlass&&!b.renderDoor&&!b.serviceLeaf&&!b.roomDoorLeaf),...(level.maintenance?.colliders||[])])].filter(b=>b.enabled!==false),service=level.maintenance?.cells||[];this.staticSkip=new Set(curves);const shadowCurves=curves.filter(b=>!b.flashlightParts),parts=curves.flatMap(b=>b.flashlightParts||[]);this.staticMesh=this._mesh(solids.length+service.length*2+shadowCurves.length);let index=0;for(const b of solids){let height=3.6;if(level.backrooms?.heightMap)for(const[dx,dz]of[[0,0],...C.DIRS])height=Math.max(height,level.backrooms.heightMap.get(C.key(b.x+dx,b.z+dz))||3.6);this._put(this.staticMesh,index++,b.x*C.CELL,height/2,b.z*C.CELL,C.CELL,height,C.CELL);}for(const c of service){this._put(this.staticMesh,index++,c.x,-.08,c.z,2,.16,2);this._put(this.staticMesh,index++,c.x,2.66,c.z,2,.12,2);}for(const b of shadowCurves){const o=b.sightOBB,minY=b.minY??0,maxY=b.maxY??(b.maintenance?2.6:3.6);if(o)this._put(this.staticMesh,index++,o.x,(minY+maxY)/2,o.z,o.halfWidth*2,maxY-minY,o.halfDepth*2,Math.atan2(-o.uz,o.ux));else this._put(this.staticMesh,index++,(b.minX+b.maxX)/2,(minY+maxY)/2,(b.minZ+b.maxZ)/2,b.maxX-b.minX,maxY-minY,b.maxZ-b.minZ);}this.staticMesh.count=index;this.staticMesh.instanceMatrix.needsUpdate=true;this.stats.staticBoxes=index;this._indexStatic();if(forest||parts.length)this._buildForest(environment,parts);this.revision++;this.dynamicSignature='';
  }
  _dynamic(state){
   if(Number.isFinite(state.time)&&this.dynamicAt===state.time&&this.dynamicCount===state.level.roomColliders?.length&&this.furnitureWorld===(state.survivalWorld||null))return;
   this._syncFurniture(state);this._syncDoors(state);this.dynamicAt=state.time;this.dynamicCount=state.level.roomColliders?.length;
-  const level=state.level,boxes=[],skip=new Set(),header=(b,bottom=2.45,top=3.6)=>{if(b)boxes.push([(b.minX+b.maxX)/2,(bottom+top)/2,(b.minZ+b.maxZ)/2,b.maxX-b.minX,top-bottom,b.maxZ-b.minZ,0]);},leaf=(hinge,width,height,depth,centerY)=>{
-   if(!hinge)return;hinge.updateWorldMatrix(true,false);this.matrix.copy(hinge.matrixWorld);const e=this.matrix.elements,x=e[12]+e[0]*width/2,y=e[13]+centerY,z=e[14]+e[2]*width/2;boxes.push([x,y,z,width,height,depth,Math.atan2(-e[2],e[0])]);
-  };
-  // Door depth is drawn from the real rigid/animated meshes. Gameplay
-  // thresholds and generous body bounds must never shadow the visible leaf.
-  const visited=new Set();for(const list of[level.roomColliders||[],level.maintenance?.colliders||[]])for(const b of list){
-   if(visited.has(b)||skip.has(b)||this.doorSkip.has(b)||this.furnitureSkip.has(b)||b.enabled===false||b.windowGlass||this.staticSkip?.has(b)||level.forest&&b.forestObstacle)continue;visited.add(b);
+  const level=state.level,boxes=[],source=level.roomColliders||[],maintenance=level.maintenance?.colliders;
+  if(!this.dynamicCandidates||this.dynamicSource!==source||this.dynamicLength!==source.length||this.dynamicMaintenance!==maintenance||this.dynamicMaintenanceLength!==(maintenance?.length||0)){
+   this.dynamicSource=source;this.dynamicLength=source.length;this.dynamicMaintenance=maintenance;this.dynamicMaintenanceLength=maintenance?.length||0;
+   this.dynamicCandidates=[...new Set([...source,...(maintenance||[])])].filter(b=>!this.doorSkip.has(b)&&!this.furnitureSkip.has(b)&&!this.staticSkip?.has(b));
+  }
+  // Only unregistered bounds can change this fallback depth batch. Full
+  // door/furniture geometry is maintained independently above.
+  for(const b of this.dynamicCandidates){
+   if(b.enabled===false||b.windowGlass||level.forest&&b.forestObstacle)continue;
    const o=b.sightOBB,minY=b.minY??0,maxY=b.maxY??(b.serviceLeaf||b.roomDoorLeaf?2.45:b.serviceJamb||b.roomDoorJamb?2.55:b.maintenance?2.6:3.6);
    if(o)boxes.push([o.x,(minY+maxY)/2,o.z,o.halfWidth*2,maxY-minY,o.halfDepth*2,Math.atan2(-o.uz,o.ux)]);
    else boxes.push([(b.minX+b.maxX)/2,(minY+maxY)/2,(b.minZ+b.maxZ)/2,b.maxX-b.minX,maxY-minY,b.maxZ-b.minZ,0]);
@@ -19362,7 +19405,7 @@ class MazeFlashlightOcclusion {
   // Disconnects remove their light maps without retaining references forever.
   for(const [light,slot]of this.slots)if(!lights.includes(light)){light.shadow.map?.dispose();light.shadow.map=null;this.slots.delete(light);}
   if(!lights.some(light=>light.visible&&light.intensity>0)){this._syncWaterLights(state,lights);this.stats.active=0;return;}
-  this._dynamic(state);this.proxy.updateMatrixWorld(true);
+  this._dynamic(state);
   // Each render target owns its viewport/scissor in physical pixels. Canvas
   // getters return the default logical rectangles; replaying those here crops
   // the CCTV feed and scales shadow maps again at non-unit render ratios.
@@ -19375,7 +19418,7 @@ class MazeFlashlightOcclusion {
     // Fast turns/teleports and changed occluders refresh immediately. Never use
     // the host's clock here: clients can receive snapshots in bursts.
     if(remote&&slot.revision===this.revision&&now-(slot.updatedAt??-Infinity)+1e-6<interval&&slot.position.distanceToSquared(this.lightPosition)<.01&&slot.target.distanceToSquared(this.target)<.04&&slot.angle===light.angle&&slot.distance===light.distance)continue;
-    slot.updatedAt=now;light.shadow.updateMatrices(light);this._selectForest(light);this._selectFurniture(light);this._selectDoors();renderer.setRenderTarget(light.shadow.map);this.originalRender.call(renderer,this.proxy,light.shadow.camera);slot.position.copy(this.lightPosition);slot.target.copy(this.target);slot.revision=this.revision;slot.angle=light.angle;slot.distance=light.distance;this.stats.updates++;this.stats.draws+=(this.staticMesh.count>0?1:0)+(this.dynamicMesh?.count>0?1:0)+this.stats.forestDraws+this.stats.furnitureMeshes+(this.stats.doorMeshes||0);
+    slot.updatedAt=now;light.shadow.updateMatrices(light);this._selectStatic(light);this._selectForest(light);this._selectFurniture(light);this._selectDoors();renderer.setRenderTarget(light.shadow.map);this.originalRender.call(renderer,this.proxy,light.shadow.camera);slot.position.copy(this.lightPosition);slot.target.copy(this.target);slot.revision=this.revision;slot.angle=light.angle;slot.distance=light.distance;this.stats.updates++;this.stats.draws+=(this.staticMesh.count>0?1:0)+(this.dynamicMesh?.count>0?1:0)+this.stats.forestDraws+this.stats.furnitureMeshes+(this.stats.doorMeshes||0);
    }
   }finally{renderer.shadowMap.enabled=priorShadow;renderer.autoClear=priorAuto;renderer.setRenderTarget(priorTarget,priorFace,priorMip);renderer.setClearColor(this.clearColor,alpha);}
   this._syncWaterLights(state,lights);this.stats.active=active;
@@ -19386,7 +19429,7 @@ class MazeFlashlightOcclusion {
 global.MazeFlashlightOcclusion=MazeFlashlightOcclusion;
 })(typeof window!=='undefined'?window:globalThis);
 
-</script><script>MazeBoot.advance(18128);</script>
+</script><script>MazeBoot.advance(30908);</script>
 <script>
 /* Real hinged house storage. This is furniture, with no player hiding state. */
 (function(root){
@@ -20253,6 +20296,14 @@ delete settings.bob;settings.sensitivity=C.clamp(Number.isFinite(settings.sensit
 const state={mode:'loading',resume:'playing',level:null,env:null,safe:null,closets:[],serviceDoors:[],wardrobes:[],exit:null,player:makePlayer(0,0,0),enemy:null,score:0,seed:0,theme:'garden',lastTheme:null,time:0,planRemaining:15,putAway:0,locked:false,keys:new Set(),crouchToggle:false,jumpQueued:false,seen:new Map(),lights:new Map(),visibilityTick:0,noticeUntil:0,flashlight:true,deathTimer:null,transitionTimer:null,loadToken:0,menuTime:0,tabletFocus:false,tabletView:{zoom:1,panX:0,panY:0,dirty:true,width:1,height:1,ratio:1},tabletTick:0,acousticTick:0,occlusion:0,shadowTick:0,shadowDirty:true,skipUnlockPause:false,closetByKey:new Map(),movingDoors:new Set(),enemyClosetDoor:null,menuRenderAt:0,renderRatio:1,adaptiveScale:1,frameAverage:1/60,slowFrames:0,fastFrames:0,enemyBrightness:0};
 let renderer,scene,camera,actor,tablet,torch,hemi,sun,flash,flashTarget,fillLight,goku,gokuActor,security,mirror,safeLight,flashlightOcclusion,berryEffects=null,pointLights=[],lastFrame=0,smoothedHeight=MOTION.standEye;
 const shadeCache=new WeakMap(),doorActors=[null,null],viewProbe={x:0,z:0};
+const nearestPointLights=[],nearestPointDistances=[];
+let pendingControlHint=null,controlHintQueued=false,controlHintValue=null,controlHintHTML=null;
+function setControlHint(value,html=true){
+ pendingControlHint={value,html};if(controlHintQueued)return;controlHintQueued=true;
+ // Several gameplay stages contribute hints in one frame. Commit only the
+ // final result, and keep the existing nodes when the content is unchanged.
+ queueMicrotask(()=>{controlHintQueued=false;const next=pendingControlHint;if(next.value===controlHintValue&&next.html===controlHintHTML)return;const element=$('controlHint');if(!element)return;element[next.html?'innerHTML':'textContent']=next.value;controlHintValue=next.value;controlHintHTML=next.html;});
+}
 const audio=new MazeAudio({footsteps:assets.footsteps,chase:assets.chase,prowler:assets.prowler,woodbreak:assets.woodbreak,onStatus:s=>{if(/unavailable|fallback/i.test(s))$('assetStatus').textContent='Audio fallback active';}});
 const show=(id,yes=true)=>$(id).classList.toggle('hidden',!yes);
 const active=()=>mp?coopLive()&&!mp.localPaused&&!mp.ending:state.mode==='planning'||state.mode==='playing';
@@ -20363,7 +20414,7 @@ function inputActionHTML(action,device=MazeInput.lastDevice()==='gamepad'?'pad':
 function inputHintGroup(action,text,device=MazeInput.lastDevice()==='gamepad'?'pad':'key'){return `<span class="maze-control-group">${inputActionHTML(action,device,{compact:true})}<span class="maze-control-text">${inputEsc(text)}</span></span>`;}
 function inputSetPrompt(action,text){$('contextPrompt').innerHTML=inputHintGroup(action,text);}
 function inputSetPromptLabel(label,text,cls='maze-btn-key'){const fake=inputInlineButtonHTML(label);$('contextPrompt').innerHTML=`<span class="maze-control-group">${fake}<span class="maze-control-text">${inputEsc(text)}</span></span>`;}
-function inputSetHint(groups){$('controlHint').innerHTML=groups.filter(Boolean).join('');}
+function inputSetHint(groups){setControlHint(groups.filter(Boolean).join(''));}
 function inputWheelOpen(){return !!inputWheelState.open;}
 function inputWheelUsable(item){return !!item&&new Set(['shotgun','bat','axe','tablet','flashlight','food','water','almond-water','empty-bottle','alarmclock']).has(item.type);}
 function inputWheelMeta(item){if(!item)return'';if(item.type==='shotgun')return `${item.ammo||0} / 4`;if(item.type==='shells'||item.type==='food'||MI.isBerry(item.type))return '×'+(item.count||1);if(['tablet','flashlight'].includes(item.type))return Math.ceil(item.charge||0)+'s';return '';} 
@@ -20527,7 +20578,7 @@ function inputRefreshHints(){
  if(drop!=='Unbound'&&inputHeldItem())parts.push(inputHintGroup('drop','DROP'));
  if(MazeInput.lastDevice()==='gamepad'&&!inventoryIsOpen()&&!survivalBlocked())parts.push(`<span class="maze-control-group">${inputActionHTML('inventory','pad',{compact:true})}<span class="maze-control-text">TAP INVENTORY / HOLD QUICK WHEEL</span></span>`);
  else parts.push(inputHintGroup('inventory','INVENTORY'));
- $('controlHint').innerHTML=parts.join('');
+ setControlHint(parts.join(''));
 }
 function inputFrame(now){
  const dt=Math.min(.05,Math.max(0,(now-(inputLastFrame||now))/1000));inputLastFrame=now;MazeInput.poll(dt);
@@ -20624,7 +20675,15 @@ function updateVisibility(menuView=false){
 function updateBackroomsPointLights(){if(!state.env?.backroomsLighting)return;for(const light of pointLights){const target=light.userData.backroomsFixtureLight;if(target)light.intensity=target.intensity*(state.lights.get(target.tile)||0);}}
 function placePointLights(lightMap,p){
  if(state.level.poolVariant==='dark'){for(const light of pointLights){light.intensity=0;light.userData.elevator=null;}weaponPlaceMuzzleLight(p);return;}
- const lights=state.env.spawnLights.filter(l=>(lightMap.get(l.tile)||0)>.02&&(!l.backroomsFixture||l.intensity>.001)).sort((a,b)=>(a.x-p.x)**2+(a.z-p.z)**2-(b.x-p.x)**2-(b.z-p.z)**2);
+ const lights=nearestPointLights,distances=nearestPointDistances,limit=pointLights.length;lights.length=distances.length=0;
+ // The renderer owns a small fixed light pool. Select its nearest entries
+ // directly instead of sorting every fixture; equal distances stay stable.
+ for(const light of state.env.spawnLights){
+  if(!limit||(lightMap.get(light.tile)||0)<=.02||light.backroomsFixture&&light.intensity<=.001)continue;
+  const distance=(light.x-p.x)**2+(light.z-p.z)**2;let i=lights.length;if(i===limit){if(distance>=distances[i-1])continue;i--;}
+  while(i>0&&distance<distances[i-1]){if(i<limit){lights[i]=lights[i-1];distances[i]=distances[i-1];}i--;}
+  lights[i]=light;distances[i]=distance;
+ }
  for(let i=0;i<pointLights.length;i++){const target=lights[i],l=pointLights[i];l.userData.elevator=target?.elevator||null;l.userData.backroomsFixtureLight=target?.backroomsFixture?target:null;if(target){l.position.set(target.x,target.y+(target.elevator?.height||0),target.z);l.color.set(target.color);l.distance=target.distance||11;l.intensity=target.intensity*(lightMap.get(target.tile)||0);}else l.intensity=0;}
  weaponPlaceMuzzleLight(p);
 }
@@ -20921,17 +20980,17 @@ function updateCamera(dt){
 }
 function updatePrompts(){
  const p=state.player;show('tabletButton',!!tabletItem(p));$('tabletButton').textContent=p.tabletEquipped?'V · STOW TABLET':'V · TABLET';
- if(state.mode==='planning'){$('contextPrompt').textContent='';$('statusLine').textContent='ENTRY ROOM · LOCKED '+Math.ceil(state.planRemaining)+'s';$('objective').textContent='Prepare your supplies';$('controlHint').innerHTML=[inputHintGroup('tablet','TABLET'),inputHintGroup('tabletFocus','FOCUS'),MazeInput.lastDevice()==='gamepad'?`<span class="maze-control-group">${inputActionHTML('inventory','pad',{compact:true})}<span class="maze-control-text">TAP INVENTORY / HOLD QUICK WHEEL</span></span>`:inputHintGroup('inventory','INVENTORY'),inputHintGroup('interact','PICK UP')].join('');return;}
+ if(state.mode==='planning'){$('contextPrompt').textContent='';$('statusLine').textContent='ENTRY ROOM · LOCKED '+Math.ceil(state.planRemaining)+'s';$('objective').textContent='Prepare your supplies';setControlHint([inputHintGroup('tablet','TABLET'),inputHintGroup('tabletFocus','FOCUS'),MazeInput.lastDevice()==='gamepad'?`<span class="maze-control-group">${inputActionHTML('inventory','pad',{compact:true})}<span class="maze-control-text">TAP INVENTORY / HOLD QUICK WHEEL</span></span>`:inputHintGroup('inventory','INVENTORY'),inputHintGroup('interact','PICK UP')].join(''));return;}
  const room=playerCloset(),inSafe=state.level.get(C.tileAt(p.x),C.tileAt(p.z))===C.SAFE;
  $('statusLine').textContent=room?themedMapLabel('closet').toUpperCase()+(room.isOpen()?' · DOOR OPEN':' · DOOR CLOSED'):inSafe?(state.safe.wantsOpen()?(state.safe.isOpen()?'ENTRY ROOM · DOOR OPEN':'DOOR OPENING…'):state.safe.openAmount()>.01?'DOOR CLOSING…':'ENTRY ROOM · DOOR CLOSED'):'';
  const selected=interactionTarget(),lift=state.exit,action=selected?.kind==='lift'?selected.action:null,descending=lift.travelDirection==='down';
  $('objective').textContent=lift.phase==='calling'?`Elevator arriving · ${Math.ceil(lift.remaining)}s`:['rising','complete'].includes(lift.phase)?(descending?'Descending to the next floor':'Ascending to the next floor'):lift.phase==='closing'||lift.phase==='latching'?'Stay inside until the gates seal':'Find the elevator';
- if(action){if(action.kind==='call')inputSetPrompt('interact',descending?'Call elevator up · 30 seconds':'Call elevator · 30 seconds');else inputSetPromptLabel(descending?'D-pad ↓':'D-pad ↑',descending?'Close gates and descend':'Close gates and ascend');$('statusLine').textContent=action.kind==='call'?'CALL ELEVATOR · 30 SECONDS':'FREIGHT ELEVATOR';$('controlHint').innerHTML=[inputHintGroup('interact','PRESS BUTTON'),inputHintGroup('leanLeft','PEEK LEFT'),inputHintGroup('leanRight','PEEK RIGHT'),inputHintGroup('crouch','CROUCH')].join('');return;}
+ if(action){if(action.kind==='call')inputSetPrompt('interact',descending?'Call elevator up · 30 seconds':'Call elevator · 30 seconds');else inputSetPromptLabel(descending?'D-pad ↓':'D-pad ↑',descending?'Close gates and descend':'Close gates and ascend');$('statusLine').textContent=action.kind==='call'?'CALL ELEVATOR · 30 SECONDS':'FREIGHT ELEVATOR';setControlHint([inputHintGroup('interact','PRESS BUTTON'),inputHintGroup('leanLeft','PEEK LEFT'),inputHintGroup('leanRight','PEEK RIGHT'),inputHintGroup('crouch','CROUCH')].join(''));return;}
  if(['closing','latching','rising','complete'].includes(lift.phase)){$('contextPrompt').textContent=lift.blocked?'Step clear of the gates':lift.phase==='closing'?'Gates closing':'';$('statusLine').textContent=lift.phase==='rising'?(descending?'ELEVATOR · DESCENDING':'ELEVATOR · ASCENDING'):'ELEVATOR · GATES CLOSING';return;}
  const safe=selected?.kind==='safe'?selected.ref:null,closet=selected?.kind==='closet'?selected.ref:null,service=selected?.kind==='service'?selected.ref:null,latch=selected?.kind==='house-latch'?selected.ref:null,wardrobe=selected?.kind==='wardrobe'?selected.ref:null,pantry=selected?.kind==='pantry'?selected.ref:null,interactKey=MazeInput.label('interact',MazeInput.lastDevice()==='gamepad'?'pad':'key');
  const promptText=selected?.kind==='alarm-clock'?'Pick up alarm clock':selected?.kind==='berry-bush'?'Harvest '+selected.ref.color+' berries ×3':latch?(latch.p.doorLocked?'Unlock house':latch.p.doorLockPending?'Cancel locking':latch.wantsOpen()?'Close and lock house':'Lock house'):pantry?((pantry.wantsOpen()?'Close':'Open')+' '+pantry.p.displayName.toLowerCase()):wardrobe?((wardrobe.wantsOpen()?'Close':'Open')+' wardrobe'):safe?(!safe.isUnlocked()?'Entry-room door locked':(safe.wantsOpen()?'Close':'Open')+' entry-room door'):service?(service.p.doorLocked||service.p.doorLockPending?'House locked · interior latch / axe / gun':(service.wantsOpen()?'Close':'Open')+' '+(service.interactionLabel||'service door')):closet?((closet.wantsOpen()?'Close':'Open')+' '+themedMapLabel('closet').toLowerCase()+' door'):'';
  if(promptText){if(promptText==='Entry-room door locked'||promptText==='House locked · interior latch / axe / gun')$('contextPrompt').textContent=promptText;else inputSetPrompt('interact',promptText);}else $('contextPrompt').textContent='';
- $('controlHint').innerHTML=[inputHintGroup('forward','MOVE'),inputHintGroup('sprint','RUN'),inputHintGroup('interact','DOOR'),inputHintGroup('leanLeft','PEEK LEFT'),inputHintGroup('leanRight','PEEK RIGHT'),inputHintGroup('crouch','CROUCH'),inputHintGroup('jump','JUMP')].concat((flashlightNeededAt(p)||p.shotgunEquipped)?[inputHintGroup('flashlight','FLASHLIGHT / STOW')]:[]).concat(p.shotgunOwned?[`<span class="maze-control-group"><span class="maze-control-text">POCKET KEY · SHOTGUN</span></span>`]:[]).concat(p.shotgunEquipped?[inputHintGroup('primary','FIRE')]:p.flashlightHeld?[inputHintGroup('primary','LIGHT ON / OFF')]:[]).concat([inputHintGroup('tablet','TABLET'),MazeInput.lastDevice()==='gamepad'?`<span class="maze-control-group">${inputActionHTML('inventory','pad',{compact:true})}<span class="maze-control-text">TAP INVENTORY / HOLD QUICK WHEEL</span></span>`:inputHintGroup('inventory','INVENTORY')]).join('');
+ setControlHint([inputHintGroup('forward','MOVE'),inputHintGroup('sprint','RUN'),inputHintGroup('interact','DOOR'),inputHintGroup('leanLeft','PEEK LEFT'),inputHintGroup('leanRight','PEEK RIGHT'),inputHintGroup('crouch','CROUCH'),inputHintGroup('jump','JUMP')].concat((flashlightNeededAt(p)||p.shotgunEquipped)?[inputHintGroup('flashlight','FLASHLIGHT / STOW')]:[]).concat(p.shotgunOwned?[`<span class="maze-control-group"><span class="maze-control-text">POCKET KEY · SHOTGUN</span></span>`]:[]).concat(p.shotgunEquipped?[inputHintGroup('primary','FIRE')]:p.flashlightHeld?[inputHintGroup('primary','LIGHT ON / OFF')]:[]).concat([inputHintGroup('tablet','TABLET'),MazeInput.lastDevice()==='gamepad'?`<span class="maze-control-group">${inputActionHTML('inventory','pad',{compact:true})}<span class="maze-control-text">TAP INVENTORY / HOLD QUICK WHEEL</span></span>`:inputHintGroup('inventory','INVENTORY')]).join(''));
 }
 function renderSecurityFeed(feedCamera,lightMap,viewGroup,step){
  const savedPlayerFill=fillLight.intensity;
@@ -21171,7 +21230,8 @@ function applyServiceActorLight(group,p){
  // the local rig and each teammate retain their own indoor-lighting uniform.
  if(!cache||cache.revision!==revision){const unique=new Set();group.traverse(o=>{for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])if(m.isMeshStandardMaterial||m.isMeshPhysicalMaterial)unique.add(m);});cache={revision,materials:[...unique]};serviceMaterialCache.set(group,cache);}
  const amount=serviceCellAt(p)?1:0;
- for(const m of cache.materials){MazeEnvironment.shadeServiceMaterial(m,T,amount);MazeBackroomsLighting.shadeMaterial(m,T,state.env?.backroomsLighting||null);}
+ const lighting=state.env?.backroomsLighting||null;if(cache.amount===amount&&cache.lighting===lighting)return;cache.amount=amount;cache.lighting=lighting;
+ for(const m of cache.materials){MazeEnvironment.shadeServiceMaterial(m,T,amount);MazeBackroomsLighting.shadeMaterial(m,T,lighting);}
 }
 function legendaryLightAt(p){
  if(!p||!state.env)return 1;
@@ -21197,9 +21257,9 @@ function legendaryLightAt(p){
  return Math.max(0,Math.min(1,ambient));
 }
 function updateServiceActorLighting(){
- applyServiceActorLight(actor?.group,state.player);MazeAppearance.shadeLegendary(actor,legendaryLightAt(state.player));
+ applyServiceActorLight(actor?.group,state.player);if(MazeAppearance.hasLegendary(actor))MazeAppearance.shadeLegendary(actor,legendaryLightAt(state.player));
  applyServiceActorLight(gokuActor?.group||goku,state.enemy);
- if(mp?.visuals)for(const p of mp.players.values())if(p.id!==mp.net.id){const rig=mp.visuals.getActor(p.id);applyServiceActorLight(rig?.group,p);MazeAppearance.shadeLegendary(rig,legendaryLightAt(p));mp.visuals.setServiceLighting(p.id,state.level.poolVariant==='dark'||!!serviceCellAt(p));}
+ if(mp?.visuals)for(const p of mp.players.values())if(p.id!==mp.net.id){const rig=mp.visuals.getActor(p.id);applyServiceActorLight(rig?.group,p);if(MazeAppearance.hasLegendary(rig))MazeAppearance.shadeLegendary(rig,legendaryLightAt(p));mp.visuals.setServiceLighting(p.id,state.level.poolVariant==='dark'||!!serviceCellAt(p));}
  for(const drop of state.inventoryDrops||[])if(drop.item?.type==='outfit'&&MazeAppearance.stylePalette(drop.item.style)){
   MazeAppearance.shadeDroppedLegendary(drop.model?.group||drop.group,legendaryLightAt(drop));
  }
@@ -21489,7 +21549,7 @@ function coopAction(from,a){
  }
 }
 function coopSendWorld(force=false){
- if(!mp?.net.isHost||!mp.world||mp.loading)return;const packet=mp.world.capture(mp.time,{force}),weapon=weaponWorldState(),changed=force||!!packet?.f||mp.weaponWorldRevision!==weapon[0],inventory=inventoryWorldState(force||!!packet?.f),survival=typeof survivalWorldState==='function'?survivalWorldState(force||!!packet?.f):null,forest=forestWorldState(force||!!packet?.f);
+ if(!mp?.net.isHost||!mp.world||mp.loading)return;const packet=mp.world.capture(mp.time,{force}),changed=force||!!packet?.f||mp.weaponWorldRevision!==weaponLootRevision,weapon=changed?weaponWorldState():null,inventory=inventoryWorldState(force||!!packet?.f),survival=typeof survivalWorldState==='function'?survivalWorldState(force||!!packet?.f):null,forest=forestWorldState(force||!!packet?.f);
  if(changed)mp.weaponWorldRevision=weapon[0];if(packet||changed||inventory||survival||forest)mp.net.sendControl({type:'world-state',epoch:mp.epoch,time:mp.time,packet,...(changed?{weapon}:{}),...(inventory?{inventory}:{}),...(survival?{survival}:{}),...(forest?{forest}:{})});
 }
 function coopReceiveWorld(event){
@@ -21931,7 +21991,7 @@ function coopEnemyState(){const e=state.enemy;return{x:e.x,z:e.z,yaw:e.yaw,speed
 function coopSendSnapshot(force=false){
  if(!mp?.net.isHost||!mp.running)return;if(!force&&mp.time+1e-6<mp.sendAt)return;mp.sendAt=mp.time+MP_SNAPSHOT;coopSendWorld();
  const players=[...mp.players.values()].map(p=>{p.holding=!!p.tabletEquipped;return MazeStateCodec.player(p,MazeCoopSimulation.alive(p)?mp.visuals.captureAnimationState(p.id):null);});
- mp.net.broadcast(MazeStateCodec.snapshot({epoch:mp.epoch,time:mp.time,phase:state.mode,score:state.score,players,enemy:coopEnemyState(),world:mp.world.checksum(),weaponRevision:weaponWorldState()[0],inventoryRevision}),(packet,recipient)=>({...packet,p:packet.p.map(row=>row[0]===recipient.slot?[...row.slice(0,12),null,...row.slice(13)]:row)}));
+ mp.net.broadcast(MazeStateCodec.snapshot({epoch:mp.epoch,time:mp.time,phase:state.mode,score:state.score,players,enemy:coopEnemyState(),world:mp.world.checksum(),weaponRevision:weaponLootRevision,inventoryRevision}),(packet,recipient)=>({...packet,p:packet.p.map(row=>row[0]===recipient.slot?[...row.slice(0,12),null,...row.slice(13)]:row)}));
 }
 function coopReceiveSnapshot(wire){
  if(!mp||mp.net.isHost||!wire||wire.e!==mp.epoch||mp.loading)return;
@@ -21949,7 +22009,7 @@ function coopReceiveSnapshot(wire){
   if(wasAlive&&!sample.alive&&sample.id===mp.net.id){mp.dead=true;actor.hide();resetMovementInput();coopCycleSpectator(0);}
  }
  mp.worldFrames.push(packet);if(mp.worldFrames.length>12)mp.worldFrames.shift();coopUI.updateTeam(coopTeam(),mp.net.id,mp.spectated);
- if(packet.weaponRevision>weaponWorldState()[0]||packet.inventoryRevision>inventoryRevision){mp.inventoryMismatchAt||=now;if(now-mp.inventoryMismatchAt>Math.max(.6,mp.clock.rtt*1.5))coopRequestWorld();}else mp.inventoryMismatchAt=0;
+ if(packet.weaponRevision>weaponLootRevision||packet.inventoryRevision>inventoryRevision){mp.inventoryMismatchAt||=now;if(now-mp.inventoryMismatchAt>Math.max(.6,mp.clock.rtt*1.5))coopRequestWorld();}else mp.inventoryMismatchAt=0;
  if(packet.world){const local=mp.world.checksum(),mismatch=local.n===packet.world.n&&local.h!==packet.world.h,behind=local.n<packet.world.n;
   if(mismatch)coopRequestWorld();else if(behind){mp.worldMismatchAt||=now;if(now-mp.worldMismatchAt>Math.max(.35,mp.clock.rtt))coopRequestWorld();}else mp.worldMismatchAt=0;
  }
@@ -22756,7 +22816,7 @@ function survivalRender(dt){
   const selected=interactionTarget();
   if(selected?.kind==='bed'){const occupied=survivalPlayers().some(v=>v.sleeping&&v.survival?.bedId===selected.id);$('contextPrompt').textContent=MazeInput.label('interact')+' — '+(occupied?'Bed half occupied':'Sleep on '+(selected.ref.side<0?'right':'left')+' half · 40 seconds');$('contextPrompt').classList.add('pickup-target');}
   else if(selected?.kind==='corpse'){$('contextPrompt').textContent='R — Search '+selected.ref.name+' · '+selected.ref.reason;$('contextPrompt').classList.add('pickup-target');}
-  if(p.batEquipped)$('controlHint').textContent=MazeInput.label('primary')+' · SWING   '+MazeInput.label('inventory')+' · INVENTORY';
+  if(p.batEquipped)setControlHint(MazeInput.label('primary')+' · SWING   '+MazeInput.label('inventory')+' · INVENTORY',false);
  }
 }
 function survivalReflectionObjects(){return[...(state.survivalWorld?.roomGroups||[]).map(r=>({group:r.group,cells:r.cells})),...(state.survivalCorpses||[]).map(c=>({group:mp?.visuals?.getActor(c.ownerId)?.group||(!mp?actor.group:null),key:C.key(C.tileAt(c.x),C.tileAt(c.z))})).filter(o=>o.group)];}
@@ -23129,7 +23189,7 @@ function bottleRender(dt){
  }
  const p=state.player,item=MI.clock(p)||MI.food(p)||MI.bottle(p);if(!item||!bottleAlive(p)||inventoryIsOpen()||survivalLootId||state.tabletFocus)return;
  const slot=item.type==='alarmclock'?p.clockSlot:item.type==='food'||MI.isBerry(item.type)?p.foodSlot:p.bottleSlot,primary=window.MazeInput?.label('primary')||'LMB',inventory=window.MazeInput?.label('inventory')||'I',stow=Number.isInteger(slot)&&slot>=0&&slot<MI.SLOT_COUNT?(window.MazeInput?.label('slot'+(slot+1))||String(slot+1))+' · PUT AWAY':'SELECT ANOTHER ITEM TO PUT AWAY';
- $('controlHint').textContent=primary+' · '+(item.type==='alarmclock'?'PLACE & ARM (30s)':item.type==='food'||MI.isBerry(item.type)?'EAT':['water','almond-water'].includes(item.type)?'DRINK':'FILL FROM POOL WATER')+'   '+stow+'   '+inventory+' · INVENTORY';
+ setControlHint(primary+' · '+(item.type==='alarmclock'?'PLACE & ARM (30s)':item.type==='food'||MI.isBerry(item.type)?'EAT':['water','almond-water'].includes(item.type)?'DRINK':'FILL FROM POOL WATER')+'   '+stow+'   '+inventory+' · INVENTORY',false);
  if(item.type==='empty-bottle'){const now=performance.now();if(now>=bottlePromptAt){bottlePromptTarget=bottlePoolTarget(p);bottlePromptAt=now+120;}if(bottlePromptTarget){$('contextPrompt').textContent=primary+' — Fill bottle from pool water';$('contextPrompt').classList.add('pickup-target');}}
 }
 function bottleBind(){
@@ -23139,5 +23199,5 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 
 
-</script><script>MazeBoot.advance(271819);</script>
+</script><script>MazeBoot.advance(320130);</script>
 <script>MazeBoot.received();</script></body></html>
