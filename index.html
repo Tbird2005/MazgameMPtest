@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-build="v7.20-phone-endurance-door-recovery"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze Game 3D — Theme Worlds Review</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
+<html lang="en" data-build="v7.20.2-fixed-phone-pose-gaze"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze Game 3D — Theme Worlds Review</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
 <style id="maze-boot-style">html,body{margin:0;min-height:100%;background:#070d0e}
 #maze-boot{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:28px;color:#dce9e2;background:radial-gradient(ellipse at 48% 40%,#18333780,transparent 66%),repeating-linear-gradient(0deg,#91c5bc04 0 1px,transparent 1px 4px),#070d0e;font:14px/1.5 Arial,Helvetica,sans-serif;box-sizing:border-box;color-scheme:dark}
 #maze-boot *{box-sizing:border-box}#maze-boot-panel{width:min(430px,100%);border-top:1px solid #729b9670;padding-top:25px}#maze-boot-brand{margin:0 0 34px;color:#c9dcc2;letter-spacing:.19em;font-size:13px;font-weight:700}#maze-boot-brand b{float:right;color:#6f9792;font-size:11px;font-weight:400;letter-spacing:.08em}#maze-boot h1{margin:0 0 7px;font-size:24px;font-weight:400;letter-spacing:-.02em}#maze-boot-meta{min-height:22px;margin:0;color:#91b2ac;font-size:12px}#maze-boot-track{height:11px;margin:25px 0 11px;border:1px solid #4f716b;background:#050b0c;padding:2px;box-shadow:inset 0 1px 3px #0009}#maze-boot-fill{height:5px;width:0;background:#b7d9a1;box-shadow:0 0 10px #a9d49735}#maze-boot-bottom{display:flex;justify-content:space-between;gap:16px;color:#75928d;font-size:12px;font-variant-numeric:tabular-nums}#maze-boot-percent{color:#c3d9b9}#maze-boot-retry{margin-top:22px;padding:9px 18px;border:1px solid #7caaa2;background:#18332e;color:#daebdf;font:inherit;cursor:pointer}#maze-boot-retry[hidden]{display:none}#maze-boot-note{margin:25px 0 0;color:#5e7a76;font-size:11px}#maze-boot[data-error] #maze-boot-fill{background:#d4967f}</style><style id="maze-voice-style">
@@ -27,7 +27,7 @@
 .coop-spectator-toggle:focus-visible{outline:2px solid #c6ffbc;outline-offset:2px}
 </style></head><body><section id="maze-boot" role="status" aria-live="polite" aria-label="Loading Maze Game 3D"><div id="maze-boot-panel"><p id="maze-boot-brand">MAZE GAME / 3D <b>INITIALIZING</b></p><h1 id="maze-boot-title">Receiving game data</h1><p id="maze-boot-meta">Your game is arriving. Keep this tab open.</p><div id="maze-boot-track" role="progressbar" aria-label="Game data received" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="maze-boot-fill"></div></div><div id="maze-boot-bottom"><span id="maze-boot-eta">Estimating remaining time…</span><span id="maze-boot-percent">0%</span></div><button id="maze-boot-retry" type="button" hidden>Reload game</button><p id="maze-boot-note">Progress updates as game data arrives.</p></div></section><script>(function(w,d){
 'use strict';
-const total=22496872,start=performance.now(),parts=Object.create(null),byId=id=>d.getElementById(id),root=byId('maze-boot');
+const total=22503006,start=performance.now(),parts=Object.create(null),byId=id=>d.getElementById(id),root=byId('maze-boot');
 let bytes=0,done=false,failed=false,received=false,initialized=false,last=0,watch=null,timer=null;
 const title=byId('maze-boot-title'),meta=byId('maze-boot-meta'),eta=byId('maze-boot-eta'),percent=byId('maze-boot-percent'),track=byId('maze-boot-track'),fill=byId('maze-boot-fill');
 function units(n){return(n/1000000).toFixed(1)+' MB';}
@@ -14343,7 +14343,7 @@ class MazeItemGrips {
    including their weights on the face and lashes; gaze uses small eye morphs. */
 class MazeFaceIdle {
  constructor(model){
-  this.eyes=[];this.clock=0;this.nextBlink=2.2;this.blinkStart=-10;this.nextLook=1.1;this.gazeX=0;this.gazeY=0;this.targetX=0;this.targetY=0;this.blink=0;this.gazeStartX=0;this.gazeStartY=0;this.mirrorTracking=false;this.lookPoint=new THREE.Vector3();this.lookCenter=new THREE.Vector3();this.maxYaw=.80;this.maxPitch=.45;
+  this.eyes=[];this.clock=0;this.nextBlink=2.2;this.blinkStart=-10;this.nextLook=1.1;this.gazeX=0;this.gazeY=0;this.targetX=0;this.targetY=0;this.blink=0;this.gazeStartX=0;this.gazeStartY=0;this.mirrorTracking=false;this.phoneTracking=false;this.lookPoint=new THREE.Vector3();this.lookCenter=new THREE.Vector3();this.maxYaw=.80;this.maxPitch=.45;
   const eyeMeshes=[];model.traverse(o=>{if(o.isMesh&&/^ojos/.test(o.name))eyeMeshes.push(o)});
   this.model=model;this.head=null;this.blinkBones=[];this.eyeCenters={};this.applied=false;
   model.traverse(b=>{if(!b.isBone)return;const name=b.userData.name||b.name;if(name==='cabeza')this.head=b;if(name.startsWith('pestañas'))this.blinkBones.push({bone:b,side:name.includes(' L')?'L':'R',upper:!(/\.00[456]$/.test(name)),base:b.position.clone(),point:new THREE.Vector3()});});
@@ -14371,7 +14371,7 @@ class MazeFaceIdle {
   this.applied=true;
  }
  update(dt){
-  this.gazeStartX=this.gazeX;this.gazeStartY=this.gazeY;this.mirrorTracking=false;
+  this.gazeStartX=this.gazeX;this.gazeStartY=this.gazeY;this.mirrorTracking=false;this.phoneTracking=false;
   if(this.networkSeed!==undefined){
    // Co-op reconstructs idle eyes from a shared clock and player seed. This
    // needs no per-frame face-bone or morph-weight network traffic.
@@ -14386,12 +14386,20 @@ class MazeFaceIdle {
   if(this.clock>=this.nextLook){this.nextLook=this.clock+1.5+Math.random()*2.8;const center=Math.random()<.55;this.targetX=center?0:(Math.random()-.5)*.096;this.targetY=center?0:(Math.random()-.5)*.078;}
   this.gazeX=THREE.MathUtils.damp(this.gazeX,this.targetX,20,dt);this.gazeY=THREE.MathUtils.damp(this.gazeY,this.targetY,20,dt);this.apply(blink);
  }
- trackMirror(target,dt){
-  if(!target||!this.head)return;
-  this.mirrorTracking=true;this.head.worldToLocal(this.lookPoint.copy(target));this.lookCenter.copy(this.eyeCenters.L).add(this.eyeCenters.R).multiplyScalar(.5);this.lookPoint.sub(this.lookCenter);
+ trackTarget(target,dt){
+  if(!target||!this.head||!this.eyeCenters.L||!this.eyeCenters.R)return false;
+  this.head.worldToLocal(this.lookPoint.copy(target));this.lookCenter.copy(this.eyeCenters.L).add(this.eyeCenters.R).multiplyScalar(.5);this.lookPoint.sub(this.lookCenter);
   const x=THREE.MathUtils.clamp(Math.atan2(this.lookPoint.x,this.lookPoint.z)/this.maxYaw,-1,1),y=THREE.MathUtils.clamp(-Math.atan2(this.lookPoint.y,Math.hypot(this.lookPoint.x,this.lookPoint.z))/this.maxPitch,-1,1);
   // Replace this frame's idle saccade; do not advance the blink clock twice.
   this.gazeX=THREE.MathUtils.damp(this.gazeStartX,x,24,dt);this.gazeY=THREE.MathUtils.damp(this.gazeStartY,y,24,dt);this.apply(this.blink);return true;
+ }
+ trackPhone(target,dt){
+  this.phoneTracking=this.trackTarget(target,dt);if(this.phoneTracking)this.mirrorTracking=false;return this.phoneTracking;
+ }
+ trackMirror(target,dt){
+  // A held phone takes priority, including the later mirror/CCTV render pass.
+  if(this.phoneTracking)return false;
+  this.mirrorTracking=this.trackTarget(target,dt);return this.mirrorTracking;
  }
 }
 
@@ -19102,6 +19110,13 @@ root.MazeDroppedItemModels={...base,create};
 (function(global){
 'use strict';
 const T=global.THREE,DURATION=.85,UP=new T.Vector3(0,1,0),FORWARD=new T.Vector3(0,0,-1),NORMAL=new T.Vector3(-1,0,0),BASIS=new T.Quaternion().setFromRotationMatrix(new T.Matrix4().makeBasis(UP,FORWARD,NORMAL)),INV_BASIS=BASIS.clone().invert();
+// Saved holdingphone.blend pose, frame 1. Import only the phone arm, including
+// its palms/fingers; never replace body, left-arm, camera or locomotion tracks.
+// Source SHA-256: 86506f67d6efdf633a183143d0c5f83d33894e3a74c34ced722c3e10928da901
+const PHONE_POSE=[["shoulder.R",-0.0152682218,0.1249788052,0.0350122032,-0.5246217061,0.290011916,0.582362774,0.5491072331,0.9999998962,0.999999915,1.0000001292],["upper_arm.R",-0.0226445671,0.1602142624,0.0073510585,0.0114147009,-0.5857921082,0.6210107979,0.5206370131,1.0000001689,0.9999999412,0.99999976],["forearm.R",-2.459e-07,0.2267276948,-3.24e-08,0.8394187479,0.2035468484,0.1354879401,0.4853739428,0.9999999803,1.0000001119,1.0000001868],["hand.R",-1.127e-07,0.2521182086,2.17e-08,-0.4443091528,0.1550895967,0.1256355498,0.8733569158,1.0000000005,1.0000000672,1.0000000836],["palm.01.R",-0.0022496216,0.0602481575,0.019973159,0.061602152,-0.6906650912,-0.0533534858,0.7185682377,1.0000000508,1.0000002116,1.0000000516],["f_index.01.R",-0.0002265426,0.0359502192,-0.0001535884,0.2212044016,-0.0587175448,0.1187330501,0.9661901083,0.9999999747,1.0000000162,0.9999999462],["f_index.02.R",-0.0003507283,0.0352154099,0.0064599614,0.172092283,0.1128075924,0.0175343173,0.9784432743,0.9999999571,1.0000000704,1.0000000872],["f_index.03.R",-9.39e-08,0.0279520267,-2.59e-07,0.1526591117,-0.0500169654,-0.0158036379,0.9868858819,0.9999999529,1.000000026,1.0000000427],["thumb.01.R",0.0192225467,-0.020721727,0.0005153123,0.164780426,-0.5405076969,-0.4694902254,0.6784377415,1.0000000032,0.9999999666,1.0000000499],["thumb.02.R",2.58e-07,0.0365722787,3.02e-08,0.4060991892,-0.2241770248,0.0971794237,0.8805590666,0.9999999893,1.0000000372,1.0000000629],["thumb.03.R",-1.56e-08,0.0313822852,-4.54e-08,0.1680689712,-0.1711236028,-0.0678262925,0.9684364344,1.0000000675,1.000000024,1.0000000957],["palm.02.R",0.0001904022,0.070333041,0.0010104055,0.0205207627,-0.6916861395,-0.0380877646,0.7209011755,0.999999964,1.0000000037,1.000000011],["f_middle.01.R",-0.0009713274,0.0357576762,0.0011235439,0.3185368877,0.1081517532,0.1283606277,0.9329314008,0.9999999821,1.0000001106,0.9999999398],["f_middle.02.R",4.32e-08,0.0361219303,3.02e-08,0.1096064781,0.0334908923,-0.0044029338,0.9934009232,0.9999998431,0.9999999766,0.9999999782],["f_middle.03.R",-3.95e-08,0.0302046713,-6.7e-09,0.4759034465,0.0689014214,0.1748740926,0.8591784189,0.999999975,0.9999999778,1.0000000238],["palm.03.R",0.0007916001,0.0651873153,-0.0106988698,-0.0336466533,-0.6933888588,0.0103724944,0.7197028585,1.0000001422,1.000000238,1.0000000893],["f_ring.01.R",6.32271e-05,0.0332712764,0.0011720822,0.3440298438,0.1206756668,0.0701480982,0.9285257639,1.0000000281,1.0000000327,1.0000000922],["f_ring.02.R",4.7e-09,0.0298477221,-1.24e-08,0.0387480059,0.003346263,0.0420519439,0.9983581665,1.0000000028,1.0000000561,0.9999999743],["f_ring.03.R",-6.51e-08,0.0251924729,-2.63e-08,0.2785693888,0.0232623853,0.0852919198,0.9563384576,0.9999999855,1.0000000027,0.9999999891],["palm.04.R",0.0011193206,0.0513448628,-0.0224861444,0.0255633168,0.7135596146,-0.0611622589,-0.6974513397,1.0000000125,1.0000000194,1.0000000913],["f_pinky.01.R",4.2e-09,0.0359522546,-5.8e-09,0.3231944541,0.084079925,-0.0039980716,0.9425815224,0.9999998502,1.0000000166,0.9999999021],["f_pinky.02.R",-2e-08,0.0287469033,-1.416e-07,0.0003429813,-0.0022856303,-0.0019971822,0.9999953347,0.9999999544,1.0000000028,1.0000000303],["f_pinky.03.R",-1.27e-08,0.0202614039,1.206e-07,0.1968909838,0.0284911132,0.0294307313,0.9795693079,0.9999999474,0.9999999455,0.9999999355]].map(row=>({name:row[0],position:new T.Vector3().fromArray(row,1),quaternion:new T.Quaternion().fromArray(row,4).normalize(),scale:new T.Vector3().fromArray(row,8)}));
+// Blender bone parenting attaches at the hand's tail. This saved hand-local
+// matrix includes that offset, the edited Phone Grip, and Z-up -> prop Y-up.
+const PHONE_ATTACHMENT=new T.Matrix4().fromArray([0.4948352167,-0.860130116,0.1237446649,0.0,0.003595339,0.1444265255,0.989509357,0.0,-0.8689791726,-0.4891993772,0.0745598215,0.0,-0.0423646159,0.0924981236,-0.0516889989,1.0]);
 function ensure(rig){
  if(!rig?.grips)return null;if(rig.grips.itemUse)return rig.grips.itemUse;
  const group=new T.Group(),models={};group.name='Held usable item';group.visible=false;rig.group.add(group);
@@ -19110,9 +19125,12 @@ function ensure(rig){
   model.group.traverse(o=>{if(!o.isMesh)return;o.frustumCulled=false;o.castShadow=rig.quality==='high';rig.meshes.push(o);});
  }
  const state={group,models,weight:0,v:Array.from({length:20},()=>new T.Vector3()),q:Array.from({length:13},()=>new T.Quaternion()),matrix:new T.Matrix4(),euler:new T.Euler(0,0,0,'YXZ'),base:new Map(),key:'',warm:false};
+ state.phonePose=PHONE_POSE.map(pose=>({bone:rig.grips.bones.get(pose.name),pose})).filter(entry=>entry.bone);
+ // Cache the real screen once; its world position follows the final hand pose.
+ state.phoneDisplay=models.phone?.group.getObjectByName('Phone display')||null;
  rig.grips.itemUse=state;return state;
 }
-function hide(rig){const s=rig?.grips?.itemUse;if(s){s.group.visible=false;s.weight=0;}}
+function hide(rig){if(rig?.face)rig.face.phoneTracking=false;const s=rig?.grips?.itemUse;if(s){s.group.visible=false;s.weight=0;}}
 function dispose(rig){const g=rig?.grips,s=g?.itemUse;if(!s)return;const meshes=new Set();s.group.traverse(o=>{if(o.isMesh)meshes.add(o);});rig.meshes=rig.meshes.filter(o=>!meshes.has(o));for(const model of Object.values(s.models))model.dispose();s.group.removeFromParent();s.group.clear();g.itemUse=null;}
 function restoreArms(g,s){
  for(const a of g.arms)for(const bone of a.readyBase.keys()){
@@ -19168,7 +19186,31 @@ function freeHand(g,a,s,frame){
  for(let f=0;f<4;f++)for(let j=0;j<3;j++){const b=a.fingers[f][j];if(b)b.quaternion.multiply(s.q[9].setFromAxisAngle(s.v[19].set(1,0,0),[.12,.18,.12][j]+f*.015));}
  for(let j=0;j<3;j++){const b=a.thumbs[j];if(b)b.quaternion.multiply(s.q[9].setFromAxisAngle(s.v[19].set(1,0,0),[.08,.18,.13][j]));}a.upper.updateWorldMatrix(false,true);
 }
+function authoredPhone(rig,s,g,arm,dt){
+ // Apply the user's evaluated local transforms, not the original export keys
+ // and not the procedural grip solver. Capture them for normal stow cleanup.
+ for(const {bone,pose} of s.phonePose){g.capture(bone);bone.position.copy(pose.position);bone.quaternion.copy(pose.quaternion);bone.scale.copy(pose.scale);}
+ (arm.clavicle||arm.upper).updateWorldMatrix(false,true);
+ // Keep this authored arm/phone pose in the body's frame. Unlike a weapon,
+ // it must not aim up/down with camera pitch; the player can look around it.
+ // Retain the existing free-hand behavior rather than importing the Blender
+ // file's left arm, torso, legs, head or any full-body animation.
+ const frame=g.torso.getWorldQuaternion(s.q[1]).multiply(g.torsoRest);
+ for(const a of g.arms)if(a!==arm)freeHand(g,a,s,frame);
+ for(const a of g.arms){for(const bone of a.readyBase.keys()){const base=s.base.get(bone);if(!base)continue;bone.quaternion.slerp(base.q,1-s.weight);bone.position.lerp(base.p,1-s.weight);bone.scale.lerp(base.scale,1-s.weight);}(a.clavicle||a.upper).updateWorldMatrix(false,true);}
+ // Follow the final blended hand matrix every frame. The prop cannot lag,
+ // float away during equip, or revert to the old procedural phone offset.
+ rig.group.updateWorldMatrix(true,false);
+ s.matrix.copy(rig.group.matrixWorld).invert().multiply(arm.hand.matrixWorld).multiply(PHONE_ATTACHMENT);
+ s.matrix.decompose(s.group.position,s.group.quaternion,s.group.scale);
+ s.group.updateWorldMatrix(false,true);
+ // Apply after the prop attachment and before commit/reflections. All players
+ // use this same local visual stage, so no extra gaze data is networked.
+ if(s.phoneDisplay&&rig.face)rig.face.trackPhone(s.phoneDisplay.getWorldPosition(s.v[17]),dt);
+ rig.commitPose();return true;
+}
 function update(rig,p,dt){
+ if(rig?.face)rig.face.phoneTracking=false;
  if(!rig?.ready||!rig.grips)return false;
  const phone=global.MazeInventory?.phone?.(p),clock=global.MazeInventory?.clock?.(p),kind=!clock&&['drink','almond-drink','fill','food','battery','berry-red','berry-blue','berry-green'].includes(p.itemUseKind)&&p.itemUseTime>=0&&p.itemUseTime<DURATION?p.itemUseKind:'',item=phone||clock||global.MazeInventory?.food(p)||global.MazeInventory?.bottle(p),equipped=!!item;
  if(p.dead||p.alive===false||p.sleeping||(!equipped&&!kind)){hide(rig);return false;}
@@ -19180,6 +19222,8 @@ function update(rig,p,dt){
  s.weight=equipped?T.MathUtils.damp(s.weight,1,24,Math.max(.001,dt||.016)):T.MathUtils.smoothstep(progress,0,.16)*(1-T.MathUtils.smoothstep(progress,.78,1));s.group.visible=true;
  for(const [name,model]of Object.entries(s.models)){model.group.visible=name===type;const cap=model.group.getObjectByName('Sealed screw cap');if(cap)cap.visible=!((drinking||kind==='fill')&&progress>.08&&progress<.91);}
  restoreArms(g,s);g.torchWeight=0;g.tabletActive=false;if(g.shotgun)g.shotgun.group.visible=false;if(g.muzzleFlash)g.muzzleFlash.visible=false;if(g.bat)g.bat.group.visible=false;
+ if(type==='phone')return authoredPhone(rig,s,g,arm,Math.max(0,dt||0));
+ s.group.scale.set(1,1,1);
  const center=s.v[0],frame=g.torso.getWorldQuaternion(s.q[1]).multiply(g.torsoRest),q=s.q[0],wristOffset=s.v[2],shoulder=arm.upper.getWorldPosition(s.v[3]);
  // Match the flashlight/shotgun view frame. Moving only the prop rotation
  // left the wrist pinned to the torso when the player looked up or down.
@@ -19216,7 +19260,7 @@ global.MazeItemUseVisuals=Object.freeze({ensure,update,hide,dispose,duration:DUR
 const P=global.MazePlayer?.prototype;if(P){const oldHide=P.hide,oldDispose=P.dispose;P.hide=function(){hide(this);return oldHide.apply(this,arguments);};P.dispose=function(){dispose(this);return oldDispose.apply(this,arguments);};}
 })(typeof window!=='undefined'?window:globalThis);
 
-</script><script>MazeBoot.advance(11389);</script>
+</script><script>MazeBoot.advance(17523);</script>
 <script>
 /* Dedicated, seeded kitchen and dormitory annexes. The maze core carves their
    topology; this module places their themed interiors, furniture and scarce loot. */
@@ -22231,7 +22275,7 @@ function frame(now){
   state.shadowTick-=dt;const moved=Math.hypot(p.x-(state.shadowX??Infinity),p.z-(state.shadowZ??Infinity))>1.25;
   const animatedShadow=settings.quality==='high'&&(p.speed>.1||goku.visible&&e.moving);
   if(renderer.shadowMap.enabled&&state.shadowTick<=0&&(state.shadowDirty||moved||animatedShadow)){state.shadowTick=settings.quality==='high'?1/12:.25;updateSun();renderer.shadowMap.needsUpdate=true;state.shadowDirty=false;state.shadowX=p.x;state.shadowZ=p.z;}
-  if(!state.player.sleeping&&actor.face&&actor.face.trackMirror(mirror.getGazeTarget(camera,actor.face.lookPoint),dt))actor.commitPose();
+  if(!state.player.sleeping&&actor.face&&!actor.face.phoneTracking&&actor.face.trackMirror(mirror.getGazeTarget(camera,actor.face.lookPoint),dt))actor.commitPose();
   mirror.update(state.time,p,camera,true,renderSecurityFeed);security.update(state.time,p,camera,true,renderSecurityFeed);
  }else if(state.mode==='menu'){
   state.menuRenderAt=now+50;state.menuTime+=elapsed;state.env?.update(state.menuTime,camera.position,dt);flash.intensity=0;fillLight.intensity=0;goku.visible=false;actor.hide();
@@ -23317,7 +23361,7 @@ function coopFrame(now,elapsed,dt){
  // Finish item/survival presentation before any reflection or main view.
  // Later patches extend this stage with inventory, survival and consumables.
  weaponRender(dt);inventoryStep(dt);survivalRender(dt);bottleRender(dt);
- if(!mp.dead&&!state.player.sleeping&&actor.face&&actor.face.trackMirror(mirror.getGazeTarget(camera,actor.face.lookPoint),dt))actor.commitPose();mirror.update(state.time,p,camera,true,renderSecurityFeed);security.update(state.time,p,camera,true,renderSecurityFeed);
+ if(!mp.dead&&!state.player.sleeping&&actor.face&&!actor.face.phoneTracking&&actor.face.trackMirror(mirror.getGazeTarget(camera,actor.face.lookPoint),dt))actor.commitPose();mirror.update(state.time,p,camera,true,renderSecurityFeed);security.update(state.time,p,camera,true,renderSecurityFeed);
  if(host)coopSendSnapshot();if(!document.hidden)coopRenderMainView();coopFinishAftermath(elapsed);
 }
 async function coopLeave(){
