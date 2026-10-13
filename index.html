@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-build="v7.19-physical-phones-hearing"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze Game 3D — Theme Worlds Review</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
+<html lang="en" data-build="v7.20-phone-endurance-door-recovery"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze Game 3D — Theme Worlds Review</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
 <style id="maze-boot-style">html,body{margin:0;min-height:100%;background:#070d0e}
 #maze-boot{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:28px;color:#dce9e2;background:radial-gradient(ellipse at 48% 40%,#18333780,transparent 66%),repeating-linear-gradient(0deg,#91c5bc04 0 1px,transparent 1px 4px),#070d0e;font:14px/1.5 Arial,Helvetica,sans-serif;box-sizing:border-box;color-scheme:dark}
 #maze-boot *{box-sizing:border-box}#maze-boot-panel{width:min(430px,100%);border-top:1px solid #729b9670;padding-top:25px}#maze-boot-brand{margin:0 0 34px;color:#c9dcc2;letter-spacing:.19em;font-size:13px;font-weight:700}#maze-boot-brand b{float:right;color:#6f9792;font-size:11px;font-weight:400;letter-spacing:.08em}#maze-boot h1{margin:0 0 7px;font-size:24px;font-weight:400;letter-spacing:-.02em}#maze-boot-meta{min-height:22px;margin:0;color:#91b2ac;font-size:12px}#maze-boot-track{height:11px;margin:25px 0 11px;border:1px solid #4f716b;background:#050b0c;padding:2px;box-shadow:inset 0 1px 3px #0009}#maze-boot-fill{height:5px;width:0;background:#b7d9a1;box-shadow:0 0 10px #a9d49735}#maze-boot-bottom{display:flex;justify-content:space-between;gap:16px;color:#75928d;font-size:12px;font-variant-numeric:tabular-nums}#maze-boot-percent{color:#c3d9b9}#maze-boot-retry{margin-top:22px;padding:9px 18px;border:1px solid #7caaa2;background:#18332e;color:#daebdf;font:inherit;cursor:pointer}#maze-boot-retry[hidden]{display:none}#maze-boot-note{margin:25px 0 0;color:#5e7a76;font-size:11px}#maze-boot[data-error] #maze-boot-fill{background:#d4967f}</style><style id="maze-voice-style">
@@ -7638,12 +7638,13 @@ function moveEnemyToward(level,e,target,speed,dt){
  const originalIntent=target;let attemptedGoal=null;
  if(e.openDoorDetourWait>0)e.openDoorDetourWait=Math.max(0,e.openDoorDetourWait-dt);
  const recovery=e.serviceDoorRecovery||e.closetDoorRecovery;
+ if(recovery?.watchdog&&recovery.phase!=='backoff'){e.path=[];e.repath=0;e.doorStallProgress=null;return;}
  if(recovery?.watchdog&&recovery.phase==='backoff')target=recovery.kind==='closet'?{x:recovery.retreatX,z:recovery.retreatZ}:recovery;
  const stamp=enemyNavigationStamp(level),changed=e.navigationStamp!==stamp;
  if(changed){e.navigationStamp=stamp;e.path=[];e.repath=0;e.localApproach=null;e.openDoorDetourActive=null;}
  if(!e.navigationTarget||Math.hypot(target.x-e.navigationTarget.x,target.z-e.navigationTarget.z)>.35){e.navigationTarget={x:target.x,z:target.z};e.repath=0;e.openDoorDetourActive=null;}
- target=enemyRoomDoorTarget(level,e,target,dt);if(!target)return;
- target=enemyClosetDoorTarget(level,e,target,dt);if(!target)return;
+ if(!recovery?.watchdog){target=enemyRoomDoorTarget(level,e,target,dt);if(!target)return;
+ target=enemyClosetDoorTarget(level,e,target,dt);if(!target)return;}
  if(e.serviceDoorRecovery?.phase==='backoff')target=e.serviceDoorRecovery;
  const colliders=level.roomColliders||level.safeColliders||[],region=enemyLocalRegion(level,e,target),contact=target===e.lastTarget&&['hunting','investigating'].includes(e.state);
  let direct=enemyDirectGoal(level,e,target,colliders,contact);
@@ -13056,25 +13057,26 @@ window.MazeProps={safeRoom,closet,serviceDoor,elevator,exitGate,tablet,flashligh
  * Charge is a simulation-clock anchor, NOT a per-frame network update. */
 (function(root){
 'use strict';
-const CAPACITY=120,MAX_MESSAGES=32,MAX_TEXT=180,MAX_CONTACTS=64;
+const CAPACITY=300,MAX_MESSAGES=32,MAX_TEXT=180,MAX_CONTACTS=64;
 const finite=Number.isFinite,clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const id=s=>typeof s==='string'&&s.length>0&&s.length<=128&&!/[\x00-\x1f\x7f]/.test(s);
 const text=(s,n)=>typeof s==='string'&&s.length<=n&&!/[\x00-\x08\x0b-\x1f\x7f]/.test(s);
-function create(owner,name,time=0){return{owner:String(owner||'local').slice(0,128),name:String(name||'Player').slice(0,40),on:true,mode:'ring',at:Math.max(0,time),muted:[],blocked:[],messages:[],unread:0};}
+function create(owner,name,time=0){return{owner:String(owner||'local').slice(0,128),name:String(name||'Player').slice(0,40),on:true,mode:'ring',at:Math.max(0,time),rate:.25,muted:[],blocked:[],messages:[],unread:0};}
 function valid(v,copy=true){
  if(!v||!id(v.owner)||!text(v.name,40)||!v.name||typeof v.on!=='boolean'||!['ring','vibrate','silent'].includes(v.mode)||!finite(v.at)||v.at<0||v.at>1e9||!Number.isInteger(v.unread)||v.unread<0||v.unread>MAX_MESSAGES)return null;
  for(const a of[v.muted,v.blocked])if(!Array.isArray(a)||a.length>MAX_CONTACTS)return null;
  if(!Array.isArray(v.messages)||v.messages.length>MAX_MESSAGES)return null;
+ if(v.rate!==undefined&&v.rate!==.25&&v.rate!==1)return null;
  if(!copy)return v; // Live values were validated on ingress; avoid inbox walks in MI.has().
  if(![...v.muted,...v.blocked].every(id)||new Set(v.muted).size!==v.muted.length||new Set(v.blocked).size!==v.blocked.length)return null;
  for(const m of v.messages)if(!Array.isArray(m)||m.length!==5||!id(m[0])||!text(m[1],40)||!text(m[2],MAX_TEXT)||![0,1].includes(m[3])||!finite(m[4])||m[4]<0||m[4]>1e9)return null;
- return{owner:v.owner,name:v.name,on:v.on,mode:v.mode,at:v.at,muted:v.muted.slice(),blocked:v.blocked.slice(),messages:v.messages.map(m=>m.slice()),unread:v.unread};
+ return{owner:v.owner,name:v.name,on:v.on,mode:v.mode,at:v.at,rate:v.rate??1,muted:v.muted.slice(),blocked:v.blocked.slice(),messages:v.messages.map(m=>m.slice()),unread:v.unread};
 }
-function remaining(item,time){if(item?.type!=='phone'||!item.phone)return 0;return clamp(item.charge-(item.phone.on?Math.max(0,time-item.phone.at):0),0,CAPACITY);}
+function remaining(item,time){if(item?.type!=='phone'||!item.phone)return 0;return clamp(item.charge-(item.phone.on?Math.max(0,time-item.phone.at)*(item.phone.rate??1):0),0,CAPACITY);}
 function settle(item,time){if(!item?.phone)return;item.charge=remaining(item,time);item.phone.at=Math.max(0,time);}
 function powered(item,time){return !!item?.phone?.on&&remaining(item,time)>0;}
-function encode(v){const p=valid(v);return p?[p.owner,p.name,p.on?1:0,['ring','vibrate','silent'].indexOf(p.mode),p.at,p.muted,p.blocked,p.messages,p.unread]:null;}
-function decode(a){if(!Array.isArray(a)||a.length!==9||![0,1].includes(a[2])||![0,1,2].includes(a[3]))return null;return valid({owner:a[0],name:a[1],on:!!a[2],mode:['ring','vibrate','silent'][a[3]],at:a[4],muted:a[5],blocked:a[6],messages:a[7],unread:a[8]});}
+function encode(v){const p=valid(v);return p?[p.owner,p.name,p.on?1:0,['ring','vibrate','silent'].indexOf(p.mode),p.at,p.muted,p.blocked,p.messages,p.unread,p.rate===1?1:0]:null;}
+function decode(a){if(!Array.isArray(a)||![9,10].includes(a.length)||![0,1].includes(a[2])||![0,1,2].includes(a[3])||a.length===10&&![0,1].includes(a[9]))return null;return valid({owner:a[0],name:a[1],on:!!a[2],mode:['ring','vibrate','silent'][a[3]],at:a[4],muted:a[5],blocked:a[6],messages:a[7],unread:a[8],rate:a.length===9||a[9]===1?1:.25});}
 const api={CAPACITY,MAX_MESSAGES,MAX_TEXT,MAX_CONTACTS,create,valid,remaining,settle,powered,encode,decode};root.MazePhoneState=api;
 
 class MazePhones{
@@ -13094,6 +13096,16 @@ class MazePhones{
   for(const drop of drops)visit(drop.item,{drop,kind:'drop'});
   this.locations=next;return next;
  }
+ // Rate changes are discrete equip/storage events. Settle using the OLD rate
+ // first, then publish one new anchor. Copies/trades keep the previous interval.
+ syncRates(time=this.time){
+  this.refresh();if(!this.authoritative)return;
+  for(const loc of this.locations.values()){
+   const p=this.holder(loc),rate=p&&!p.sleeping&&this.equipped(p)?.item.id===loc.item.id?1:.25;
+   if((loc.item.phone.rate??1)===rate)continue;
+   settle(loc.item,time);loc.item.phone.rate=rate;this.touch(loc);
+  }
+ }
  initializePlayers(){
   this.refresh();if(!this.authoritative)return;
   const MI=root.MazeInventory;
@@ -13111,7 +13123,7 @@ class MazePhones{
   }
   this.refresh();this.changed();
  }
- beforeFloor(){this.refresh();const time=this.time;for(const loc of this.locations.values()){settle(loc.item,time);loc.item.phone.at=0;}this.calls.clear();this.held.clear();this.pulses.clear();this.notices=[];this.lastTime=0;this.changed();}
+ beforeFloor(){this.refresh();const time=this.time;for(const loc of this.locations.values()){settle(loc.item,time);loc.item.phone.at=0;loc.item.phone.rate=.25;}this.calls.clear();this.held.clear();this.pulses.clear();this.notices=[];this.lastTime=0;this.changed();}
  position(loc,render=false){if(!loc)return null;if(this.options.position)return this.options.position(loc,render);const p=loc.drop||loc.player;return p?{x:p.x,y:(p.y||0)+(loc.player?1.1:.08),z:p.z}:null;}
  holder(loc){const p=loc?.player;return p&&p.alive!==false&&!p.dead&&p.connected!==false?p:null;}
  get(id){return this.locations.get(id)||null;}
@@ -13138,14 +13150,14 @@ class MazePhones{
   if(!this.authoritative||!p||p.alive===false||p.dead||p.sleeping||p.connected===false||!a||typeof a.op!=='string')return no('Phone unavailable.');
   const owner=String(p.id||'local'),now=this.time;let budget=this.rate.get(owner);
   if(!budget||now<budget.at||now-budget.at>1)budget={at:now,count:0};if(++budget.count>12)return no('Too many phone actions.');this.rate.set(owner,budget);
-  if(a.op==='stow'){p.phoneEquipped=false;this.held.delete(owner);this.changed();return{accepted:true};}
+  if(a.op==='stow'){p.phoneEquipped=false;p.phoneItemId=null;this.held.delete(owner);this.syncRates(now);this.changed();return{accepted:true};}
   const loc=this.get(a.phoneId);if(!loc||loc.player!==p)return no('You no longer have that phone.');
   // A phone in a sealed, unequipped bag is not a usable hand item.
   if(loc.parent&&loc.parent!==p.inventory.backpack)return no('Equip that backpack or move the phone into a pocket.');
   if(a.op==='equip'){
    const next=a.equipped===true||!(p.phoneEquipped&&p.phoneItemId===loc.item.id);p.phoneEquipped=next;p.phoneItemId=next?loc.item.id:null;
    if(next){Object.assign(p,{shotgunEquipped:false,batEquipped:false,bottleEquipped:false,foodEquipped:false,clockEquipped:false,tabletEquipped:false,itemUseKind:null,itemUseUntil:0,holding:false,focus:false,flashlight:false,flashlightHeld:false,torchWanted:false});this.held.set(owner,loc.item.id);}else this.held.delete(owner);
-   this.changed();return{accepted:true};
+   this.syncRates(now);this.changed();return{accepted:true};
   }
   if(!this.equipped(p)||p.phoneItemId!==loc.item.id)return no('Pull out this phone first.');
   const item=loc.item,phone=item.phone;
@@ -13188,6 +13200,7 @@ class MazePhones{
   this.refresh();if(!this.authoritative)return;
   const people=this.options.players?.()||[];
   if(people.some(p=>p?.inventory&&!this.issued.has(String(p.id||'local')))||[...this.locations.values()].some(l=>l.player&&l.item.phone.owner===String(l.player.id||'local')&&this.issued.get(l.item.phone.owner)!==l.item.id))this.initializePlayers();
+  this.syncRates(time);
   for(const loc of this.locations.values())if(loc.item.phone.on&&remaining(loc.item,time)<=0){loc.item.charge=0;loc.item.phone.on=false;loc.item.phone.at=time;this.end(this.callFor(loc.item.id),'Battery empty');this.touch(loc);}
   for(const [owner,phoneId]of this.held){const loc=this.get(phoneId),p=this.holder(loc);if(!p||String(p.id||'local')!==owner||!p.phoneEquipped||p.phoneItemId!==phoneId){this.held.delete(owner);this.changed();}}
   for(const c of [...this.calls.values()]){
@@ -13253,7 +13266,7 @@ function itemValue(value,insideBag=false,copy=true){
  else if(item.type==='shotgun'){if(!integer(value.ammo??0,0,GUN_CAPACITY))return null;if(copy)item.ammo=value.ammo??0;}
  else if(item.type==='shells'||isBerry(item.type)){if(!integer(value.count,1,isBerry(item.type)?MAX_BERRIES:MAX_SHELLS))return null;if(copy)item.count=value.count;}
  else if(item.type==='tablet'||item.type==='flashlight'){const maximum=item.type==='tablet'?TABLET_CAPACITY:FLASHLIGHT_CAPACITY;if(!Number.isFinite(value.charge)||value.charge<0||value.charge>maximum)return null;if(copy)item.charge=Math.round(value.charge*1000)/1000;}
- else if(item.type==='phone'){if(!Number.isFinite(value.charge)||value.charge<0||value.charge>120)return null;const phone=root.MazePhoneState.valid(value.phone,copy);if(!phone)return null;if(copy){item.charge=value.charge;item.phone=phone;}}
+ else if(item.type==='phone'){if(!Number.isFinite(value.charge)||value.charge<0||value.charge>root.MazePhoneState.CAPACITY)return null;const phone=root.MazePhoneState.valid(value.phone,copy);if(!phone)return null;if(copy){item.charge=value.charge;item.phone=phone;}}
  else if(item.type==='backpack'){
   if(!integer(value.color,0,BACKPACK_COLORS-1)||!Array.isArray(value.contents)||value.contents.length!==BACKPACK_SLOTS)return null;
   if(copy){item.color=value.color;item.contents=[];}const ids=new Set([item.id]);
@@ -13268,7 +13281,7 @@ function create(type,fields={},ownerId='world'){
  else if(type==='shotgun')value.ammo=fields.ammo??0;
  else if(type==='shells'||isBerry(type))value.count=fields.count??1;
  else if(type==='tablet'||type==='flashlight')value.charge=fields.charge??(type==='tablet'?TABLET_CAPACITY:FLASHLIGHT_CAPACITY);
- else if(type==='phone'){value.charge=fields.charge??120;value.phone=fields.phone??root.MazePhoneState.create(ownerId,fields.name||'Player',fields.at||0);}
+ else if(type==='phone'){value.charge=fields.charge??root.MazePhoneState.CAPACITY;value.phone=fields.phone??root.MazePhoneState.create(ownerId,fields.name||'Player',fields.at||0);}
  else if(type==='backpack'){value.color=fields.color??0;value.contents=fields.contents??Array(BACKPACK_SLOTS).fill(null);}
  return itemValue(value);
 }
@@ -13381,7 +13394,7 @@ function rechargePlan(p,from,to,expected){
  if(!inv||!integer(from,0,capacity(inv)-1)||!integer(to,0,capacity(inv)-1)||from===to||!expected||expected.revision!==inv.revision)return null;
  const cell=read(inv,from),device=read(inv,to);
  if(cell?.type!=='battery'||cell.id!==expected.itemId||!device||device.id!==expected.targetItemId||!['tablet','flashlight','phone'].includes(device.type))return null;
- const maximum=device.type==='phone'?120:device.type==='tablet'?TABLET_CAPACITY:FLASHLIGHT_CAPACITY;
+ const maximum=device.type==='phone'?root.MazePhoneState.CAPACITY:device.type==='tablet'?TABLET_CAPACITY:FLASHLIGHT_CAPACITY;
  const time=root.MazePhoneRuntime?.time?.()??device.phone?.at??0,charge=device.type==='phone'?root.MazePhoneState.remaining(device,time):device.charge;
  return charge<maximum-.0001?{inv,maximum,time}:null;
 }
@@ -13421,7 +13434,7 @@ function restore(p,data){if(!p||typeof p!=='object')return false;const next=Arra
 function encodeItem(item){if(!item)return null;if(item.type==='phone')return[item.id,TYPES.indexOf('phone'),Math.round(item.charge*1000),root.MazePhoneState.encode(item.phone)];if(item.type==='backpack')return[item.id,TYPES.indexOf(item.type),item.color,item.contents.map(encodeItem)];return[item.id,TYPES.indexOf(item.type),item.type==='outfit'?item.palette+5*(OUTFIT_STYLES.indexOf(item.style)+1):item.type==='shotgun'?item.ammo:item.type==='shells'||isBerry(item.type)?item.count:['tablet','flashlight'].includes(item.type)?Math.round(item.charge*1000):0];}
 function decodeItem(row,insideBag=false){
  if(row===null)return null;if(!Array.isArray(row)||!integer(row[1],0,TYPES.length-1))return undefined;const type=TYPES[row[1]],item={id:row[0],type};
- if(type==='phone'){if(row.length!==4||!integer(row[2],0,120000))return undefined;item.charge=row[2]/1000;item.phone=root.MazePhoneState.decode(row[3]);}
+ if(type==='phone'){if(row.length!==4||!integer(row[2],0,root.MazePhoneState.CAPACITY*1000))return undefined;item.charge=row[2]/1000;item.phone=root.MazePhoneState.decode(row[3]);}
  else if(type==='backpack'){if(insideBag||row.length!==4||!Array.isArray(row[3])||row[3].length!==BACKPACK_SLOTS)return undefined;item.color=row[2];item.contents=row[3].map(r=>decodeItem(r,true));}
  else{if(row.length!==3)return undefined;if(type==='outfit'){if(!integer(row[2],0,19))return undefined;item.palette=row[2]%5;const style=Math.floor(row[2]/5);if(style)item.style=OUTFIT_STYLES[style-1];}else if(type==='shotgun')item.ammo=row[2];else if(type==='shells'||isBerry(type))item.count=row[2];else if(type==='tablet'||type==='flashlight'){if(!integer(row[2],0,(type==='tablet'?TABLET_CAPACITY:FLASHLIGHT_CAPACITY)*1000))return undefined;item.charge=row[2]/1000;}else if(row[2]!==0)return undefined;}
  return itemValue(item,insideBag)||undefined;
@@ -17116,10 +17129,9 @@ global.MazeLobbyStage=MazeLobbyStage;
       const a = state.listener || state.local, b = peer;
       if (![a.x, a.y, a.z, b.x, b.y, b.z].every(Number.isFinite)) return { gain: 0, pan: 0, cutoff: 18000 };
       const dx = b.x - a.x, dz = b.z - a.z, distance = Math.hypot(dx, b.y - a.y, dz);
-      // Loudness bands use the already-decoded stream, not movement packets.
-      // Keep syllable peaks briefly so quiet gaps don't chop nearby speech.
-      const radius=this.peers.get(peer.id)?.voiceRadius??24,near=Math.min(1.25,radius*.25);
-      const t = radius>0?clamp((distance-near)/Math.max(.1,radius-near),0,1):1;
+      // Human proximity voice retains its original, fixed 24 m falloff.
+      // Mic RMS is sampled separately for host hearing; it NEVER gates playback.
+      const t = clamp((distance - 2) / 22, 0, 1);
       const falloff = (1 - t) * (1 - t);
       const blocked = falloff ? clamp(this.occlusion(a, b) || 0, 0, 1) : 0;
       const yaw = Number.isFinite(state.yaw) ? state.yaw : a.yaw || 0;
@@ -17245,8 +17257,6 @@ global.MazeLobbyStage=MazeLobbyStage;
         this.attachPeer(id, peer);
         if (!peer.gain) continue;
         const rms=this.rms(peer.analyser,peer.samples);this.onLoudness(id,this.canHear(state,player)?rms:0);
-        const radius=(window.MazeHearing?.voiceRange(rms)||0)*4;
-        if(radius>=(peer.voiceRadius||0)||now>=(peer.voiceRadiusUntil||0)){peer.voiceRadius=radius;peer.voiceRadiusUntil=now+180;}
         const spatial = this.spatial(state, player);this.updatePhoneSpeakers(state,peer,player);
         const pref = this.preferences.get(id) || { muted: false, volume: 1 };
         const gain = pref.muted ? 0 : spatial.gain * pref.volume;
@@ -17273,7 +17283,7 @@ global.MazeLobbyStage=MazeLobbyStage;
       let status = 'idle', label = `HOLD ${voiceKey}`, detail = state?.scene === 'lobby' ? 'LOBBY VOICE' : dead(state?.local) ? 'DEAD PLAYERS ONLY' : 'MIC NOISE · '+(window.MazeHearing?.voiceRange(this.level)||0)+' TILES';
       const speaking = this.transmitting && performance.now() < this.speakingUntil;
       const loading=state?.active&&state.scene==='loading';
-      this.hud.classList.toggle('hidden', !state?.active || (!speaking&&!loading&&!this.held&&!this.openMic&&!this.request&&!this.error));
+      this.hud.classList.toggle('hidden', !state?.active || (!speaking&&!this.held&&!this.request&&!this.error));
       if(loading){status='muted';label='MIC PAUSED · LOADING';detail='TEAMMATES CANNOT HEAR YOU';}
       else if (this.error) { status = 'error'; label = this.error; detail = `PRESS ${voiceKey} TO RETRY`; }
       else if (this.request) { status = 'pending'; label = 'ALLOW MICROPHONE'; detail = 'CHECK BROWSER PROMPT'; }
@@ -18721,7 +18731,7 @@ global.MazeInventoryPreview=MazeInventoryPreview;
 (function(root){
 'use strict';
 // Geometry/range/authorization stay with the runtime. This selector provides one
-// category-neutral answer for the crosshair prompt, highlight and action.
+// consistent answer for the crosshair prompt, highlight and action.
 const ASSIST_ANGLE=4*Math.PI/180,ASSIST_MISS=.13,TAN_ASSIST=Math.tan(ASSIST_ANGLE);
 const vector=v=>!!v&&[v.x,v.y,v.z].every(Number.isFinite);
 function unit(direction){if(!vector(direction))return null;const length=Math.hypot(direction.x,direction.y,direction.z);return Number.isFinite(length)&&length>1e-10?{x:direction.x/length,y:direction.y/length,z:direction.z/length}:null;}
@@ -18730,8 +18740,8 @@ function visible(candidate,point){return typeof candidate.visibleAt!=='function'
 function select(origin,direction,candidates){
  if(!vector(origin)||!Array.isArray(candidates))return null;const ray=unit(direction);if(!ray)return null;
  let selected=null,distance=Infinity;
- // A real mesh hit always outranks angular assistance, regardless of kind or
- // candidate insertion order. Occlusion is evaluated at the actual surface.
+ // Prefer the closest visible mesh; the only category exception is a pickup
+ // physically resting on the bed being aimed at. Walls remain occluders.
  for(const candidate of candidates){
   if(!eligible(candidate)||!Number.isFinite(candidate.hitDistance)||candidate.hitDistance<0)continue;
   const hit=candidate.hitDistance;
@@ -18739,20 +18749,32 @@ function select(origin,direction,candidates){
   const point={x:origin.x+ray.x*hit,y:origin.y+ray.y*hit,z:origin.z+ray.z*hit};
   if(!visible(candidate,point))continue;selected=candidate;distance=hit;
  }
- if(selected)return selected;
- let slope=Infinity,alongDistance=Infinity;
+ const bedHit=selected?.kind==='bed'?selected:null;
+ if(selected&&!bedHit)return selected;
+ let assisted=null,slope=Infinity,alongDistance=Infinity;
+ const bedId=bedHit?(bedHit.ref?.parentBedId||bedHit.ref?.group?.userData?.bedId||bedHit.id):null;
+ if(bedHit){
+  let pickup=null,nearest=Infinity;
+  for(const candidate of candidates){
+   if(!eligible(candidate)||!['drop','loot','alarm-clock'].includes(candidate.kind)||candidate.bedSupport!==bedId||!Number.isFinite(candidate.hitDistance)||candidate.hitDistance<0||candidate.hitDistance>distance+.18||candidate.hitDistance>=nearest)continue;
+   const q={x:origin.x+ray.x*candidate.hitDistance,y:origin.y+ray.y*candidate.hitDistance,z:origin.z+ray.z*candidate.hitDistance};
+   if(visible(candidate,q)){pickup=candidate;nearest=candidate.hitDistance;}
+  }
+  if(pickup)return pickup;
+ }
  for(const candidate of candidates){
   if(!eligible(candidate)||!vector(candidate.point))continue;
+  if(bedHit&&(!['drop','loot','alarm-clock'].includes(candidate.kind)||candidate.bedSupport!==bedId))continue;
   const delta={x:candidate.point.x-origin.x,y:candidate.point.y-origin.y,z:candidate.point.z-origin.z};
   const along=delta.x*ray.x+delta.y*ray.y+delta.z*ray.z;if(!Number.isFinite(along)||along<=0)continue;
   const miss=Math.hypot(delta.x-ray.x*along,delta.y-ray.y*along,delta.z-ray.z*along);
   if(!Number.isFinite(miss)||miss>ASSIST_MISS+1e-10||miss>along*TAN_ASSIST+1e-10)continue;
   const angleSlope=miss/along;
-  if(angleSlope>slope||angleSlope===slope&&(along>alongDistance||along===alongDistance&&selected&&candidate.id>=selected.id))continue;
+  if(angleSlope>slope||angleSlope===slope&&(along>alongDistance||along===alongDistance&&assisted&&candidate.id>=assisted.id))continue;
   if(!visible(candidate,candidate.point))continue;
-  selected=candidate;slope=angleSlope;alongDistance=along;
+  assisted=candidate;slope=angleSlope;alongDistance=along;
  }
- return selected;
+ return assisted||bedHit;
 }
 // Pure AABB helper for deterministic collision/selection checks. It needs no
 // Three.js scene, renderer, DOM, or visual preview.
@@ -19859,12 +19881,14 @@ function create(room,level=null,doorSpec=room.door){
  const latchRay=lockable?new T.Raycaster():null;
  const apply=()=>{hinge.rotation.set(p.doorBroken?swing*Math.PI/2:0,p.doorBroken?0:swing*Math.PI/2*open,0);hinge.position.y=p.doorBroken?.08:0;hinge.updateMatrix();if(latchBolt){latchBolt.position.x=p.doorLocked?.05:-.11;latchBolt.updateMatrix();}Object.assign(leaf,leafBounds(open),{enabled:!p.doorBroken,renderOpen:open});p.doorOpen=open;p.doorPassable=p.doorBroken||!p.doorLocked&&open>.92;p.doorSwing=swing;g.userData.shadeRevision=(g.userData.shadeRevision||0)+1;};
  const api={group:g,hinge,p,room,duration,interactionLabel:label+' door',interactionRoots:[hinge],interactionIgnore:colliders,colliders,barriers:colliders,latchRoot,breakRoots:breakable?[hinge]:[],lockFailure:'',doorPos:new T.Vector3(p.x,0,p.z),inPos:new T.Vector3(p.x-p.dx*.9,0,p.z-p.dz*.9),outPos:new T.Vector3(p.x+p.dx*.9,0,p.z+p.dz*.9),
-  setOpen(value,opener){const next=value?1:0;if(p.doorBroken||next&&(p.doorLocked||p.doorLockPending)||next===desired)return false;
+  setOpen(value,opener){const next=value?1:0;if(p.doorBroken||next&&(p.doorLocked||p.doorLockPending))return false;
    const along=opener&&Number.isFinite(opener.x)&&Number.isFinite(opener.z)?(opener.x-p.x)*p.dx+(opener.z-p.z)*p.dz:null;
-   // Reopening a still-closing leaf must use the new opener's side too. Keep
-   // current and requested sides separate: pass smoothly through closed
-   // instead of retaining the old side or snapping the hinge across a body.
-   targetSwing=next&&along!==null&&Math.abs(along)>.001?(along>0?1:-1):swing;if(open<1e-7)swing=targetSwing;
+   // A partly open leaf already has a physical swing side. Reopening retracts
+   // along that arc, even after the opener crosses the portal plane. Choosing
+   // the opposite arc here required closing THROUGH the trapped actor first.
+   const requested=next&&open<1e-7&&along!==null&&Math.abs(along)>.001?(along>0?1:-1):swing;
+   if(next===desired&&(!next||requested===targetSwing))return false;
+   targetSwing=requested;if(open<1e-7)swing=targetSwing;
    desired=next;p.doorBlocked=false;apply();return true;},
   canUseLatch,
   aimedLatch(actor,origin,direction){
@@ -21371,11 +21395,11 @@ class MazePhoneUI{
   const key=JSON.stringify([item.id,on,p.mode,p.muted,p.blocked,p.messages,p.unread,call,sys.contacts(item.id),this.page,this.contact,this.keyboard,this.shift]);if(!force&&key===this.signature)return;this.signature=key;
   const focus=document.activeElement?.dataset.phoneKey;this.content.replaceChildren();for(const b of this.nav.children)b.setAttribute('aria-pressed',String(b.dataset.phoneKey==='nav-'+this.page));
   if(call){const row=make('div','maze-phone-card');row.append(make('strong',null,status));if(call.stage==='ringing'&&call.b===item.id)row.append(this.button('answer','Answer',()=>this.request('answer')));const end=this.button('end',call.stage==='ringing'?'Decline / cancel':'End call',()=>this.request('hangup'));end.className='phone-danger';row.append(end);this.content.append(row);}
-  if(!on){this.content.append(make('p',null,'The phone is off. Its identity, settings and saved messages are still here.'),this.button('power','Power on',()=>this.request('power')),this.button('recharge','Use battery item · recharge to 120 s',()=>this.request('recharge')));}
+  if(!on){this.content.append(make('p',null,'The phone is off. Its identity, settings and saved messages are still here.'),this.button('power','Power on',()=>this.request('power')),this.button('recharge','Use battery item · recharge to 5 minutes',()=>this.request('recharge')));}
   else if(this.page==='settings'){
-   this.content.append(make('p',null,'Sound settings belong to this physical phone, even after you drop or trade it.'));
+   this.content.append(make('p',null,'Full charge: 5 minutes held, up to 20 minutes stowed or dropped. Power off stops drain. Sound settings stay with this phone.'));
    for(const mode of['ring','vibrate','silent']){const row=make('div','maze-phone-card'),b=this.button('mode-'+mode,mode==='ring'?'Ring · incoming calls heard within 5 tiles':mode==='vibrate'?'Vibrate · heard within 2 tiles':'Silent · no audible alerts',()=>this.request('mode',{mode}));b.setAttribute('aria-pressed',String(p.mode===mode));row.append(b);this.content.append(row);}
-   this.content.append(this.button('recharge','Use battery item · recharge to 120 s',()=>this.request('recharge')),this.button('power','Power off · stop battery drain',()=>this.request('power')));
+   this.content.append(this.button('recharge','Use battery item · recharge to 5 minutes',()=>this.request('recharge')),this.button('power','Power off · stop battery drain',()=>this.request('power')));
   }else if(this.page==='contacts'){
    const contacts=sys.contacts(item.id);if(!contacts.length)this.content.append(make('p',null,'No other surviving phones. Contacts appear when other players join.'));
    for(const c of contacts){const card=make('div','maze-phone-card'),row=make('div','maze-phone-actions');card.append(make('strong',null,c.name+(c.on?'':' · OFF')));row.append(this.button('call-'+c.id,'Call',()=>this.request('call',{target:c.id})),this.button('text-'+c.id,'Message',()=>{this.contact=c.id;this.page='messages';this.keyboard=false;this.request('read');}),this.button('mute-'+c.id,p.muted.includes(c.id)?'Unmute':'Mute',()=>this.request('mute',{target:c.id})),this.button('block-'+c.id,p.blocked.includes(c.id)?'Unblock':'Block',()=>this.request('block',{target:c.id})));card.append(row);this.content.append(card);}
@@ -22021,17 +22045,22 @@ function safeDoorCanInteract(p=state.player,origin=null){
 function interact(target=null){if(state.player?.bearTrapId)return false;return interactionPerform(target);}
 function syncDoorStallRecovery(door,recovery){
  const e=state.enemy;if(!door||!recovery||!recovery.watchdog||mp&&!mp.net.isHost)return false;
- const finish=()=>{if(recovery.kind==='closet')e.closetDoorRecovery=null;else e.serviceDoorRecovery=null;e.path=[];e.repath=0;e.localApproach=null;e.doorStallProgress=null;e.doorStallCooldown=recovery.attempts>=3?10:2;if(recovery.attempts>=3)e.doorStallRetries?.set(recovery.key,0);};
+ const finish=()=>{if(recovery.kind==='closet')e.closetDoorRecovery=null;else e.serviceDoorRecovery=null;e.path=[];e.repath=0;e.localApproach=null;e.openDoorDetourActive=null;e.doorStallProgress=null;e.doorStallCooldown=recovery.attempts>=3?2:.5;};
  if(door.p.doorBroken||recovery.kind==='closet'&&!C.closetDoorAvailable(door.p)){door.enemyDoor=false;finish();return true;}
+ const command=open=>{if(door.setOpen(open,e)){state.movingDoors.add(door);state.visibilityTick=0;state.shadowDirty=true;doorSound(door,open);}else if(door.isMoving())state.movingDoors.add(door);};
  if(!Number.isFinite(recovery.until))recovery.until=state.time+Math.max(2.4,recovery.travel/C.ENEMY_TUNING.investigateSpeed+1.2);
  if(recovery.phase==='backoff'){
-  if(door.setOpen(false,e)){state.movingDoors.add(door);state.visibilityTick=0;state.shadowDirty=true;doorSound(door,false);}
-  const x=recovery.kind==='closet'?recovery.retreatX:recovery.x,z=recovery.kind==='closet'?recovery.retreatZ:recovery.z,arrived=Math.hypot(e.x-x,e.z-z)<.24;
-  if(arrived&&(door.openAmount?.()??door.p.doorOpen)<.08||state.time>=recovery.until){recovery.phase='reopen';recovery.until=state.time+3;e.path=[];e.repath=0;}
+  // Never press a closing panel against the actor while asking him to retreat.
+  command(true);
+  const x=recovery.kind==='closet'?recovery.retreatX:recovery.x,z=recovery.kind==='closet'?recovery.retreatZ:recovery.z,arrived=Math.hypot(e.x-x,e.z-z)<.12;
+  if(arrived&&!recovery.retry){recovery.phase='close';recovery.until=state.time+2;e.path=[];e.repath=0;}
+  else if(door.p.doorPassable&&recovery.retry||state.time>=recovery.until){recovery.phase='reopen';recovery.until=state.time+2;e.path=[];e.repath=0;}
+ }else if(recovery.phase==='close'){
+  command(false);
+  if((door.openAmount?.()??door.p.doorOpen)<.001||state.time>=recovery.until){recovery.phase='reopen';recovery.until=state.time+2;}
  }else{
   if(door.unlockForEnemy?.(e)){survivalDirty=true;interactionCache=null;state.visibilityTick=0;state.shadowDirty=true;}
-  if(door.setOpen(true,e)){state.movingDoors.add(door);state.visibilityTick=0;state.shadowDirty=true;doorSound(door,true);}
-  if(door.p.doorPassable||state.time>=recovery.until)finish();
+  command(true);if(door.p.doorPassable||state.time>=recovery.until)finish();
  }
  return true;
 }
@@ -22269,7 +22298,7 @@ function bindUI(){
  for(const event of ['pointerup','pointercancel'])mapCanvas.addEventListener(event,()=>mapDrag=null);
  const context=document.modelContext;if(context?.registerTool){try{Promise.resolve(context.registerTool({name:'get_maze_status',title:'Read maze status',description:'Read the current maze, cleared count, phase, and tablet battery.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(input){if(!input||Object.keys(input).length)throw new Error('This tool takes no arguments.');return{phase:state.mode,maze:state.score+1,cleared:state.score,theme:state.env.theme.name,tabletSeconds:Math.ceil(tabletCharge()),hidden:state.player.hidden};}})).catch(()=>{});}catch(e){}}
  // Read-only performance / geometry diagnostics; player-free mode is a separate startup path.
- window.MazeDiagnostics={getStatus:()=>({build:'V7.18.1 · Continuous Door Contact',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable},performance:{...clientFrames.status(),simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
+ window.MazeDiagnostics={getStatus:()=>({build:'V7.20 · Phone Endurance / Door Recovery',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable},performance:{...clientFrames.status(),simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
 }
 function look(dx,dy){if(phoneUI.isOpen)return;if(!Number.isFinite(dx)||!Number.isFinite(dy)||inventoryIsOpen()||survivalBlocked())return;const s=.00055+settings.sensitivity*.000032;if(mp?.dead){if(coopLive()&&!mp.ending&&!mp.localPaused&&mp.spectatorView==='orbit'){mp.spectatorYaw=(Number.isFinite(mp.spectatorYaw)?mp.spectatorYaw:0)-dx*s;mp.spectatorPitch=C.clamp((Number.isFinite(mp.spectatorPitch)?mp.spectatorPitch:.12)-dy*s,-Math.PI/2,Math.PI/2);}return;}const p=state.player,inversion=MazeBerryGameplay.mouseMultiplier(p,state.time);p.yaw-=dx*s*inversion;p.pitch=C.clamp(p.pitch-dy*s*inversion,-1.43,1.25);}
 // Service passages occupy real half-cells; presentation and interaction use
@@ -22345,7 +22374,8 @@ function syncServiceDoors(){
   // The path can be emptied by a blocked segment while a player shuts a
   // door. Recover the immediate doorway from the target's opposite side;
   // never assume a path node must survive each replan before opening a door.
-  if(!upcoming.has(p.id)&&!between)continue;
+  const touching=p.doorBlocked&&distance<2.65&&d.colliders.some(b=>(b.roomDoorLeaf||b.serviceLeaf)&&(()=>{const o=b.collisionOBB;if(!o)return false;const ox=e.x-o.x,oz=e.z-o.z,u=ox*o.ux+oz*o.uz,v=-ox*o.uz+oz*o.ux;return Math.hypot(Math.max(0,Math.abs(u)-o.halfWidth),Math.max(0,Math.abs(v)-o.halfDepth))<.70;})());
+  if(!upcoming.has(p.id)&&!between&&!touching)continue;
   if(distance>2.65||!serviceDoorReachable(d,e))continue;
   if(d.unlockForEnemy?.(e)){survivalDirty=true;interactionCache=null;state.visibilityTick=0;state.shadowDirty=true;e.repath=0;}
   if(d.setOpen(true,e)){state.movingDoors.add(d);state.visibilityTick=0;state.shadowDirty=true;doorSound(d,true);}
@@ -23469,8 +23499,18 @@ function inventoryStorageFor(drop){return [...(state.wardrobes||[]),...(state.su
 // Open shelves and clothing racks have a movement envelope, but reaching
 // their contents ignores only that particular supporting furniture unit.
 // Adjacent props, closet doors and all structural walls still occlude.
+function interactionSupportingBed(item){
+ if(!item||![item.x,item.y,item.z].every(Number.isFinite))return null;
+ for(const bed of state.survivalWorld?.beds||[]){
+  const top=bed.collider?.maxY??bed.y;if(!Number.isFinite(top)||item.y<top-.035||item.y>top+.16)continue;
+  const dx=item.x-bed.x,dz=item.z-bed.z,c=Math.cos(bed.yaw||0),s=Math.sin(bed.yaw||0),x=c*dx-s*dz,z=s*dx+c*dz;
+  if(Math.abs(x)<(bed.mattressWidth||bed.width||1.65)/2+.025&&Math.abs(z)<(bed.mattressLength||bed.length||2.15)/2+.025)return bed;
+ }
+ return null;
+}
 function inventoryPickupIgnore(drop,storage=inventoryStorageFor(drop)){
- const ignore=[...(storage?.interactionIgnore||[])];
+ const ignore=[...(storage?.interactionIgnore||[])],bed=interactionSupportingBed(drop);
+ if(bed?.collider&&!ignore.includes(bed.collider))ignore.push(bed.collider);
  if(drop?.supportId)for(const b of state.level?.roomColliders||[])if(b.survivalId===drop.supportId&&!ignore.includes(b))ignore.push(b);
  return ignore;
 }
@@ -23480,7 +23520,7 @@ function inventoryCreateDrop(drop){
  // dropping the same item somewhere else after it has been collected.
  const source=state.survivalWorld?.layout?.loot.find(v=>v.id===drop.id);
  if(source&&Math.abs(source.x-drop.x)<.001&&Math.abs(source.y-drop.y)<.001&&Math.abs(source.z-drop.z)<.001){
-  for(const key of ['support','supportId','supportY','storageId','wardrobeId','roomId','rackId','hanging','rack','spawnSource'])if(source[key]!==undefined)drop[key]=source[key];
+  for(const key of ['support','supportId','supportY','bedId','storageId','wardrobeId','roomId','rackId','hanging','rack','spawnSource'])if(source[key]!==undefined)drop[key]=source[key];
  }
  let model;
  if(drop.item.type==='shotgun'){
@@ -23541,7 +23581,9 @@ function interactionCandidates(p,origin,direction){
   const closest=interactionBounds.clampPoint(new T.Vector3(p.x,origin.y,p.z),new T.Vector3());if(Math.hypot(closest.x-p.x,closest.z-p.z)>reach)return;
   const hits=interactionRay.intersectObjects(roots,true),hit=hits.find(h=>h.object.material?.visible!==false);
   if(kind==='safe'&&(!hit||ref.door.worldToLocal(hit.point.clone()).z>-.064))return;
-  const target={kind,id,ref,action,hitDistance:hit?.distance??Infinity,point:point||(['drop','loot','alarm-clock'].includes(kind)?interactionBounds.getCenter(new T.Vector3()):null),visibleAt:q=>interactionVisible(origin,q,ignore)};
+  const support=['drop','loot','alarm-clock'].includes(kind)?interactionSupportingBed(ref):null;
+  if(support?.collider&&!ignore.includes(support.collider))ignore=[...ignore,support.collider];
+  const target={kind,id,ref,action,bedSupport:support?.id||null,hitDistance:hit?.distance??Infinity,point:point||(['drop','loot','alarm-clock'].includes(kind)?interactionBounds.getCenter(new T.Vector3()):null),visibleAt:q=>interactionVisible(origin,q,ignore)};
   candidates.push(target);
  };
  const s=state.level.safe,safe=state.safe;
@@ -24395,7 +24437,7 @@ const phoneSystem=new MazePhones({time:phoneTime,players:phonePeople,drops:()=>s
  itemChanged(loc){if(loc.player){loc.player.inventory.revision=(loc.player.inventory.revision+1)>>>0;inventoryStateChanged(loc.player);}else{inventoryDropRevision++;inventoryRevision++;}interactionCache=null;},
  noise:event=>phoneHearing.hear(event),
  remove(loc){if(!loc.drop)return false;if(loc.parent){const i=loc.parent.contents.findIndex(p=>p?.id===loc.item.id);if(i<0)return false;loc.parent.contents[i]=null;}else{const i=state.inventoryDrops.indexOf(loc.drop);if(i<0)return false;inventoryDisposeDrop(loc.drop);state.inventoryDrops.splice(i,1);}inventoryDropRevision++;inventoryRevision++;interactionCache=null;audio.door(false,{position:{x:loc.drop.x,y:loc.drop.y||0,z:loc.drop.z}});return true;},
- recharged:p=>{if(p===state.player)announce('Phone charged: 120 seconds.',2);}
+ recharged:p=>{if(p===state.player)announce('Phone charged: 5 minutes held / 20 minutes stowed.',3);}
 });
 function phoneDoorInfo(door){const p=door.p,point=door.doorPos||p;if(!point||![point.x,point.z].every(Number.isFinite))return null;const dx=p.dx??p.doorDx,dz=p.dz??p.doorDz;if(!Number.isFinite(dx)||!Number.isFinite(dz))return null;return{door,point,dx,dz};}
 function phoneLocked(event,enemy){
@@ -24434,7 +24476,7 @@ function phoneRequest(a){if(!inputWorldReady()||mp?.dead||state.player?.dead||st
  const result=phoneSystem.action(state.player,a);if(result.accepted&&a.op==='equip'){state.flashlight=false;setTabletFocus(false);}phoneSystem.step();phoneResult(result);if(mp)coopSendWorld();return result.accepted;
 }
 function phoneHostAction(from,a){if(!mp?.net.isHost||a.epoch!==mp.epoch||!mp.running||mp.ending)return;const p=mp.players.get(from),seen=phoneSeen.get(from)||0;if(!p||!mp.readyPeers.has(from)||!Number.isSafeInteger(a.nonce)||a.nonce<=seen||a.nonce>seen+64)return;phoneSeen.set(from,a.nonce);const result=phoneSystem.action(p,a);phoneSystem.step();mp.net.sendControl({type:'phone-ack',epoch:mp.epoch,nonce:a.nonce,accepted:result.accepted,reason:result.reason||''},from);coopSendWorld();}
-function phoneStow(p=state.player){if(!p?.phoneEquipped)return;if(p===state.player&&mp&&!mp.net.isHost)phoneRequest({op:'stow'});else{p.phoneEquipped=false;p.phoneItemId=null;phoneSystem.held.delete(String(p.id||'local'));phoneSystem.changed();}if(p===state.player)phoneUI.close(false);}
+function phoneStow(p=state.player){if(!p?.phoneEquipped)return;if(p===state.player&&mp&&!mp.net.isHost)phoneRequest({op:'stow'});else{p.phoneEquipped=false;p.phoneItemId=null;phoneSystem.held.delete(String(p.id||'local'));phoneSystem.syncRates(phoneTime());phoneSystem.changed();}if(p===state.player)phoneUI.close(false);}
 function phonePrimary(){phoneSystem.refresh();const loc=phoneSystem.equipped(state.player);if(!loc)return;const c=phoneSystem.callFor(loc.item.id);if(c?.stage==='ringing'&&c.b===loc.item.id)phoneRequest({op:'answer'});else phoneUI.show();}
 function phoneSecondary(){phoneSystem.refresh();const loc=phoneSystem.equipped(state.player);if(!loc)return false;const c=phoneSystem.callFor(loc.item.id);if(c?.stage==='ringing')phoneRequest({op:'decline'});else phoneUI.show();return true;}
 function phoneFrame(){const visible=['planning','playing'].includes(state.mode)&&!mp?.loading&&!mp?.ending;phoneSystem.refresh();if(!visible&&phoneUI.isOpen)phoneUI.close(false);phoneUI.draw();if(!visible)phoneUI.glance.hidden=true;
