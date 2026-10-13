@@ -14668,6 +14668,81 @@ function removeGloveCoveredSkin(model){
  return removed;
 }
 
+
+// Embedded bytes still need parsing, texture decoding and animation preparation.
+// Keep that immutable work once per source, including across the lobby/world
+// boundary. Every wearer owns its skeleton, geometry, material and Texture
+// objects; only decoded images and read-only clips are shared. Existing actor
+// disposal can therefore never invalidate another wearer or this template.
+const mazePlayerAssetCache=new Map(),mazePlayerAssetStats={parses:0,preparations:0,clones:0};
+const yieldPlayerAsset=()=>new Promise(resolve=>setTimeout(resolve,0));
+function disposePlayerSource(model){
+ const skeletons=new Set();model?.traverse(o=>{if(o.isSkinnedMesh)skeletons.add(o.skeleton);});
+ if(model)MazeProps.dispose(model);for(const skeleton of skeletons)skeleton.dispose();
+}
+async function preparePlayerSource(gltf){
+ const model=gltf.scene,accessoriesRemoved=removeUnwantedPlayerAccessories(model),gloveSkinTrianglesRemoved=removeGloveCoveredSkin(model);let wristBraceletsRemoved=0;
+ model.traverse(o=>{
+  if(!o.isSkinnedMesh||!o.name.startsWith('brazalete'))return;
+  const g=o.geometry,si=g.attributes.skinIndex,sw=g.attributes.skinWeight,index=g.index,keep=[],wristBones=new Set();
+  for(const b of o.skeleton.bones)if(/^(hand|forearm)\.[LR]$/.test(b.userData.name||b.name))b.traverse(child=>wristBones.add(child));
+  const wristWeight=i=>{let w=0;for(let k=0;k<4;k++)if(wristBones.has(o.skeleton.bones[si.array[i*4+k]]))w+=sw.array[i*4+k];return w;};
+  if(index){for(let i=0;i<index.count;i+=3){const a=index.getX(i),b=index.getX(i+1),c=index.getX(i+2);if((wristWeight(a)+wristWeight(b)+wristWeight(c))/3<.5)keep.push(a,b,c);}
+   if(keep.length<index.count){o.geometry=g.clone();o.geometry.setIndex(keep);o.geometry.clearGroups();wristBraceletsRemoved+=(index.count-keep.length)/3;g.dispose();}
+  }
+ });
+ await yieldPlayerAsset();
+ const animations=gltf.animations;replaceCrouchClips(animations);replaceJumpClips(animations);alignItemStances(animations);
+ const invariant=new Map();let sliceStarted=performance.now();
+ for(const clip of animations){
+  for(const track of clip.tracks){const size=track.getValueSize(),v=track.values,prev=invariant.get(track.name);let same=true;for(let i=size;i<v.length;i++)if(Math.abs(v[i]-v[i%size])>1e-6){same=false;break;}if(prev===false)continue;if(!same||prev&&prev.some((n,i)=>Math.abs(n-v[i])>1e-6))invariant.set(track.name,false);else if(!prev)invariant.set(track.name,Array.from(v.slice(0,size)));}
+  if(performance.now()-sliceStarted>8){await yieldPlayerAsset();sliceStarted=performance.now();}
+ }
+ const animationTracksBefore=animations.reduce((n,c)=>n+c.tracks.length,0);
+ for(const clip of animations){clip.tracks=clip.tracks.filter(t=>!invariant.get(t.name));smoothLocomotionClip(clip);clip.optimize();if(performance.now()-sliceStarted>8){await yieldPlayerAsset();sliceStarted=performance.now();}}
+ mazePlayerAssetStats.preparations++;
+ return{scene:model,animations,invariant,accessoriesRemoved,gloveSkinTrianglesRemoved,wristBraceletsRemoved,animationTracksBefore,animationTracksAfter:animations.reduce((n,c)=>n+c.tracks.length,0)};
+}
+function clonePlayerSource(source){
+ const model=source.scene.clone(true),original=[],copies=[];source.scene.traverse(o=>original.push(o));model.traverse(o=>copies.push(o));
+ const objects=new Map(original.map((o,i)=>[o,copies[i]])),geometries=new Map(),materials=new Map(),textures=new Map(),skeletons=new Map();
+ const texture=value=>{if(!textures.has(value))textures.set(value,value.clone());return textures.get(value);};
+ const material=value=>{
+  if(!materials.has(value)){const copy=value.clone();copy.onBeforeCompile=value.onBeforeCompile;copy.customProgramCacheKey=value.customProgramCacheKey;for(const [name,entry]of Object.entries(value))if(entry?.isTexture)copy[name]=texture(entry);materials.set(value,copy);}
+  return materials.get(value);
+ };
+ for(let i=0;i<original.length;i++){
+  const from=original[i],to=copies[i];if(!to.isMesh)continue;
+  if(!geometries.has(from.geometry))geometries.set(from.geometry,from.geometry.clone());to.geometry=geometries.get(from.geometry);
+  to.material=Array.isArray(from.material)?from.material.map(material):material(from.material);
+  if(from.morphTargetInfluences)to.morphTargetInfluences=from.morphTargetInfluences.slice();
+  if(from.morphTargetDictionary)to.morphTargetDictionary={...from.morphTargetDictionary};
+  if(from.isSkinnedMesh){
+   if(!skeletons.has(from.skeleton))skeletons.set(from.skeleton,new THREE.Skeleton(from.skeleton.bones.map(b=>objects.get(b)),from.skeleton.boneInverses.map(m=>m.clone())));
+   to.bind(skeletons.get(from.skeleton),from.bindMatrix.clone());
+  }
+ }
+ mazePlayerAssetStats.clones++;
+ return{...source,scene:model};
+}
+async function loadPlayerSource(url){
+ let entry=mazePlayerAssetCache.get(url);
+ if(!entry){
+  entry={value:null,promise:null};mazePlayerAssetCache.set(url,entry);
+  entry.promise=new Promise((resolve,reject)=>new THREE.GLTFLoader().load(url,gltf=>{mazePlayerAssetStats.parses++;resolve(gltf);},undefined,reject)).then(gltf=>preparePlayerSource(gltf).catch(error=>{disposePlayerSource(gltf.scene);throw error;})).then(value=>{
+   entry.value=value;
+   // The embedded model normally occupies one entry. Bound optional imported
+   // sources without discarding an in-flight load another actor is awaiting.
+   for(const [key,old]of mazePlayerAssetCache){if(mazePlayerAssetCache.size<=2)break;if(old!==entry&&old.value){mazePlayerAssetCache.delete(key);disposePlayerSource(old.value.scene);}}
+   return value;
+  }).catch(error=>{if(mazePlayerAssetCache.get(url)===entry)mazePlayerAssetCache.delete(url);throw error;});
+ }else{mazePlayerAssetCache.delete(url);mazePlayerAssetCache.set(url,entry);}
+ const source=await entry.promise;
+ // Each actor's clone/rig setup gets its own task instead of stacking every
+ // remote survivor's CPU work into the same resolved-promise microtask.
+ await yieldPlayerAsset();return clonePlayerSource(source);
+}
+
 class MazePlayer {
  constructor(scene){
   this.scene=scene;this.group=new THREE.Group();this.group.name='Supplied player rig';this.scene.add(this.group);this.model=null;this.mixer=null;this.springs=null;this.actions={};this.meshes=[];this.skeletons=new Set();this.current=null;this.ready=false;this.pending=null;this.quality='balanced';this.flashlightEquipped=false;this.flashlightBlend=0;
@@ -14676,25 +14751,14 @@ class MazePlayer {
   this.poseMatrix=new THREE.Matrix4();this.inverseRoot=new THREE.Matrix4();this.poseScale=new THREE.Vector3();this.rootRotation=new THREE.Quaternion();this.parentRotation=new THREE.Quaternion();this.offsetFrame=new THREE.Quaternion();this.offsetInverse=new THREE.Quaternion();this.offsetQuaternion=new THREE.Quaternion();this.axisX=new THREE.Vector3(1,0,0);this.axisZ=new THREE.Vector3(0,0,1);
  }
  async load(url){
-  if(this.ready)return this;if(this.pending)return this.pending;
-  this.pending=new Promise((resolve,reject)=>{new THREE.GLTFLoader().load(url,gltf=>{
-   this.model=gltf.scene;this.model.name='Supplied full body';this.accessoriesRemoved=removeUnwantedPlayerAccessories(this.model);this.gloveSkinTrianglesRemoved=removeGloveCoveredSkin(this.model);
+  if(this._disposed)throw new Error('This player model has been disposed.');if(this.ready)return this;if(this.pending)return this.pending;
+  this.pending=loadPlayerSource(url).then(gltf=>{
+   if(this._disposed){disposePlayerSource(gltf.scene);return this;}
+   this.model=gltf.scene;this.model.name='Supplied full body';this.accessoriesRemoved={...gltf.accessoriesRemoved};this.gloveSkinTrianglesRemoved=gltf.gloveSkinTrianglesRemoved;this.wristBraceletsRemoved=gltf.wristBraceletsRemoved;
    const headNames=new Set(['cabello','cabeza','cejas','dientes','gorro','lengua','ojos','ojos.001','parpados.L','parpadosR','cuello']);
    this.model.traverse(o=>{
     if(o.isBone){const name=o.userData?.name||o.name;if(name==='EyeAnchor')this.eyeAnchor=o;if(name==='TabletAnchor')this.tabletAnchor=o;if(name==='FlashlightAnchor')this.flashlightAnchor=o;if(name==='spine.001'||o.name==='spine001')this.leanBones[0]=o;if(name==='spine.002'||o.name==='spine002')this.leanBones[1]=o;if(name==='shoulder.R'||o.name==='shoulderR')this.aimBone=o;if(['spine.002','spine.003','cuello','shoulder.L','shoulder.R'].includes(name))this.breathBones[name]=o;}
     if(o.isMesh){
-     // The gold accessory mesh also contains costume trim. Remove only its
-     // wrist-weighted triangles, leaving the gloves and other trim intact.
-     if(o.isSkinnedMesh&&o.name.startsWith('brazalete')){
-      const g=o.geometry,si=g.attributes.skinIndex,sw=g.attributes.skinWeight,index=g.index,keep=[],wristBones=new Set();
-      // These wrist rings are bound to palm/thumb joints in the supplied rig.
-      // Include the complete hand hierarchy, not just the forearm joint.
-      for(const b of o.skeleton.bones)if(/^(hand|forearm)\.[LR]$/.test(b.userData.name||b.name))b.traverse(child=>wristBones.add(child));
-      const wristWeight=i=>{let w=0;for(let k=0;k<4;k++)if(wristBones.has(o.skeleton.bones[si.array[i*4+k]]))w+=sw.array[i*4+k];return w;};
-      if(index){for(let i=0;i<index.count;i+=3){const a=index.getX(i),b=index.getX(i+1),c=index.getX(i+2);if((wristWeight(a)+wristWeight(b)+wristWeight(c))/3<.5)keep.push(a,b,c);}
-       if(keep.length<index.count){o.geometry=g.clone();o.geometry.setIndex(keep);o.geometry.clearGroups();this.wristBraceletsRemoved=(this.wristBraceletsRemoved||0)+(index.count-keep.length)/3;}
-      }
-     }
      if(o.isSkinnedMesh)this.skeletons.add(o.skeleton);
      let hidden=false;for(let n=o;n&&n!==this.model;n=n.parent)if(n.userData?.firstPersonHidden===true||headNames.has(n.name)){hidden=true;break;}
      // One full rig serves both views. Layer 2 is visible to the CCTV camera
@@ -14706,20 +14770,19 @@ class MazePlayer {
      o.material=Array.isArray(o.material)?o.material.map(prepare):prepare(o.material);
     }
    });
-   this.group.add(this.model);this.face=new MazeFaceIdle(this.model);this.grips=new MazeItemGrips(this);if(window.MazeBatVisuals)MazeBatVisuals.ensure(this.grips);this.springs=new MazePlayerSprings(this.model,this.group);this.mixer=new THREE.AnimationMixer(this.model);replaceCrouchClips(gltf.animations);replaceJumpClips(gltf.animations);alignItemStances(gltf.animations);
+   this.group.add(this.model);this.face=new MazeFaceIdle(this.model);this.grips=new MazeItemGrips(this);if(window.MazeBatVisuals)MazeBatVisuals.ensure(this.grips);this.springs=new MazePlayerSprings(this.model,this.group);this.mixer=new THREE.AnimationMixer(this.model);
    this.lookHead=this.grips.bones.get('cabeza');this.lookNeck=this.grips.bones.get('cuello');this.lookHead?.getWorldQuaternion(this.headRest);this.lookNeck?.getWorldQuaternion(this.neckRest);
-   // Strip channels that never change across any clip. These exported clips
-   // otherwise blend hundreds of identical scales/positions every frame.
-   const invariant=new Map();for(const clip of gltf.animations)for(const track of clip.tracks){const size=track.getValueSize(),v=track.values,prev=invariant.get(track.name);let same=true;for(let i=size;i<v.length;i++)if(Math.abs(v[i]-v[i%size])>1e-6){same=false;break;}if(prev===false)continue;if(!same||prev&&prev.some((n,i)=>Math.abs(n-v[i])>1e-6))invariant.set(track.name,false);else if(!prev)invariant.set(track.name,Array.from(v.slice(0,size)));}
-   for(const [name,value]of invariant)if(value){const binding=THREE.PropertyBinding.create(this.model,name);binding.bind();binding.setValue(value,0);binding.unbind();}
+   // Apply constants after grip/face/spring construction, preserving their
+   // original bind-pose reference frames. The expensive scan is cached.
+   for(const [name,value]of gltf.invariant)if(value){const binding=THREE.PropertyBinding.create(this.model,name);binding.bind();binding.setValue(value,0);binding.unbind();}
    // Shared network baseline includes invariant animation translations/scales.
    // Capture once before any live animation, never when joining after solo.
    this.coopBindPose=new Map();this.model.traverse(b=>{if(b.isBone)this.coopBindPose.set(b.userData.name||b.name,{position:b.position.clone(),scale:b.scale.clone()});});
-   this.animationTracksBefore=gltf.animations.reduce((n,c)=>n+c.tracks.length,0);
-   for(const clip of gltf.animations){clip.tracks=clip.tracks.filter(t=>!invariant.get(t.name));smoothLocomotionClip(clip);clip.optimize();const action=this.mixer.clipAction(clip);action.setLoop(THREE.LoopRepeat);this.actions[clip.name]=action;}
+   this.animationTracksBefore=gltf.animationTracksBefore;
+   for(const clip of gltf.animations){const action=this.mixer.clipAction(clip);action.setLoop(THREE.LoopRepeat);this.actions[clip.name]=action;}
    for(const bone of [...this.leanBones,this.aimBone,this.lookHead,this.lookNeck,...Object.values(this.breathBones)])if(bone&&!this.poseOffsets.some(x=>x.bone===bone))this.poseOffsets.push({bone,quaternion:bone.quaternion.clone(),applied:false});
-   this.animationTracksAfter=gltf.animations.reduce((n,c)=>n+c.tracks.length,0);this.ready=true;this.play('Idle');resolve(this);
-  },undefined,error=>{this.pending=null;reject(new Error('Your player model could not be loaded. '+(error.message||'Please reload.')));});});return this.pending;
+   this.animationTracksAfter=gltf.animationTracksAfter;this.ready=true;this.play('Idle');return this;
+  }).catch(error=>{this.pending=null;throw new Error('Your player model could not be loaded. '+(error.message||'Please reload.'));});return this.pending;
  }
  setQuality(value){this.quality=value;for(const mesh of this.meshes){mesh.castShadow=value==='high';mesh.receiveShadow=value==='high';}}
  commitPose(){
@@ -14859,9 +14922,10 @@ class MazePlayer {
   this.commitPose();
  }
  hide(){this.springs?.reset();this.face?.restorePose();this._restorePoseOffsets();this.mixer?.stopAllAction();this.actionWeights.clear();this.current=null;this.group.visible=false;this.wasGrounded=true;this.motionEvent=null;this.motionEventTime=0;this.wasHolding=false;this.lowering=null;this.flashlightEquipped=false;this.flashlightBlend=0;this.locomotionSpeed=0;this.gaitTravelSpeed=0;this.moving=false;this.running=false;this.cadence=1;this.crouchLeadRight=false;this.cameraSocketReady=false;this.crouchViewOffset.set(0,0,0);if(this.grips){this.grips.torchWeight=0;this.grips.crouchWeight=0;this.grips.idleWeight=0;this.grips.shotgunWeight=0;if(this.grips.shotgun)this.grips.shotgun.group.visible=false;}}
- dispose(){this.springs?.reset();this.face?.restorePose();this._restorePoseOffsets();this.grips?.disposeShotgun();if(this.grips&&window.MazeBatVisuals)MazeBatVisuals.dispose(this.grips);this.springs=null;this.mixer?.stopAllAction();this.scene.remove(this.group);if(this.model)MazeProps.dispose(this.model);this.model=null;this.meshes.length=0;this.poseOffsets.length=0;this.actionWeights.clear();}
+ dispose(){this._disposed=true;this.ready=false;this.springs?.reset();this.face?.restorePose();this._restorePoseOffsets();this.grips?.disposeShotgun();if(this.grips&&window.MazeBatVisuals)MazeBatVisuals.dispose(this.grips);this.springs=null;this.mixer?.stopAllAction();this.scene.remove(this.group);if(this.model){MazeProps.dispose(this.model);this.mixer?.uncacheRoot(this.model);}for(const skeleton of this.skeletons)skeleton.dispose();this.skeletons.clear();this.model=null;this.meshes.length=0;this.poseOffsets.length=0;this.actionWeights.clear();}
 }
 MazePlayer.gaitSpeed=gaitSpeed;
+MazePlayer.assetCacheStats=()=>({...mazePlayerAssetStats,entries:mazePlayerAssetCache.size,pending:[...mazePlayerAssetCache.values()].filter(entry=>!entry.value).length});
 window.MazePlayer=MazePlayer;
 })();
 
@@ -22615,7 +22679,7 @@ function frame(now){
  // Loading/resume can reset the clock after a RAF was already queued. That
  // older callback must not rewind time and make the next frame simulate a hitch.
  now=Math.max(now,lastFrame||now);
- requestAnimationFrame(frame);inputFrame(now);phoneFrame();berryPerception();if(!renderer||state.mode==='error')return;if(state.mode==='survival-dead'){const elapsed=Math.max(0,(now-(lastFrame||now))/1000);lastFrame=now;survivalDeathFrame(elapsed,Math.min(.05,elapsed));return;}if(mp?.running){if(document.hidden){lastFrame=now;return;}const elapsed=Math.max(0,(now-(lastFrame||now))/1000),dt=Math.min(.05,elapsed);lastFrame=now;coopFrame(now,elapsed,dt);return;}if(document.hidden){lastFrame=now;return;}
+ requestAnimationFrame(frame);inputFrame(now);phoneFrame();berryPerception();if(!renderer||state.mode==='error')return;if(state.mode==='loading'||state.mode==='mp-waiting'||mp?.loading){lastFrame=now;return;}if(state.mode==='survival-dead'){const elapsed=Math.max(0,(now-(lastFrame||now))/1000);lastFrame=now;survivalDeathFrame(elapsed,Math.min(.05,elapsed));return;}if(mp?.running){if(document.hidden){lastFrame=now;return;}const elapsed=Math.max(0,(now-(lastFrame||now))/1000),dt=Math.min(.05,elapsed);lastFrame=now;coopFrame(now,elapsed,dt);return;}if(document.hidden){lastFrame=now;return;}
  if(state.mode==='menu'&&now<state.menuRenderAt)return;
  const elapsed=Math.max(0,(now-(lastFrame||now))/1000),dt=Math.min(.05,elapsed);lastFrame=now;
  if(active()){
@@ -22872,7 +22936,8 @@ function weaponInventoryChanged(p){if(typeof inventoryStateChanged==='function')
 // Equip only reveals existing resources. Warm every weapon material with the
 // screen's actual light count and output settings while the loading UI is up.
 // Render-target tone mapping can select a different program from the screen.
-function weaponWarmup(rigs=[actor]){
+function weaponWarmup(rigs=[actor],loadingReady=false){
+ if(mp?.loading&&!loadingReady)return;
  if(!renderer||!scene||!MazeShotgunModel.ready)return;
  const lights=[];scene.traverseVisible(o=>{if(o.isLight&&o.layers.test(camera.layers))lights.push(o);});
  const key=[settings.quality,renderer.outputColorSpace,renderer.toneMapping,!!scene.fog,...lights.map(o=>o.type+':'+Number(o.castShadow))].join('|');
@@ -22886,6 +22951,7 @@ function weaponWarmup(rigs=[actor]){
   proxy.traverse(o=>{o.visible=true;if(o.isMesh){o.frustumCulled=false;o.castShadow=rig.quality==='high';}});
   warmScene.add(proxy);if(rig.grips.bat?.group){const batProxy=rig.grips.bat.group.clone(true);batProxy.position.set(0,0,0);batProxy.quaternion.identity();batProxy.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});warmScene.add(batProxy);}rig.prepareSurvivalPoses?.();pending.push(rig);
  }
+ if(loadingReady)return{pending,key};
  if(!pending.length)return;
  for(const light of lights){const copy=light.clone(false);light.getWorldPosition(copy.position);light.getWorldQuaternion(copy.quaternion);if(copy.shadow){copy.shadow.map=null;copy.shadow.mapPass=null;copy.shadow.mapSize.set(4,4);}warmScene.add(copy);if(copy.target)warmScene.add(copy.target);}
  const lens=new T.PerspectiveCamera(65,1,.01,8);lens.position.set(.5,.35,1.2);lens.lookAt(0,0,0);lens.updateMatrixWorld(true);
@@ -23110,6 +23176,9 @@ function coopAction(from,a){
  if(!mp?.net.isHost||!a)return;
  if(!['ready','request-level','world-repair'].includes(a.kind)&&!mp.readyPeers.has(from))return;
  if(a.kind==='ready'&&a.epoch===mp.epoch){
+  // A fast client can finish while the host is still preparing graphics.
+  // Verify its hash only after the host has finished initializing this epoch.
+  if(mp.loading){mp.pendingReady.set(from,a.map);return;}
   if(a.map!==mp.world?.staticHash){const tries=mp.mapRetries.get(from)||0;mp.mapRetries.set(from,tries+1);if(tries<1)mp.net.sendControl({type:'repair-map',epoch:mp.epoch,spec:{...mp.spec,players:coopLevelPlayers()}},from);else mp.net.sendControl({type:'map-error'},from);return;}
   const newlyReady=!mp.readyPeers.has(from);mp.readyPeers.add(from);
   // This client finishes loading independently. The host is already running;
@@ -23120,7 +23189,7 @@ function coopAction(from,a){
    coopSendSnapshot(true);
    if(mp.dead&&!mp.spectated)coopCycleSpectator(0);
   }else if(newlyReady)coopTryBegin();
- }else if(a.kind==='request-level'&&mp.spec&&!mp.loading)mp.net.sendControl({type:'load-level',...mp.spec,players:coopLevelPlayers()},from);
+ }else if(a.kind==='request-level'&&mp.spec)coopSendLevelPreparation(from);
  else if(a.kind==='world-repair'&&a.epoch===mp.epoch){if(mp.time>=mp.worldFullAt){mp.worldFullAt=mp.time+1;coopSendWorld(true);}}
  else if(a.kind==='phone'){phoneHostAction(from,a);}
  else if(a.kind==='inventory'&&a.epoch===mp.epoch&&mp.running&&!mp.ending){
@@ -23153,7 +23222,7 @@ function coopReceiveWorld(event){
  if(result.needsRepair)coopRequestWorld();else{mp.worldMismatchAt=0;state.visibilityTick=0;state.shadowDirty=true;}
 }
 function coopRequestWorld(){if(!mp||mp.net.isHost)return;const now=performance.now()/1000;if(now<mp.worldRepairAt)return;mp.worldRepairAt=now+2;mp.net.sendAction({kind:'world-repair',epoch:mp.epoch,check:mp.world?.checksum()});}
-function coopMapError(message){if(!mp)return;survivalResetPresentation();inventoryClose(false);mp.running=false;mp.loading=false;mp.left=true;mp.net.leave();exitLock();show('loading',false);state.mode='mp-disconnected';coopUI.showDisconnected(message);}
+function coopMapError(message){if(!mp)return;coopCancelLevelLoad();mp.readyToken++;survivalResetPresentation();inventoryClose(false);mp.running=false;mp.loading=false;mp.left=true;mp.net.leave();exitLock();show('loading',false);state.mode='mp-disconnected';coopUI.showDisconnected(message);}
 function coopLocalCamera(dt){
  if(mp.net.isHost){updateCamera(dt);return;}
  // Correct simulation immediately, while camera, body and held items share a
@@ -23298,7 +23367,7 @@ function coopUpdateAudio(dt,p,e){
  audio.updateRemoteSteps(dt,sources,{silent,occlusion:point=>C.wallTransmission(state.level,listener,point)});
 }
 
-function coopNewSession(){return{net:MazeNetwork,room:null,players:new Map(),inputs:new Map(),readyPeers:new Set(),loadingStatusRev:0,loadingStatusSeen:-1,visuals:null,running:false,loading:false,ended:false,ending:null,lastDeath:null,dead:false,left:false,epoch:null,spec:null,time:0,accumulator:0,sendAt:0,inputAt:0,seq:0,history:[],actions:[],worldFrames:[],lastSnapshotAt:0,lastHostTime:0,localPaused:false,inHostAction:false,spectated:null,spectatorYaw:null,spectatorPitch:.12,spectatorDistance:2.7,spectatorView:'orbit',spectatorNight:true,departed:new Map(),readyToken:0,handledDeaths:new Set(),deadPlayers:new Set(),revivalRoll:null,transitionUntil:0,prediction:new MazeCoopPrediction.Client(),commands:new MazeCoopPrediction.HostCommands(),clock:new MazeStateCodec.Clock(),world:null,worldRepairAt:0,worldAuditAt:0,worldMismatchAt:0,worldFullAt:0,mapRetries:new Map(),visualError:{x:0,y:0,z:0},netCorrections:{count:0,max:0},lastCommand:null,weaponNonce:0,weaponAck:0,weaponSeen:new Map(),weaponPending:new Map(),weaponWorldRevision:-1,inventoryNonce:0,inventorySeen:new Map(),inventoryPending:new Map(),inventoryMismatchAt:0,survivalNonce:0,survivalSeen:new Map(),survivalPending:new Map()};}
+function coopNewSession(){return{net:MazeNetwork,room:null,players:new Map(),inputs:new Map(),readyPeers:new Set(),loadingStatusRev:0,loadingStatusSeen:-1,visuals:null,running:false,loading:false,ended:false,ending:null,lastDeath:null,dead:false,left:false,epoch:null,spec:null,time:0,accumulator:0,sendAt:0,inputAt:0,seq:0,history:[],actions:[],worldFrames:[],lastSnapshotAt:0,lastHostTime:0,localPaused:false,inHostAction:false,spectated:null,spectatorYaw:null,spectatorPitch:.12,spectatorDistance:2.7,spectatorView:'orbit',spectatorNight:true,departed:new Map(),readyToken:0,levelLoad:null,levelAuthority:null,pendingReady:new Map(),retiredEpochs:new Set(),handledDeaths:new Set(),deadPlayers:new Set(),revivalRoll:null,transitionUntil:0,prediction:new MazeCoopPrediction.Client(),commands:new MazeCoopPrediction.HostCommands(),clock:new MazeStateCodec.Clock(),world:null,worldRepairAt:0,worldAuditAt:0,worldMismatchAt:0,worldFullAt:0,mapRetries:new Map(),visualError:{x:0,y:0,z:0},netCorrections:{count:0,max:0},lastCommand:null,weaponNonce:0,weaponAck:0,weaponSeen:new Map(),weaponPending:new Map(),weaponWorldRevision:-1,inventoryNonce:0,inventorySeen:new Map(),inventoryPending:new Map(),inventoryMismatchAt:0,survivalNonce:0,survivalSeen:new Map(),survivalPending:new Map()};}
 function coopVoiceState(){
  if(!mp){const local={...state.player,id:'local',name:'Player',connected:true},active=['planning','playing'].includes(state.mode);return{active,players:[local],local,scene:'world',listener:state.player,yaw:camera?.rotation.y,canTalk:active&&!state.player.sleeping&&!state.player.dead};}
  const active=!!mp&&!mp.left&&!!mp.net.room&&mp.net.players.some(p=>p.id===mp.net.id&&p.connected!==false)&&state.mode!=='mp-disconnected';
@@ -23344,13 +23413,13 @@ function initMultiplayer(){
  coopUI.callbacks.playerList=coopVoicePlayerList;
  coopUI.init();
  MazeNetwork.addEventListener('roster',e=>coopRoster(e.detail));
- MazeNetwork.addEventListener('started',()=>{if(!mp)return;phoneSystem.reset();phoneHearing.reset();mp.departed.clear();mp.ended=false;mp.ending=null;mp.lastDeath=null;mp.running=false;mp.readyPeers.clear();mp.loadingStatusRev=0;mp.loadingStatusSeen=-1;mp.handledDeaths.clear();mp.deadPlayers.clear();mp.revivalRoll=null;mp.history=[];mp.epoch=null;coopUI.hide();if(mp.net.isHost)coopHostLevel(0);else{state.mode='loading';show('loading');$('loadingText').textContent='Waiting for the host’s maze…';}});
+ MazeNetwork.addEventListener('started',()=>{if(!mp)return;coopCancelLevelLoad();mp.readyToken++;mp.levelAuthority=null;mp.pendingReady.clear();phoneSystem.reset();phoneHearing.reset();mp.departed.clear();mp.ended=false;mp.ending=null;mp.lastDeath=null;mp.running=false;mp.readyPeers.clear();mp.loadingStatusRev=0;mp.loadingStatusSeen=-1;mp.handledDeaths.clear();mp.deadPlayers.clear();mp.revivalRoll=null;mp.history=[];mp.epoch=null;coopUI.hide();if(mp.net.isHost)coopHostLevel(0);else{state.mode='loading';show('loading');$('loadingText').textContent='Receiving the maze seed…';}});
  MazeNetwork.addEventListener('input',e=>{if(!mp?.net.isHost||!mp.running||mp.ending)return;const {from,payload}=e.detail,p=mp.players.get(from);if(!p||!MazeCoopSimulation.alive(p)||!mp.readyPeers.has(from)||!payload||payload.epoch!==mp.epoch)return;mp.commands.enqueue(from,payload,p);});
  MazeNetwork.addEventListener('action',e=>coopAction(e.detail.from,e.detail.payload));
  MazeNetwork.addEventListener('latency',e=>{if(mp&&!mp.net.isHost&&e.detail.id===mp.net.hostId)mp.clock.rtt=Math.min(3,Math.max(0,e.detail.ms/1000));});
  MazeNetwork.addEventListener('control',e=>coopControl(e.detail.payload));
  MazeNetwork.addEventListener('snapshot',e=>coopReceiveSnapshot(e.detail.payload));
- MazeNetwork.addEventListener('closed',e=>{if(!mp||mp.left)return;survivalResetPresentation();inventoryClose(false);mp.running=false;mp.ending=null;mp.localPaused=true;resetMovementInput();exitLock();audio.stop();show('loading',false);show('transition',false);state.mode='mp-disconnected';coopUI.showDisconnected(e.detail?.reason||'Host disconnected. Return to the main menu.');});
+ MazeNetwork.addEventListener('closed',e=>{if(!mp||mp.left)return;coopCancelLevelLoad();mp.readyToken++;mp.loading=false;survivalResetPresentation();inventoryClose(false);mp.running=false;mp.ending=null;mp.localPaused=true;resetMovementInput();exitLock();audio.stop();show('loading',false);show('transition',false);state.mode='mp-disconnected';coopUI.showDisconnected(e.detail?.reason||'Host disconnected. Return to the main menu.');});
  MazeNetwork.addEventListener('error',e=>{if(mp)coopUI.error(e.detail?.message||'The connection was interrupted.');});
  MazeNetwork.addEventListener('status',e=>{if(mp&&e.detail?.message)coopUI.setStatus(e.detail.message);});
  // A host remains the simulation owner while its tab is in the background.
@@ -23426,7 +23495,7 @@ function coopRoster({room,players}){
  }
  if(room.status==='lobby'){state.mode='mp-lobby';coopUI.showLobby(room,players,mp.net.id,mp.net.isHost);}
  if(mp.net.isHost&&mp.spec&&!mp.loading&&newcomers.length){
-  for(const meta of newcomers)mp.net.sendControl({type:'load-level',...mp.spec,players:coopLevelPlayers()},meta.id);
+  for(const meta of newcomers)coopSendLevelPreparation(meta.id);
  }
  if(mp.running&&mp.net.isHost){state.exit.setPassengers(coopAlive());if(!coopAlive().length&&!coopPendingAlive())coopEndRun();}
  if(mp.net.isHost&&mp.epoch&&mp.spec&&!mp.loading&&!mp.running&&!mp.ended)coopTryBegin();
@@ -23443,19 +23512,54 @@ function coopFloorRevival(score){
  const id=MazeCoopSimulation.chooseFloorRevival(candidates);
  mp.revivalRoll={epoch:mp.epoch,score,id};return id;
 }
+// Map construction starts as soon as the authority chooses a seed. The final
+// player snapshot remains separate: carried items, needs and revival are host-owned.
+function coopCancelLevelLoad(session=mp){
+ const load=session?.levelLoad;if(load){load.cancelled=true;load.resolve?.(null);load.resolve=null;}
+ if(session)session.levelLoad=null;
+}
+function coopSendLevelPreparation(to=null){
+ if(!mp?.net.isHost||!mp.spec)return;
+ const {epoch,seed,theme,score,revivedPlayer,supplyPlayers}=mp.spec;
+ mp.net.sendControl({type:'prepare-level',epoch,seed,theme,score,revivedPlayer,supplyPlayers},to);
+ // A player joining during generation must receive its own authoritative entry,
+ // not a provisional spectator that would stay dead after its real spawn arrives.
+ if(mp.levelAuthority&&(!to||mp.players.has(to)))mp.net.sendControl({type:'load-level',...mp.spec,players:coopLevelPlayers()},to);
+}
+function coopStartClientLevel(spec,prepareOnly=false){
+ if(!mp||mp.net.isHost||mp.retiredEpochs.has(spec.epoch))return;
+ const session=mp,promise=coopLoadLevel(spec,false,prepareOnly),token=session.readyToken;
+ promise.catch(error=>{if(mp!==session||session.left||session.readyToken!==token||session.epoch!==spec.epoch)return;coopMapError('Could not load the host’s maze: '+error.message);});
+}
+function coopAcceptLevel(spec){
+ if(!mp||mp.net.isHost||mp.retiredEpochs.has(spec.epoch))return;
+ if(spec.epoch!==mp.epoch){coopStartClientLevel(spec,false);return;}
+ const load=mp.levelLoad;if(!load||load.cancelled||load.authority)return;
+ for(const key of ['seed','theme','score','supplyPlayers'])if(spec[key]!==load.spec[key]){coopMapError('The host changed the maze while it was being prepared. Please rejoin.');return;}
+ load.authority=spec;mp.spec=spec;load.resolve?.(spec);load.resolve=null;
+}
 async function coopHostLevel(score){
  if(!mp?.net.isHost||mp.loading)return;const session=mp,chosen=coopFloorRevival(score);mp.loading=true;mp.running=false;mp.ended=false;mp.readyPeers.clear();mp.loadingStatusRev=0;mp.loadingStatusSeen=-1;
  // The roster must admit input again before anyone receives the next floor.
  // Publishing it while loading also prevents the roster callback starting it.
  const revivedPlayer=chosen&&mp.net.revivePlayer(chosen,score)?chosen:null;if(revivedPlayer)mp.deadPlayers.delete(revivedPlayer);
  const spec={epoch:crypto.getRandomValues(new Uint32Array(1))[0]||1,seed:crypto.getRandomValues(new Uint32Array(1))[0],theme:chooseTheme(),score,revivedPlayer,supplyPlayers:Math.max(1,mp.net.players.filter(p=>p.connected!==false&&p.alive!==false&&!p.spectator).length)};
- try{await coopLoadLevel(spec,true);if(mp!==session||mp.left)return;mp.spec={...spec,players:coopLevelPlayers()};mp.net.sendControl({type:'load-level',...mp.spec});mp.readyPeers.add(mp.net.id);coopTryBegin();}catch(e){if(mp===session){coopUI.error('The multiplayer maze could not load. '+e.message);state.mode='mp-disconnected';show('loading',false);coopUI.showDisconnected('The maze could not load. Return to the main menu.');}}
+ try{await coopLoadLevel(spec,true);if(mp!==session||mp.left||mp.epoch!==spec.epoch||state.mode==='mp-disconnected')return;
+  // Reconcile anyone who connected while the map/graphics were loading.
+  coopRoster({room:mp.net.room,players:mp.net.players});
+  for(const [id,map]of mp.pendingReady){if(mp.players.has(id))coopAction(id,{kind:'ready',epoch:mp.epoch,map});}mp.pendingReady.clear();
+  mp.readyPeers.add(mp.net.id);coopTryBegin();}catch(e){if(mp===session&&!session.left&&mp.epoch===spec.epoch&&state.mode!=='mp-disconnected'){coopUI.error('The multiplayer maze could not load. '+e.message);state.mode='mp-disconnected';show('loading',false);coopUI.showDisconnected('The maze could not load. Return to the main menu.');}}
 }
-async function coopLoadLevel(spec,isHost=false){
- if(!mp||mp.epoch===spec.epoch)return;if(spec.score===0)phoneSystem.reset();else if(isHost){phoneSystem.beforeFloor();magicBeforeFloor();}else{phoneSystem.calls.clear();phoneSystem.held.clear();}const previousBerryTime=state.time;inputClearLevelUI();const session=mp,token=++mp.readyToken;mp.epoch=spec.epoch;mp.loading=true;mp.running=false;mp.readyPeers.clear();mp.loadingStatusSeen=-1;mp.spec=spec;mp.history=[];mp.actions=[];mp.worldFrames=[];mp.time=0;mp.lastHostTime=0;mp.accumulator=0;mp.sendAt=0;mp.inputAt=0;mp.handledDeaths.clear();mp.elevatorCallHeard=null;mp.prowlerHeard=0;mp.doorBreakHeard=new Set();mp.doorCueHeard=0;mp.doorCueSerial=0;mp.consumeCueHeard=0;mp.consumeCueSerial=0;audio.resetRemoteSteps();mp.ending=null;mp.lastDeath=null;mp.transitionUntil=0;state.mode='loading';state.score=spec.score;show('menu',false);show('pauseScreen',false);show('transition',false);show('deathScreen',false);show('loading');$('loadingText').textContent='Preparing the team and maze…';coopUI.hide();exitLock();
+async function coopLoadLevel(spec,isHost=false,prepareOnly=false){
+ if(!mp||mp.left||mp.epoch===spec.epoch)return;if(mp.epoch!==null){mp.retiredEpochs.add(mp.epoch);if(mp.retiredEpochs.size>8)mp.retiredEpochs.delete(mp.retiredEpochs.values().next().value);}coopCancelLevelLoad();if(spec.score===0)phoneSystem.reset();else if(isHost){phoneSystem.beforeFloor();magicBeforeFloor();}else{phoneSystem.calls.clear();phoneSystem.held.clear();}const previousBerryTime=state.time;inputClearLevelUI();const session=mp,token=++mp.readyToken,load={epoch:spec.epoch,spec,authority:prepareOnly?null:spec,cancelled:false,resolve:null,promise:null};if(prepareOnly)load.promise=new Promise(resolve=>load.resolve=resolve);mp.levelLoad=load;mp.levelAuthority=null;mp.pendingReady.clear();mp.pendingWorld=null;mp.pendingBegin=null;mp.epoch=spec.epoch;mp.loading=true;mp.running=false;mp.readyPeers.clear();mp.loadingStatusSeen=-1;mp.spec=spec;mp.history=[];mp.actions=[];mp.worldFrames=[];mp.time=0;mp.lastHostTime=0;mp.accumulator=0;mp.sendAt=0;mp.inputAt=0;mp.handledDeaths.clear();mp.elevatorCallHeard=null;mp.prowlerHeard=0;mp.doorBreakHeard=new Set();mp.doorCueHeard=0;mp.doorCueSerial=0;mp.consumeCueHeard=0;mp.consumeCueSerial=0;audio.resetRemoteSteps();mp.ending=null;mp.lastDeath=null;mp.transitionUntil=0;state.mode='loading';state.score=spec.score;show('menu',false);show('pauseScreen',false);show('transition',false);show('deathScreen',false);show('loading');$('loadingText').textContent='Preparing the team and maze…';coopUI.hide();exitLock();
+ if(isHost)coopSendLevelPreparation();
  await Promise.all([actor.load(assets.player),gokuActor.load(assets.gokuModel),MazeShotgunModel.load()]);if(mp!==session||token!==mp.readyToken)return;
  const previousPlayers=mp.players;buildLevel(spec.theme,spec.seed,spec.supplyPlayers);state.enemy.kind='enemy';actor.hide();state.flashlight=false;mp.world=new MazeWorldSync({level:state.level,safe:state.safe,closets:state.closets,serviceDoors:state.serviceDoors,wardrobes:state.wardrobes,exit:state.exit});mp.prediction.reset();mp.commands.reset();mp.seq=0;mp.clock=new MazeStateCodec.Clock();mp.visualError={x:0,y:0,z:0};mp.lastCommand=null;mp.worldRepairAt=0;mp.worldAuditAt=0;mp.worldMismatchAt=0;mp.worldFullAt=0;mp.mapRetries.clear();mp.weaponNonce=0;mp.weaponAck=0;mp.weaponSeen.clear();mp.weaponPending.clear();mp.weaponWorldRevision=-1;mp.inventoryNonce=0;mp.inventorySeen.clear();mp.inventoryPending.clear();mp.inventoryMismatchAt=0;mp.survivalNonce=0;mp.survivalSeen.clear();mp.survivalPending.clear();
  if(!mp.visuals)mp.visuals=new MazeCoopVisuals(scene,assets,settings.quality);mp.visuals.resetInterpolation();mp.visuals.clearGibs();
+ if(prepareOnly){
+  if(!load.authority){$('loadingText').textContent='Maze prepared · receiving the team…';const authority=await load.promise;if(!authority)return;load.authority=authority;}
+  if(mp!==session||session.left||token!==session.readyToken||load.cancelled)return;spec=load.authority;mp.spec=spec;
+ }
  const roster=mp.net.players.map(meta=>({...meta,alive:meta.alive!==false&&!meta.spectator,dead:meta.alive===false||!!meta.spectator}));
  mp.players=isHost?MazeCoopSimulation.spawnPlayers(state.level,roster,spec.score):new Map((spec.players||[]).map(p=>[p.id,{...p}]));
  if(isHost&&spec.score>0)for(const p of mp.players.values()){const previous=previousPlayers.get(p.id);if(p.id===spec.revivedPlayer){MI.resetForRevival(p);}else if(previous){MI.restore(p,MI.snapshot(previous));if(typeof MS!=='undefined')MS.restore(p,MS.encode(previous));MazeStamina.carry(previous,p);MazeBerryGameplay.applyCarry(p,MazeBerryGameplay.carry(previous,previousBerryTime),0);}p.shotgunEquipped=false;p.shotgunAction='idle';p.shotgunActionTime=0;p.shotgunActionId=0;p.shotgunAck=0;}
@@ -23464,10 +23568,14 @@ async function coopLoadLevel(spec,isHost=false){
  state.player=mp.players.get(mp.net.id);if(!state.player)throw new Error('Local roster identity is missing.');
  for(const p of mp.players.values()){if(p.berryState){const saved=p.berryState;if(Number.isFinite(saved.t)&&Math.abs(saved.t)<100000&&MazeBerryGameplay.validCarry(saved.c))MazeBerryGameplay.applyCarry(p,saved.c,saved.t);delete p.berryState;}if(typeof MS!=='undefined'){if(Array.isArray(p.survival)){const saved=p.survival;delete p.survival;MS.restore(p,saved);}MS.init(p);MS.cancelSleep(p);p.batEquipped=false;p.batSwingTime=1;}if(Array.isArray(p.inventory)){const data=p.inventory;delete p.inventory;MI.restore(p,data);}MI.init(p,p.slot??4,p.id);inventoryStateChanged(p);}
  forestAdoptRoster();
+ // Publish initialized player state before avatar/GPU preparation, so clients
+ // finish that independent work in parallel. The live world is sent before begin.
+ for(const p of mp.players.values()){tabletSetEquipped(p,false);tabletInventoryChanged(p);}tabletSpawnBatteries([...mp.players.values()]);
+ if(isHost){mp.spec={...spec,players:coopLevelPlayers()};mp.levelAuthority=mp.spec;mp.net.sendControl({type:'load-level',...mp.spec});}
  await Promise.all(roster.filter(p=>p.connected!==false).map(meta=>mp.visuals.add(meta.id,meta.slot,meta.id===mp.net.id?{localActor:actor,tablet,torch}:{})));if(mp!==session||token!==mp.readyToken)return;
  weaponWarmup([...mp.visuals.entries.values()].map(entry=>entry.actor));for(const p of mp.players.values())inventoryStateChanged(p);await warmLevelGraphics();if(mp!==session||token!==mp.readyToken)return;
  for(const p of mp.players.values()){const rig=mp.visuals.getActor(p.id);if(rig&&p.id!==mp.net.id)rig.resolveAimTarget=(eye,direction,out)=>{const previous=state.player;state.player=p;try{return resolveAimTarget(eye,direction,out);}finally{state.player=previous;}};}
- state.player=mp.players.get(mp.net.id);inventoryStateChanged(state.player);for(const p of mp.players.values()){tabletSetEquipped(p,false);tabletInventoryChanged(p);}state.putAway=.7;tabletSpawnBatteries([...mp.players.values()]);mp.dead=!MazeCoopSimulation.alive(state.player);state.exit.setPassengers(isHost?coopAlive():null);mp.loading=false;mp.localPaused=false;mp.inputs.clear();state.mode='mp-waiting';$('loadingText').textContent='Joining the host’s live maze…';coopUI.updateTeam(coopTeam(),mp.net.id,mp.spectated);
+ state.player=mp.players.get(mp.net.id);inventoryStateChanged(state.player);for(const p of mp.players.values()){tabletSetEquipped(p,false);tabletInventoryChanged(p);}state.putAway=.7;tabletSpawnBatteries([...mp.players.values()]);mp.dead=!MazeCoopSimulation.alive(state.player);state.exit.setPassengers(isHost?coopAlive():null);mp.loading=false;mp.localPaused=false;mp.inputs.clear();state.mode='mp-waiting';$('loadingText').textContent='Ready · waiting for the host…';coopUI.updateTeam(coopTeam(),mp.net.id,mp.spectated);
  for(const p of mp.players.values())mp.visuals.setVisible(p.id,MazeCoopSimulation.alive(p));
  if(!isHost){if(mp.pendingWorld?.epoch===mp.epoch){coopReceiveWorld(mp.pendingWorld);mp.pendingWorld=null;}mp.net.sendAction({kind:'ready',epoch:mp.epoch,map:mp.world.staticHash});if(mp.pendingBegin?.epoch===mp.epoch){const begin=mp.pendingBegin;mp.pendingBegin=null;coopBegin(begin);}}
 }
@@ -23476,7 +23584,11 @@ function coopTryBegin(){
  // Do not wait for remote map/model loads. The host starts its own world now.
  // Peers get their own targeted begin-level only AFTER their verified ready.
  coopSendLoadingStatus();coopSendWorld(true);
- coopBegin({type:'begin-level',epoch:mp.epoch,time:0});
+ const begin={type:'begin-level',epoch:mp.epoch,time:0};coopBegin(begin);
+ // Fast clients may already be verified. Slow clients receive this same
+ // ordered world/begin handshake individually when their ready arrives.
+ for(const id of mp.readyPeers)if(id!==mp.net.id)mp.net.sendControl(begin,id);
+ coopSendSnapshot(true);
 }
 function coopBegin(event){if(!mp||event.epoch!==mp.epoch)return;if(mp.loading){mp.pendingBegin=event;return;}if(mp.running)return;
  mp.readyPeers.add(mp.net.id);if(!mp.net.isHost)mp.readyPeers.add(mp.net.hostId);
@@ -23484,7 +23596,8 @@ function coopBegin(event){if(!mp||event.epoch!==mp.epoch)return;if(mp.loading){m
 function coopControl(event){
  if(event?.type==='phone-ack'){if(mp&&event.epoch===mp.epoch)phoneResult(event);return;}
  if(!mp||!event)return;
- if(event.type==='load-level'){if(event.epoch===mp.epoch)return;coopLoadLevel(event,false).catch(e=>{coopUI.showDisconnected('Could not load the host’s maze: '+e.message);show('loading',false);});}
+ if(event.type==='prepare-level'){if(event.epoch!==mp.epoch)coopStartClientLevel(event,true);}
+ else if(event.type==='load-level')coopAcceptLevel(event);
  else if(event.type==='begin-level')coopBegin(event);
  else if(event.type==='loading-status'&&event.epoch===mp.epoch&&Number.isSafeInteger(event.rev)&&event.rev>mp.loadingStatusSeen&&Array.isArray(event.ready)&&event.ready.length<=4&&event.ready.every(id=>typeof id==='string'&&mp.net.players.some(p=>p.id===id))){
   mp.loadingStatusSeen=event.rev;mp.readyPeers=new Set(event.ready);
@@ -23497,7 +23610,7 @@ function coopControl(event){
  else if(event.type==='forest-prowler')coopProwler(event);
  else if(event.type==='house-door-break')coopHouseDoorBreak(event);
  else if(event.type==='world-state'&&event.epoch===mp.epoch)coopReceiveWorld(event);
- else if(event.type==='repair-map'&&event.epoch===mp.epoch){mp.epoch=null;coopLoadLevel(event.spec,false).catch(e=>coopMapError(e.message));}
+ else if(event.type==='repair-map'&&event.epoch===mp.epoch){coopCancelLevelLoad();mp.epoch=null;coopStartClientLevel(event.spec,false);}
  else if(event.type==='map-error')coopMapError('Map verification failed. Everyone must load the same V7.7 build.');
  else if(event.type==='inventory-ack'&&event.epoch===mp.epoch&&!mp.net.isHost){mp.inventoryPending.delete(event.nonce);inventoryMessage=event.accepted?'':'That item changed, is out of reach, or there is no room.';inventoryUI?.refresh();}
  else if(event.type==='survival-ack'&&event.epoch===mp.epoch&&!mp.net.isHost){const pending=mp.survivalPending.get(event.nonce);mp.survivalPending.delete(event.nonce);if(!event.accepted){if(pending?.previous){Object.assign(state.player,pending.previous);state.flashlight=!!state.player.flashlight;}announce('That action is not available.',2);}inventoryUI?.refresh();}
@@ -23753,7 +23866,7 @@ function coopFrame(now,elapsed,dt){
 async function coopLeave(){
  coopVoice?.stop();
  survivalResetPresentation();spectatorNightLight.intensity=0;fillLight.intensity=.16;
- if(!mp){coopUI?.clear();return;}inventoryClose(false);const previous=mp;previous.left=true;previous.running=false;previous.readyToken++;mp=null;await previous.net.leave();previous.visuals?.dispose();coopUI.clear();camera.layers.disable(2);state.mode='mp-leaving';menu();
+ if(!mp){coopUI?.clear();return;}inventoryClose(false);const previous=mp;previous.left=true;previous.running=false;previous.readyToken++;coopCancelLevelLoad(previous);mp=null;await previous.net.leave();previous.visuals?.dispose();coopUI.clear();camera.layers.disable(2);state.mode='mp-leaving';menu();
 }
 
 // Item ownership is host-authoritative; meshes and the inventory window are local.
@@ -24645,57 +24758,63 @@ function survivalRoomAt(p){
  return state.level.survivalRoomLookup?.get(key)||(state.level.survivalRooms||[]).find(room=>room.cells.some(c=>c.x===x&&c.z===z))||null;
 }
 function survivalWaterFloorAt(p){return state.theme==='poolrooms'?.8:0;}
-// Precompile the two reflective skinned-material combinations while the
-// loading cover is up. Keep the tiny compile proxies alive so the renderer
-// doesn't evict the linked programs as soon as the player's usual costume
-// is restored. All texture sources are shared, never duplicated per player.
+// Retain only two tiny representative meshes, so their compiled programs stay
+// resident across floors. They join the normal asynchronous screen/reflection
+// warmup rather than performing a separate synchronous render/readback.
 const legendaryRendererWarmCache=new WeakMap();
 function warmLegendaryRenderer(){
- if(!renderer||!scene||!actor?.ready||!window.MazeAppearance)return false;
+ if(!renderer||!scene||!actor?.ready||!window.MazeAppearance)return null;
  let remembered=legendaryRendererWarmCache.get(renderer);if(!remembered){remembered=new Map();legendaryRendererWarmCache.set(renderer,remembered);}
- const lightList=[];scene.traverseVisible(o=>{if(o.isLight&&o.layers.test(camera.layers))lightList.push(o);});
- const key=[settings.quality,renderer.outputColorSpace,renderer.toneMapping,!!scene.fog,...lightList.map(o=>o.type+':'+Number(o.castShadow)),!!state.env?.backroomsLighting].join('|');
- if(remembered.has(key))return false;
- const original=actor.group.visible,player=mp?.players.get(mp.net.id)||state.player;
- const cacheEntry={scene:new T.Scene(),materials:[],proxies:[],textures:[],lights:[]};
- let succeeded=false;const destination=renderer.getRenderTarget(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest(),shadowAuto=renderer.shadowMap.autoUpdate,shadowDirty=renderer.shadowMap.needsUpdate;
- const target=new T.WebGLRenderTarget(8,8,{depthBuffer:true,stencilBuffer:false});
+ const lights=[];scene.traverseVisible(o=>{if(o.isLight&&o.layers.test(camera.layers))lights.push(o);});
+ const key=[settings.quality,renderer.outputColorSpace,renderer.toneMapping,!!scene.fog,...lights.map(o=>o.type+':'+Number(o.castShadow)),!!state.env?.backroomsLighting].join('|');
+ if(remembered.has(key))return remembered.get(key);
+ const original=actor.group.visible,player=mp?.players.get(mp.net.id)||state.player,group=new T.Group();group.name='Legendary material preparation';
  try{
-  MazeAppearance.apply(actor,{slot:player?.slot??4,inventory:{outfit:{type:'outfit',palette:4,style:'gold'}}});
-  applyServiceActorLight(actor.group,player);
-  cacheEntry.scene.fog=scene.fog;cacheEntry.scene.background=scene.background;
+  MazeAppearance.apply(actor,{slot:player?.slot??4,inventory:{outfit:{type:'outfit',palette:4,style:'gold'}}});applyServiceActorLight(actor.group,player);
   const included=new Set();
   for(const mesh of actor.meshes||[]){
    if(!mesh?.isMesh||!mesh.material)continue;
-   const mats=Array.isArray(mesh.material)?mesh.material:[mesh.material];
-   for(const mat of mats)if(mat.envMap&&mat.map&&!included.has('cloth')||mat.envMap&&!mat.map&&!included.has('trim')){
-    const kind=mat.map?'cloth':'trim';included.add(kind);
-    const duplicate=mat.clone();duplicate.onBeforeCompile=mat.onBeforeCompile;duplicate.customProgramCacheKey=mat.customProgramCacheKey;
-    const proxy=mesh.clone(false);proxy.material=duplicate;proxy.frustumCulled=false;proxy.castShadow=false;proxy.visible=true;cacheEntry.scene.add(proxy);cacheEntry.proxies.push(proxy);cacheEntry.materials.push(duplicate);
+   for(const material of Array.isArray(mesh.material)?mesh.material:[mesh.material]){
+    if(!material.envMap)continue;const kind=material.map?'cloth':'trim';if(included.has(kind))continue;included.add(kind);
+    const duplicate=material.clone();duplicate.onBeforeCompile=material.onBeforeCompile;duplicate.customProgramCacheKey=material.customProgramCacheKey;
+    const proxy=mesh.clone(false);proxy.material=duplicate;proxy.frustumCulled=false;proxy.castShadow=false;proxy.visible=true;group.add(proxy);
    }
   }
-  if(!cacheEntry.proxies.length)return false;
-  for(const light of lightList){const copy=light.clone(false);light.getWorldPosition(copy.position);light.getWorldQuaternion(copy.quaternion);copy.castShadow=light.castShadow;cacheEntry.scene.add(copy);cacheEntry.lights.push(copy);if(copy.target)cacheEntry.scene.add(copy.target);}
-  const lens=camera.clone();lens.layers.enableAll();lens.position.set(0,1,3);lens.lookAt(0,1,0);lens.updateMatrixWorld(true);
-  renderer.setRenderTarget(target);renderer.setViewport(0,0,8,8);renderer.setScissor(0,0,8,8);renderer.setScissorTest(true);renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=false;
-  renderer.compile(cacheEntry.scene,lens);renderer.render(cacheEntry.scene,lens);
-  const gl=renderer.getContext(),pixel=new Uint8Array(4);gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);
-  remembered.set(key,cacheEntry);succeeded=true;
- }catch(error){console.warn('Legendary outfit shader prewarm deferred:',error?.message||error);return false;
- }finally{
-  renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);renderer.setRenderTarget(destination);renderer.shadowMap.autoUpdate=shadowAuto;renderer.shadowMap.needsUpdate=shadowDirty;
-  target.dispose();actor.group.visible=original;MazeAppearance.apply(actor,player);applyServiceActorLight(actor.group,player);MazeAppearance.shadeLegendary(actor,legendaryLightAt(player));
-  if(!succeeded){for(const m of cacheEntry.materials)m.dispose();cacheEntry.scene.clear();}
- }
- return succeeded;
+  if(!group.children.length)return null;remembered.set(key,group);return group;
+ }catch(error){for(const mesh of group.children)mesh.material.dispose();console.warn('Legendary material preparation deferred:',error?.message||error);return null;}
+ finally{MazeAppearance.apply(actor,player);actor.group.visible=original;applyServiceActorLight(actor.group,player);}
 }
-// Prepare the level's loaded graphics behind its loading cover. Screen and
-// reflection targets need different shader variants. Small batches let the
-// browser paint progress and process multiplayer heartbeats between draws.
+
+
+// Submit compilation before drawing so the driver can compile in parallel.
+// Every wait yields: the loading screen and multiplayer heartbeats stay live.
+const graphicsYield=()=>new Promise(resolve=>setTimeout(resolve,0));
+async function waitGraphicsPrograms(programs,valid){
+ if(!renderer.extensions.has('KHR_parallel_shader_compile'))return valid();
+ while(valid()){
+  if(renderer.getContext().isContextLost())throw new Error('The graphics context was interrupted.');
+  const ready=programs.reduce((count,program)=>count+Number(!program.program||program.isReady()),0);
+  if(ready===programs.length)return true;
+  $('loadingText').textContent='Preparing lighting · '+Math.round(ready/Math.max(1,programs.length)*100)+'%';
+  await new Promise(resolve=>setTimeout(resolve,8));
+ }
+ return false;
+}
+async function waitGraphicsUploads(valid){
+ const gl=renderer.getContext();
+ if(!gl.fenceSync){gl.flush();return valid();}
+ const fence=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);if(!fence){gl.flush();return valid();}
+ gl.flush();
+ try{while(valid()){
+  const status=gl.clientWaitSync(fence,0,0);
+  if(status===gl.ALREADY_SIGNALED||status===gl.CONDITION_SATISFIED)return true;
+  if(status===gl.WAIT_FAILED||gl.isContextLost())throw new Error('The graphics context was interrupted.');
+  await new Promise(resolve=>setTimeout(resolve,4));
+ }}finally{gl.deleteSync(fence);}
+ return false;
+}
 async function warmLevelGraphics(){
  if(!renderer||!scene||!state.env||!actor?.ready)return false;
- // Construct the tiny consumable props before batched shader preparation,
- // so drawing the first bottle or using a battery cannot compile mid-chase.
  if(window.MazeItemUseVisuals){MazeItemUseVisuals.ensure(actor);for(const entry of mp?.visuals?.entries?.values?.()||[])if(entry.actor!==actor)MazeItemUseVisuals.ensure(entry.actor);}
  let spotLights=0;scene.traverseVisible(o=>{if(o.isSpotLight)spotLights++;});
  const environment=state.env,key=[settings.quality,renderer.outputColorSpace,renderer.toneMapping,state.renderRatio,spotLights].join('|');
@@ -24703,69 +24822,91 @@ async function warmLevelGraphics(){
  const loadToken=state.loadToken,session=mp,epoch=mp?.epoch;
  const valid=()=>state.env===environment&&state.loadToken===loadToken&&mp===session&&(!session||!session.left&&session.epoch===epoch)&&!['menu','mp-disconnected','error'].includes(state.mode);
  const started=performance.now(),lens=camera.clone();lens.layers.enableAll();
- // A timer, not RAF: hidden-tab loading can still complete.
- await new Promise(resolve=>setTimeout(resolve,0));if(!valid())return false;
- // Furnished-room routes are immutable; build their graph before the first
- // enemy pursuit instead of paying that cost on a gameplay frame.
- C.prepareNavigation?.(state.level);
- // Spread the three one-time CPU texture conversions over separate tasks.
- for(const style of ['gold','chrome','prism']){
-  MazeAppearance.prewarm(actor,style);
-  await new Promise(resolve=>setTimeout(resolve,0));if(!valid())return false;
+ await graphicsYield();if(!valid())return false;
+ // Clients never run enemy navigation; the authority prepares this graph.
+ if(!session||session.net.isHost)C.prepareNavigation?.(state.level);
+ for(const style of ['gold','chrome','prism']){MazeAppearance.prewarm(actor,style);await graphicsYield();if(!valid())return false;}
+ flashlightOcclusion?.prepareDepth?.();await graphicsYield();if(!valid())return false;
+ // The render wrapper enables the four flashlight shadow slots. Configure
+ // those before compilation, otherwise it compiles a second lighting variant
+ // synchronously on the first real draw.
+ flashlightOcclusion?.update();
+ const weaponPreparation=weaponWarmup([...new Set([actor,...(mp?.visuals?.entries?.values?.()||[])].map(entry=>entry.actor||entry))],true);
+ await graphicsYield();if(!valid())return false;
+ const legendarySource=warmLegendaryRenderer(),legendary=legendarySource?legendarySource.clone(true):null;
+ if(legendary){legendary.visible=false;scene.add(legendary);}
+ try{
+ await graphicsYield();if(!valid())return false;
+ const nodes=[],renderables=[];scene.traverse(o=>{nodes.push(o);if(o.isMesh||o.isLine||o.isPoints||o.isSprite)renderables.push(o);});
+ // PMREM conversion renders a tiny reflection map internally. Do it before
+ // queuing the floor's shaders; otherwise that hidden draw drains the entire
+ // outstanding compiler queue synchronously inside the final material batch.
+ if(legendary){const reflectionMeshes=new Set();legendary.traverse(o=>reflectionMeshes.add(o));renderables.sort((a,b)=>Number(reflectionMeshes.has(b))-Number(reflectionMeshes.has(a)));}
+ const targets=[null],targetKeys=new Set();
+ for(const view of [mirror,security])if(view){
+  if(view===mirror)view.resizeForViewer();
+  const target=view.target,signature=[target.texture.colorSpace,target.texture.type,target.texture.format,!!target.isXRRenderTarget].join('|');
+  // Mirror and CCTV use the same output program. Compile/upload it once.
+  if(!targetKeys.has(signature)){targetKeys.add(signature);targets.push(target);}
  }
- // Linked metallic shaders and their textures are warmed in the same render
- // configuration the floor uses, rather than when someone first equips them.
- warmLegendaryRenderer();
- await new Promise(resolve=>setTimeout(resolve,0));if(!valid())return false;
- flashlightOcclusion?.prepareDepth?.();
- const renderables=[],lightParents=new Set();scene.traverse(o=>{if(o.isMesh||o.isLine||o.isPoints||o.isSprite)renderables.push(o);if(o.isLight)for(let parent=o.parent;parent&&parent!==scene;parent=parent.parent)lightParents.add(parent);});
- const batchSize=24,targets=[null];if(mirror){mirror.resizeForViewer();targets.push(mirror.target);}if(security)targets.push(security.target);
- const passMilliseconds=[],batchMilliseconds=[];
+ const batchSize=48,batchMilliseconds=[],passMilliseconds=[],compileMilliseconds=[];
+ function withTarget(destination,selected,operation){
+  const saved=[],target=renderer.getRenderTarget(),face=renderer.getActiveCubeFace(),mip=renderer.getActiveMipmapLevel(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest(),auto=renderer.shadowMap.autoUpdate,dirty=renderer.shadowMap.needsUpdate;
+  const targetViewport=destination?.viewport.clone(),targetScissor=destination?.scissor.clone(),targetScissorTest=destination?.scissorTest;
+  try{
+   for(const o of nodes){if(o.isLight)continue;const drawable=o.isMesh||o.isLine||o.isPoints||o.isSprite;saved.push({o,visible:o.visible,frustum:o.frustumCulled,count:o.isInstancedMesh?o.count:null});o.visible=!drawable||selected.has(o);o.frustumCulled=false;if(o.isInstancedMesh)o.count=Math.min(1,o.instanceMatrix.count);}
+   // Drawable parents (e.g. clothing) can contain other warmed props.
+   for(const o of selected)for(let parent=o.parent;parent&&parent!==scene;parent=parent.parent)parent.visible=true;
+   if(mirror&&destination===mirror.target)mirror.glass.visible=false;
+   if(security&&destination===security.target)security.screen.visible=false;
+   if(destination){destination.viewport.set(0,0,8,8);destination.scissor.set(0,0,8,8);destination.scissorTest=true;renderer.setRenderTarget(destination);}
+   else{renderer.setRenderTarget(null);renderer.setViewport(0,0,8,8);renderer.setScissor(0,0,8,8);renderer.setScissorTest(true);}
+   renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=destination===null&&renderer.shadowMap.enabled;
+   return operation();
+  }finally{
+   for(const entry of saved){entry.o.visible=entry.visible;entry.o.frustumCulled=entry.frustum;if(entry.count!==null)entry.o.count=entry.count;}
+   if(destination){destination.viewport.copy(targetViewport);destination.scissor.copy(targetScissor);destination.scissorTest=targetScissorTest;}
+   renderer.setRenderTarget(target,face,mip);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);renderer.shadowMap.autoUpdate=auto;renderer.shadowMap.needsUpdate=dirty;
+  }
+ }
+ const all=new Set(renderables),compileBatchSize=12,compileRoot=new T.Group();
+ // The pinned Three renderer accepts a separate target scene for lighting.
+ // Visit this batch's actual meshes without reparenting them or cloning assets.
+ compileRoot.traverseVisible=()=>{};
+ // Queue both output variants before waiting, instead of serializing two
+ // independent driver compilation jobs. No scene/viewport override survives a yield.
  for(let pass=0;pass<targets.length;pass++){
-  let passTime=0;
-  for(let batch=0,batchCount=Math.ceil(renderables.length/batchSize);batch<=batchCount;batch++){
-   const first=batch*batchSize,validation=batch===batchCount;
-   if(first||pass){await new Promise(resolve=>setTimeout(resolve,0));if(!valid())return false;}
-   const passStarted=performance.now(),destination=targets[pass],selected=new Set(validation?renderables:renderables.slice(first,first+batchSize)),saved=[];
-   for(const child of selected)for(let parent=child.parent;parent&&parent!==scene;parent=parent.parent)selected.add(parent);
-   // Capture fresh state AFTER the yield. Resizing, disconnecting or other
-   // callbacks never see forced visibility and are never undone by old state.
-   const target=renderer.getRenderTarget(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest(),auto=renderer.shadowMap.autoUpdate,dirty=renderer.shadowMap.needsUpdate;
-   const destinationViewport=destination?.viewport.clone(),destinationScissor=destination?.scissor.clone(),destinationScissorTest=destination?.scissorTest;
-   $('loadingText').textContent='Preparing graphics · '+Math.min(100,Math.round((pass+Math.min(renderables.length,first+batchSize)/renderables.length)/targets.length*100))+'%';
-   try{
-    scene.traverse(o=>{
-     if(o.isLight)return;const drawable=o.isMesh||o.isLine||o.isPoints||o.isSprite;
-     saved.push({o,visible:o.visible,frustum:o.frustumCulled,count:o.isInstancedMesh?o.count:null});
-     o.visible=!drawable||selected.has(o)||lightParents.has(o);o.frustumCulled=false;
-     if(o.isInstancedMesh)o.count=Math.min(1,o.instanceMatrix.count);
-    });
-    if(mirror&&destination===mirror.target)mirror.glass.visible=false;
-    if(security&&destination===security.target)security.screen.visible=false;
-    // Store offscreen warmup bounds on the target so nested shadow renders
-    // restore the same 8-pixel viewport, without changing canvas defaults.
-    if(destination){destination.viewport.set(0,0,8,8);destination.scissor.set(0,0,8,8);destination.scissorTest=true;renderer.setRenderTarget(destination);}
-    else{renderer.setRenderTarget(null);renderer.setViewport(0,0,8,8);renderer.setScissor(0,0,8,8);renderer.setScissorTest(true);}
-    renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=destination===null&&renderer.shadowMap.enabled;
-    // The final already-warm full draw also prepares shared shadow-depth
-    // material combinations used when skinned and static casters coexist.
-    // renderer.compile traverses hidden objects too. Rendering this small
-    // visible batch bounds cold compilation and deferred first-draw work.
-    renderer.render(scene,lens);
-    const pixel=new Uint8Array(4),gl=renderer.getContext();gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);
-   }finally{
-    for(const entry of saved){entry.o.visible=entry.visible;entry.o.frustumCulled=entry.frustum;if(entry.count!==null)entry.o.count=entry.count;}
-    if(destination){destination.viewport.copy(destinationViewport);destination.scissor.copy(destinationScissor);destination.scissorTest=destinationScissorTest;}
-    renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);renderer.setRenderTarget(target);renderer.shadowMap.autoUpdate=auto;renderer.shadowMap.needsUpdate=dirty;
-   }
-   const duration=performance.now()-passStarted;passTime+=duration;batchMilliseconds.push(duration);
+  for(let first=0;first<renderables.length;first+=compileBatchSize){
+   if(!valid())return false;const compileStart=performance.now(),batch=renderables.slice(first,first+compileBatchSize);
+   compileRoot.traverse=visitor=>{for(const object of batch)visitor(object);};
+   $('loadingText').textContent='Preparing graphics · '+(pass===0?'player view':'reflections');
+   withTarget(targets[pass],all,()=>renderer.compile(compileRoot,lens,scene));
+   compileMilliseconds.push(performance.now()-compileStart);await graphicsYield();
+  }
+ }
+ const programs=renderer.info.programs.slice(),linkStarted=performance.now();
+ if(!await waitGraphicsPrograms(programs,valid))return false;
+ const linkMilliseconds=performance.now()-linkStarted;
+ for(let pass=0;pass<targets.length;pass++){
+  if(!valid())return false;
+  const destination=targets[pass];let passTime=0;
+  for(let first=0;first<renderables.length;first+=batchSize){
+   await graphicsYield();if(!valid())return false;
+   const before=performance.now(),selected=new Set(renderables.slice(first,first+batchSize));
+   $('loadingText').textContent='Preparing graphics · '+Math.round((pass+(first+selected.size)/Math.max(1,renderables.length))/targets.length*100)+'%';
+   withTarget(destination,selected,()=>renderer.render(scene,lens));
+   const duration=performance.now()-before;batchMilliseconds.push(duration);passTime+=duration;
+   if(!await waitGraphicsUploads(valid))return false;
   }
   passMilliseconds.push(passTime);
  }
  environment.graphicsWarmKey=key;
- state.graphicsWarmup={milliseconds:performance.now()-started,programs:renderer.info.programs.length,passes:targets.length,batches:batchMilliseconds.length,passMilliseconds,maxBlockingMilliseconds:Math.max(...batchMilliseconds)};
+ for(const rig of weaponPreparation?.pending||[])rig.weaponWarmKey=weaponPreparation.key;
+ state.graphicsWarmup={milliseconds:performance.now()-started,programs:renderer.info.programs.length,passes:targets.length,batches:batchMilliseconds.length,compileMilliseconds,linkMilliseconds,passMilliseconds,maxBlockingMilliseconds:Math.max(0,...batchMilliseconds,...compileMilliseconds),parallelShaders:renderer.extensions.has('KHR_parallel_shader_compile')};
  return true;
+ }finally{if(legendary)scene.remove(legendary);}
 }
+
 
 // Refillable bottles: ownership and thirst changes commit only on the authority.
 let bottlePromptAt=0,bottlePromptTarget=null;
