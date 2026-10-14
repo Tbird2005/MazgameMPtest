@@ -8054,6 +8054,57 @@ root.MazeCore=api;if(typeof module!=='undefined'&&module.exports)module.exports=
 
 
 </script><script>MazeBoot.advance(138066);</script><script>
+/* Shared, opaque opal-glass ceiling fixtures. Geometry is owned by the room build,
+   so changing floors releases it with the rest of the architecture. */
+(function(root){
+'use strict';
+function createKit(T,resources,materials){
+ const geometries=new Map(),{metal,shade,glass,trim=metal}=materials;
+ const own=(key,build)=>{if(!geometries.has(key)){const geometry=build();geometry.name='Ceiling fixture / '+key;resources.geometries.add(geometry);geometries.set(key,geometry);}return geometries.get(key);};
+ const lathe=(key,points)=>own(key,()=>new T.LatheGeometry(points.map(([r,y])=>new T.Vector2(r,y)),20));
+ const ring=()=>own('rolled brass rim',()=>new T.TorusGeometry(1,.025,5,20).rotateX(Math.PI/2));
+ const cylinder=()=>own('mount and stem',()=>new T.CylinderGeometry(1,1,1,12));
+ const globe=()=>own('opal bulb',()=>new T.SphereGeometry(1,16,10));
+ const bar=()=>own('lantern corner rib',()=>new T.BoxGeometry(1,1,1));
+ function add(parent,x,z,kind='pendant',ceiling=3.04){
+  const g=new T.Group();g.name='Modeled ceiling fixture / '+kind;g.position.set(x,ceiling,z);g.userData.ceilingFixture=kind;parent.add(g);
+  const mesh=(name,geometry,material,px,py,pz,sx=1,sy=1,sz=1)=>{const o=new T.Mesh(geometry,material);o.name=name;o.position.set(px,py,pz);o.scale.set(sx,sy,sz);o.castShadow=false;o.receiveShadow=true;g.add(o);return o;};
+  mesh('Stepped ceiling rose',lathe('ceiling rose',[[0,-.049],[.10,-.049],[.10,-.035],[.16,-.022],[.16,0],[0,0]]),metal,0,0,0);
+  if(kind==='pendant'){
+   mesh('Pendant brass suspension',cylinder(),metal,0,-.102,0,.016,.112,.016);
+   mesh('Bell shade crown',lathe('bell crown',[[0,-.181],[.066,-.181],[.072,-.156],[.045,-.137],[0,-.137]]),metal,0,0,0);
+   // A curved, hollow shade, with its lit opal bulb projecting below the lip.
+   mesh('Flared enamel bell shade',lathe('bell shade',[[.372,-.365],[.37,-.347],[.29,-.315],[.215,-.262],[.14,-.204],[.062,-.174]]),shade,0,0,0);
+   mesh('Pale enamel shade lining',lathe('bell lining',[[.061,-.183],[.132,-.210],[.206,-.269],[.281,-.321],[.363,-.351],[.371,-.365]]),trim,0,0,0);
+   mesh('Rolled pendant rim',ring(),metal,0,-.365,0,.371,.371,.371);
+   mesh('Exposed warm opal diffuser',globe(),glass,0,-.352,0,.164,.111,.164);
+  }else if(kind==='utility'){
+   mesh('Utility lantern short stem',cylinder(),metal,0,-.090,0,.019,.086,.019);
+   mesh('Sloping lantern cap',lathe('lantern cap',[[0,-.169],[.214,-.169],[.214,-.149],[.072,-.105],[0,-.105]]),shade,0,0,0);
+   mesh('Rounded lantern opal panes',lathe('lantern glass',[[0,-.438],[.127,-.428],[.176,-.396],[.176,-.212],[.146,-.172],[0,-.172]]),glass,0,0,0);
+   mesh('Lantern lower gallery',ring(),metal,0,-.404,0,.181,.181,.181);
+   for(const sx of[-1,1])for(const sz of[-1,1])mesh('Open lantern corner rib',bar(),metal,sx*.137,-.283,sz*.137,.017,.255,.017);
+   mesh('Lantern small finial',globe(),metal,0,-.448,0,.032,.018,.032);
+  }else{
+   const shallow=kind==='bulkhead',scale=shallow?.59:1,drop=shallow?.15:0;
+   // The pool vault ribs end either side of the center. A slim stem passes
+   // through that gap; the complete glass fitting hangs below their underside.
+   mesh('Schoolhouse globe neck',cylinder(),metal,0,shallow?-.158:-.081,0,shallow?.028:.077,shallow?.218:.076,shallow?.028:.077);
+   mesh('Rounded schoolhouse opal glass',lathe('schoolhouse glass',[[0,-.301],[.12,-.292],[.223,-.257],[.286,-.205],[.304,-.143],[.282,-.094],[.213,-.057],[.112,-.035],[.081,0],[0,0]]),glass,0,-.117-drop,0,1,scale,1);
+   mesh('Globe brass collar',ring(),metal,0,-.118-drop,0,.082,.082,.082);
+   if(shallow){
+    mesh('Sealed bulkhead mounting ring',ring(),metal,0,-.192-drop,0,.306,.306,.306);
+    for(const angle of[0,Math.PI*2/3,Math.PI*4/3]){const r=.293;mesh('Bulkhead glass retaining clip',bar(),metal,Math.cos(angle)*r,-.206-drop,Math.sin(angle)*r,.028,.075,.028);}
+   }
+  }
+  return g;
+ }
+ return{add};
+}
+root.MazeCeilingFixtures=Object.freeze({createKit});
+})(typeof window!=='undefined'?window:globalThis);
+
+
 /* Seeded forest topology, continuous trail ribbons, and inhabited-scale cabins.
    Every obstacle, support surface and room portal has an explicit world footprint. */
 (function(root){
@@ -8183,6 +8234,10 @@ function trailSegments(level){
  return out;
 }
 
+// Furniture offsets use the same right-handed local frame as their rendered groups.
+// The wall-placement helper's u axis runs in the opposite direction.
+const FOREST_SOFA=Object.freeze({arm:.14,seatY:.492,seatHeight:.10,chaiseWidth:.92,chaiseDepth:1.15,chaiseZ:-.90,chaiseInset:.46});
+function forestFurniturePoint(p,yaw,x,z){const c=Math.cos(yaw),s=Math.sin(yaw);return{x:p.x+c*x+s*z,z:p.z-s*x+c*z};}
 function forestLayout(level,seed,theme='forest',players=level.supplyPlayers){
  const r=random(hash('forest-house-supplies-v1:'+seed)),rooms=level.survivalRooms.map(room=>({...room,theme:'forest'})),beds=[],furniture=[],wardrobes=[],colliders=[],loot=[],magicLoot=[],lights=[],stamp=hash('forest-provisions:'+seed).toString(36);
  players=Math.max(1,Math.min(4,Number.isInteger(players)?players:1));
@@ -8196,7 +8251,20 @@ function forestLayout(level,seed,theme='forest',players=level.supplyPlayers){
  const clearFurniture=boxes=>boxes.every(b=>!doorZones.some(d=>overlap(b,d,.015))&&!colliders.some(c=>c.furniture&&overlap(b,c,.10)));
  const roomPortals=room=>[...(room.doors||[room.door]),...(room.interiorRooms||[]).map(r=>r.door)];
  function wallsFor(room,cell){const section=room.sections.find(s=>s.cells.some(c=>c.x===cell.x&&c.z===cell.z)),set=new Set(section.cells.map(c=>key(c.x,c.z))),doors=roomPortals(room);return DIRS.filter(([dx,dz])=>!set.has(key(cell.x+dx,cell.z+dz))&&!doors.some(d=>d.x===cell.x*4+dx*2&&d.z===cell.z*4+dz*2));}
- function addFurniture(room,cell,wall,u,v,spec){const yaw=Math.atan2(wall[0],wall[1]),p=world(cell,wall,u,v),id=room.id+':'+spec.kind+':'+furniture.filter(f=>f.roomId===room.id&&f.kind===spec.kind).length,extra={furniture:true,enemyPassThrough:true,standable:spec.standable!==false,footstepSurface:spec.soft?'carpet':'wood',furnitureRootId:id},boxes=[bounds(p,spec.width,spec.depth,yaw,spec.height,id,cell,extra)];if(spec.variant==='corner-sectional'){const q=world(cell,wall,u+spec.chaiseSide*(spec.width/2-.46),v-.90);boxes.push(bounds(q,.92,1.15,yaw,.55,id+':chaise',cell,extra));}if(!clearFurniture(boxes))return null;const item={id,roomId:room.id,cell:{...cell},wall:wall.slice(),x:p.x,z:p.z,yaw,...spec};furniture.push(item);colliders.push(...boxes);return item;}
+ function addFurniture(room,cell,wall,u,v,spec){
+  const yaw=Math.atan2(wall[0],wall[1]),p=world(cell,wall,u,v),id=room.id+':'+spec.kind+':'+furniture.filter(f=>f.roomId===room.id&&f.kind===spec.kind).length,extra={furniture:true,enemyPassThrough:true,standable:spec.standable!==false,footstepSurface:spec.soft?'carpet':'wood',furnitureRootId:id},seating=spec.kind==='sofa'||spec.kind==='armchair',seatTop=FOREST_SOFA.seatY+FOREST_SOFA.seatHeight/2,boxes=[bounds(p,spec.width,spec.depth,yaw,seating?seatTop:spec.height,id,cell,extra)];
+  const piece=(name,x,z,w,d,h)=>boxes.push(bounds(forestFurniturePoint(p,yaw,x,z),w,d,yaw,h,id+':'+name,cell,extra));
+  if(seating){
+   // Cushions, arms and backrests each support feet at their visible height.
+   piece('back',0,spec.depth/2-.10,spec.width,.20,spec.height);
+   const cushionDepth=.39*Math.sin(.09)+.15*Math.cos(.09),cushionTop=.735+.195*Math.cos(.09)+.075*Math.sin(.09);
+   piece('back-cushions',0,spec.depth/2-.24,spec.width-FOREST_SOFA.arm*2-.08,cushionDepth,cushionTop);
+   for(const side of[-1,1])piece('arm:'+side,side*(spec.width/2-FOREST_SOFA.arm/2),-.05,FOREST_SOFA.arm,spec.depth-.10,.86);
+  }
+  if(spec.variant==='corner-sectional')piece('chaise',spec.chaiseSide*(spec.width/2-FOREST_SOFA.chaiseInset),FOREST_SOFA.chaiseZ,FOREST_SOFA.chaiseWidth,FOREST_SOFA.chaiseDepth,seatTop);
+  if(!clearFurniture(boxes))return null;
+  const item={id,roomId:room.id,cell:{...cell},wall:wall.slice(),x:p.x,z:p.z,yaw,...spec};furniture.push(item);colliders.push(...boxes);return item;
+ }
  for(const room of rooms){
   for(const b of room.boundaries){const window=hasHouseWindow(b),byaw=Math.atan2(b.dx,b.dz),id=room.id+':wall:'+key(b.cell.x,b.cell.z)+':'+b.dx+','+b.dz;
    for(const[u,width]of b.doorId?[[-1.5,1],[1.5,1]]:window?[[-1.375,1.25],[1.375,1.25]]:[[0,4]]){const q=world(b.cell,[b.dx,b.dz],u,1.98);colliders.push(bounds(q,width,.12,byaw,3.1,id+':'+u,b.cell,{survivalWall:true}));}
@@ -8387,7 +8455,8 @@ function buildHouses(T,data){
  const furnitureDepth=(id,kind,group,colliders)=>{group.userData.flashlightFurniture=true;flashlightFurniture.push({id,kind,group,colliders});};
  const geo=new T.BoxGeometry(1,1,1),cylinder=new T.CylinderGeometry(1,1,1,10),pane=new T.PlaneGeometry(1,1);resources.geometries.add(geo);resources.geometries.add(cylinder);resources.geometries.add(pane);
  const mat=(name,color,extra={})=>{const m=new T.MeshStandardMaterial({color,roughness:.93,...extra});m.name='House / '+name;resources.materials.add(m);return m;};
- const m={wood:mat('warm timber',0x73604b),siding:mat('weathered siding',0x687a6b),pale:mat('old white paint',0xaaa795),dark:mat('dark roof and iron',0x303c37),stone:mat('fieldstone foundation',0x767b70),cloth:mat('wool blanket',0x697963),linen:mat('linen bedding',0xc7bfa7),metal:mat('worn brass',0x8c855e,{metalness:.45}),light:mat('warm lantern glass',0xf4d8a5,{emissive:0xffc16e,emissiveIntensity:.4})};
+ const m={wood:mat('warm timber',0x73604b),siding:mat('weathered siding',0x687a6b),pale:mat('old white paint',0xaaa795),dark:mat('dark roof and iron',0x303c37),stone:mat('fieldstone foundation',0x767b70),cloth:mat('wool blanket',0x697963),linen:mat('linen bedding',0xc7bfa7),metal:mat('worn brass',0x8c855e,{metalness:.45}),light:mat('warm lantern glass',0xf4d8a5,{emissive:0xffe3b0,emissiveIntensity:1.1})};
+ const ceilingFixtures=root.MazeCeilingFixtures.createKit(T,resources,{metal:m.metal,shade:m.pale,glass:m.light,trim:m.pale});
  // Clear panes transmit the spotlight rather than receiving its diffuse and
  // specular disc like a painted surface. Keep a faint, unlit glass tint; the
  // aperture and opaque trim supply the window's shape in every light level.
@@ -8486,11 +8555,11 @@ function buildHouses(T,data){
    else if(f.kind==='clothes-rack'){for(const x of[-1.29,1.29]){box(fg,'Clothes rack carved upright',m.wood,x,1.04,0,.085,2.08,.085);box(fg,'Clothes rack splayed foot',m.wood,x,.08,-.005,.17,.11,.61);}box(fg,'Brass clothes hanging rail',m.metal,0,1.95,-.12,2.62,.055,.055);box(fg,'Linen lower slatted shelf',m.wood,0,.24,.04,2.62,.065,.48);for(const x of[-1.18,-.89,-.60,-.31,-.02,.27,.56,.85,1.14])box(fg,'Lower rack shelf slat',siding,x,.286,.04,.19,.025,.48);box(fg,'Folded spare towel',m.linen,.77,.34,.10,.58,.08,.26);box(fg,'Folded wool blanket',m.cloth,.77,.415,.09,.55,.06,.27);
     if(f.magicLight){box(fg,'Magic light display shelf',m.wood,0,2.305,-.03,.66,.044,.56);for(const x of[-.27,.27])box(fg,'Magic light shelf bracket',m.metal,x,2.19,.18,.025,.24,.06);}
    }
-   else if(f.kind==='sofa'||f.kind==='armchair'){const fabric=upholstery(f.upholstery),width=f.width,depth=f.depth,seats=f.seats||1,arm=.14,seatWidth=(width-arm*2-.08)/seats;
+   else if(f.kind==='sofa'||f.kind==='armchair'){const fabric=upholstery(f.upholstery),width=f.width,depth=f.depth,seats=f.seats||1,arm=FOREST_SOFA.arm,seatWidth=(width-arm*2-.08)/seats;
     for(const x of[-width/2+.15,width/2-.15])for(const z of[-depth/2+.13,depth/2-.13])box(fg,'Turned sofa foot',m.wood,x,.11,z,.11,.22,.11);
     box(fg,'Upholstered sofa base',fabric,0,.32,0,width,.25,depth);box(fg,'Padded sofa back',fabric,0,f.height-.24,depth/2-.10,width,.48,.20);for(const x of[-width/2+arm/2,width/2-arm/2])box(fg,'Rolled sofa arm',fabric,x,.59,-.05,arm,.54,depth-.10);
-    for(let seat=0;seat<seats;seat++){const x=-width/2+arm+.04+seatWidth*(seat+.5);box(fg,'Separate upholstered seat cushion',fabric,x,.492,-.07,seatWidth-.035,.10,depth-.28);part(fg,'Loose sofa back cushion',geo,fabric,x,.735,depth/2-.24,seatWidth-.04,.39,.15,[-.09,0,0]);box(fg,'Cushion piping seam',m.linen,x,.488,-depth/2+.06,seatWidth-.06,.011,.011);}
-    if(f.variant==='corner-sectional'){const x=f.chaiseSide*(width/2-.46);box(fg,'Sectional chaise lower body',fabric,x,.32,-.90,.92,.25,1.15);box(fg,'Sectional chaise cushion',fabric,x,.492,-.93,.85,.10,1.10);for(const z of[-1.37,-.47])box(fg,'Chaise foot',m.wood,x+f.chaiseSide*.27,.11,z,.11,.22,.11);}
+    for(let seat=0;seat<seats;seat++){const x=-width/2+arm+.04+seatWidth*(seat+.5);box(fg,'Separate upholstered seat cushion',fabric,x,FOREST_SOFA.seatY,-.07,seatWidth-.035,FOREST_SOFA.seatHeight,depth-.28);part(fg,'Loose sofa back cushion',geo,fabric,x,.735,depth/2-.24,seatWidth-.04,.39,.15,[-.09,0,0]);box(fg,'Cushion piping seam',m.linen,x,.488,-depth/2+.06,seatWidth-.06,.011,.011);}
+    if(f.variant==='corner-sectional'){const x=f.chaiseSide*(width/2-FOREST_SOFA.chaiseInset);box(fg,'Sectional chaise lower body',fabric,x,.32,FOREST_SOFA.chaiseZ,FOREST_SOFA.chaiseWidth,.25,FOREST_SOFA.chaiseDepth);box(fg,'Sectional chaise cushion',fabric,x,FOREST_SOFA.seatY,-.93,.85,FOREST_SOFA.seatHeight,1.10);for(const z of[-1.37,-.47])box(fg,'Chaise foot',m.wood,x+f.chaiseSide*.27,.11,z,.11,.22,.11);}
    }
    else if(f.kind==='sideboard'){box(fg,'Sideboard body',m.wood,0,.54,0,1.66,.88,.53);box(fg,'Sideboard overhanging top',siding,0,1.014,0,1.68,.052,.56);for(const x of[-.79,.79])for(const z of[-.22,.22])box(fg,'Sideboard foot',m.wood,x,.10,z,.09,.20,.09);for(const x of[-.42,.42]){box(fg,'Inset sideboard panel',m.pale,x,.53,-.273,.73,.67,.023);box(fg,'Sideboard brass knob',m.metal,x+(x<0?.23:-.23),.57,-.295,.045,.045,.032);}box(fg,'Carved sideboard top drawer',m.wood,0,.91,-.276,1.49,.12,.035);box(fg,'Drawer brass pull',m.metal,0,.91,-.302,.17,.024,.024);}
    else if(f.kind==='bookcase'){for(const x of[-.605,.605])box(fg,'Bookcase side',m.wood,x,1.10,0,.07,2.20,.42);box(fg,'Bookcase back',siding,0,1.10,.19,1.21,2.20,.035);for(const y of[.10,.61,1.12,1.63,2.165])box(fg,'Bookcase shelf',m.wood,0,y,0,1.28,.055,.42);const bookR=random(hash('forest-books:'+f.id));for(const y of[.635,1.145,1.655])for(let i=0;i<6;i++){const height=.23+bookR()*.19,x=-.49+i*.175;box(fg,'Old cloth-bound book',upholstery(Math.floor(bookR()*6)),x,y+height/2,-.04,.09+bookR()*.04,height,.24);box(fg,'Book spine band',m.pale,x,y+height*.72,-.165,.09,.013,.014);}}
@@ -8499,7 +8568,7 @@ function buildHouses(T,data){
    furnitureDepth(f.id,f.kind,fg,data.colliders.filter(c=>c.furnitureRootId===f.id||c.survivalId===f.id));
   }
   for(const p of(data.wardrobes||[]).filter(p=>p.roomId===room.id)){if(!root.MazeForestWardrobes)throw new Error('Forest wardrobe models were not loaded.');const wardrobe=root.MazeForestWardrobes.create(T,p);rg.add(wardrobe.group);wardrobes.push(wardrobe);furnitureDepth(p.id,'wardrobe',wardrobe.group,[p.collider,...wardrobe.colliders]);}
-  for(const section of room.sections||[{cells:room.cells}]){const lx=section.cells.reduce((n,c)=>n+c.x,0)*4/section.cells.length,lz=section.cells.reduce((n,c)=>n+c.z,0)*4/section.cells.length;part(rg,'Hanging room lantern',cylinder,m.dark,lx,2.79,lz,.20,.44,.20);part(rg,'Warm lantern core',cylinder,m.light,lx,2.78,lz,.17,.30,.17);box(rg,'Lantern suspension',m.dark,lx,3.00,lz,.035,.22,.035);}
+  for(const section of room.sections||[{cells:room.cells}]){const lx=section.cells.reduce((n,c)=>n+c.x,0)*4/section.cells.length,lz=section.cells.reduce((n,c)=>n+c.z,0)*4/section.cells.length;ceilingFixtures.add(rg,lx,lz,section.kind==='sleeping'?'opal':['larder','closet'].includes(section.kind)?'utility':'pendant',3.04);}
  }
  // Keep each furniture root intact for exact flashlight depth. Architecture
  // and each rigid piece still merge by material; wardrobe hinges stay live.
@@ -19899,6 +19968,8 @@ function build(THREE,data){
  const furnitureDepth=(id,kind,g)=>{g.userData.flashlightFurniture=true;flashlightFurniture.push({id,kind,group:g,colliders:data.colliders.filter(c=>c.survivalId===id||c.survivalId.startsWith(id+':'))});};
  function material(name,color,options={}){if(!baseMaterials[name]){const m=new T.MeshStandardMaterial({color,roughness:.85,...options});m.name='Survival / '+name;resources.materials.add(m);baseMaterials[name]=m;}return baseMaterials[name];}
  const mats={dormWall:material('dormitory painted plaster',0x788b82),dormLower:material('dormitory timber panels',0x655e4c),kitchenWall:material('kitchen glazed pale ceramic',0xa9bab0,{roughness:.42}),kitchenLower:material('kitchen dark green tile',0x536d65,{roughness:.45}),grout:material('ceramic grout',0x7b9187),ceiling:material('acoustic ceiling',0xb2b5a2),wall:material('wall',palette.wall),floor:material('floor',palette.floor),metal:material('metal',palette.metal,{metalness:.6,roughness:.46}),wood:material('wood',palette.wood),cloth:material('cloth',palette.cloth),linen:material('linen',0xc9c8b1),dark:material('dark',0x19272a),accent:material('brass',palette.accent,{metalness:.48}),ceramic:material('ceramic',0xb5c6bb),glass:material('oven glass',0x142c31,{metalness:.3,roughness:.22}),light:material('frosted light',0xd4e5d6,{emissive:0xd4e5d6,emissiveIntensity:.25})};
+ const fixtureGlass=material('opal ceiling fixture glass',theme==='poolrooms'?0xe4faf6:0xffedd1,{emissive:theme==='poolrooms'?0xe4faf6:0xffedd1,emissiveIntensity:1.1,roughness:.62});
+ const ceilingFixtures=root.MazeCeilingFixtures.createKit(T,resources,{metal:mats.accent,shade:mats.metal,glass:fixtureGlass,trim:mats.linen});
  const roomColors={backrooms:[0xe4d2ad,0xad774f,0xe4d2ad,0xad774f,0xdbd3b9],garden:[0xc4b997,0x7e9270,0xd4caa8,0x75826a,0xb1ad8a],poolrooms:[0xd7e5df,0x66a5a4,0xd7e5df,0x6dadaf,0xe5e7d7],school:[0xc1cfbf,0x749089,0xd8d7bb,0x8caa8e,0xd5d9ce],catacombs:[0x92877b,0x6d665d,0x938979,0x746957,0x6d685e],industrial:[0x849493,0x526866,0xb6bab0,0x627d74,0x9ea6a0],hotel:[0xd2bda0,0x654d3e,0xdecbae,0x78604c,0xcbb699]}[theme];
  ['dormWall','dormLower','kitchenWall','kitchenLower','ceiling'].forEach((k,i)=>mats[k].color.setHex(roomColors[i]));
  mats.leaf=material('living foliage',0x52764d);mats.terracotta=material('terracotta',0xb77d58);mats.water=material('ceramic basin blue',0x4da6b0,{roughness:.28});
@@ -20048,7 +20119,7 @@ function build(THREE,data){
   const x0=Math.min(...room.cells.map(c=>c.x))*4-1.98,x1=Math.max(...room.cells.map(c=>c.x))*4+1.98,z0=Math.min(...room.cells.map(c=>c.z))*4-1.98,z1=Math.max(...room.cells.map(c=>c.z))*4+1.98,cx=(x0+x1)/2,cz=(z0+z1)/2;
   const roof=new T.Group();roof.name='Removable Manila cutaway roof';roof.userData.cutawayRoof=true;rg.add(roof);cutawayRoofs.push(roof);for(const cell of room.cells){box(rg,'Manila orange brown carpet',mats.velvet,cell.x*4,.012,cell.z*4,4,.024,4);footstepSurfaces.push({minX:cell.x*4-2,maxX:cell.x*4+2,minZ:cell.z*4-2,maxZ:cell.z*4+2,y:.024,surface:'carpet',source:'Manila Room carpet'});box(roof,'Manila warm plaster ceiling',mats.ceiling,cell.x*4,3.11,cell.z*4,3.98,.12,3.98);}
   for(const b of room.boundaries){const base=new T.Group();base.position.set(b.cell.x*4,0,b.cell.z*4);base.rotation.y=Math.atan2(b.dx,b.dz);rg.add(base);for(const[u,w]of b.doorId?[[-1.515,.97],[1.515,.97]]:[[0,4]]){box(base,'Manila patterned wall',mats.manilaWall,u,1.525,1.955,w,3.05,.070);box(base,'Manila wood skirting',mats.wood,u,.075,1.90,w,.15,.04);}if(b.doorId)box(base,'Manila doorway lintel',mats.manilaWall,0,2.79,1.955,2.06,.52,.070);box(base,'Manila ceiling coving',mats.ceiling,0,3.015,1.90,4,.065,.10);}
-  for(const cell of room.cells){const g=new T.Group();g.position.set(cell.x*4,0,cell.z*4);rg.add(g);part(g,'Manila warm ceiling diffuser',cylinder,mats.light,0,3.012,0,.19,.038,.19);}
+  for(const cell of room.cells)ceilingFixtures.add(rg,cell.x*4,cell.z*4,'opal',3.05);
   for(const item of data.furniture.filter(f=>f.roomId===room.id))rg.add(item.kind==='wooden-chair'?woodenChair(item):manilaTable(item));
  }
  for(const room of data.rooms){const rg=new T.Group();rg.name=(room.displayName||(room.kind==='dormitory'?area.rest:area.supply))+' / '+room.id;rg.userData.roomId=room.id;rg.userData.cells=room.cells;rg.userData.theme=theme;group.add(rg);roomGroups.push({id:room.id,kind:room.kind,displayName:room.displayName,cells:room.cells,group:rg});if(room.kind==='manila'){manilaRoom(room,rg);continue;}const dorm=room.kind==='dormitory',wallMat=dorm?mats.dormWall:mats.kitchenWall,lowerMat=dorm?mats.dormLower:mats.kitchenLower;
@@ -20075,7 +20146,7 @@ function build(THREE,data){
      part(base,'Hanging votive wax',cylinder,mats.linen,0,2.815,0,.068,.05,.068);
      part(base,'Hanging warm votive flame',sphere,mats.ember,0,2.89,0,.035,.065,.035);
      for(const x of[-.14,.14])rod(base,'Votive suspension chain',mats.dark,[x,2.79,0],[x*.28,3.025,0],.009);
-    }else part(base,'Vault central light',cylinder,mats.light,0,2.993,0,.23,.027,.23);
+    }else ceilingFixtures.add(base,0,0,'bulkhead',3.05);
    }else{
     for(const x of[-1,1])for(const[a,b]of segments(z0,z1,[0],.011))box(base,'Ceiling panel joint',mats.metal,x,3.041,(a+b)/2,.022,.018,b-a);box(base,'Ceiling panel joint',mats.metal,cx,3.041,0,x1-x0,.018,.022);
     box(base,'Ceiling light housing',mats.metal,0,3.006,0,.44,.095,1.11);box(base,'Frosted ceiling light',mats.light,0,2.95,0,.34,.018,.96);
