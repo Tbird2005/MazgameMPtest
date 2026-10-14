@@ -222,7 +222,7 @@ applied afterward. No procedural sinusoidal walk or view bob is used.
 <footer class="tablet-focus-footer"><div class="map-legend"><span><i class="you-symbol">▲</i> YOU</span><span><i class="exit-symbol"></i> LIFT</span><span><i class="closet-symbol"></i> CLOSET</span><span><i class="service-symbol" style="background:#ad8f61;height:7px"></i> SERVICE</span></div><p><kbd>WASD</kbd> pan · Mouse wheel zoom · <kbd>Tab</kbd> return</p><span class="tablet-warning">SCREEN OFF AT ZERO</span></footer>
 </section>
 <section id="pauseScreen" class="screen panel-screen hidden"><div class="panel"><p class="eyebrow">TAKE A BREATH</p><h2>Paused.</h2><p>The maze is waiting.</p><button id="resumeButton" class="primary">Resume</button><button id="pauseSettings" class="secondary">Settings & controls</button><button id="pauseDisclaimers" class="secondary">Disclaimers &amp; help</button><button id="quitButton" class="text-button">Return to menu</button></div></section>
-<section id="settingsScreen" class="screen panel-screen hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="panel settings"><header class="menu-panel-heading"><div class="menu-panel-heading-copy"><p class="eyebrow">MAKE YOURSELF COMFORTABLE</p><h2 id="settingsTitle">Settings.</h2></div><button id="closeSettings" class="secondary">Close settings</button></header><div class="menu-panel-content"><div class="setting"><label for="volume">Sound volume <output id="volumeOut">70%</output></label><input id="volume" type="range" min="0" max="100" value="70"></div><div class="setting"><label for="sensitivity">Mouse sensitivity <output id="sensitivityOut">50%</output></label><input id="sensitivity" type="range" min="10" max="100" value="50"></div><div class="setting"><label for="quality">Graphics</label><select id="quality"><option value="high" selected>High · shadows & full resolution</option><option value="balanced">Balanced · adaptive resolution</option><option value="low">Performance · reduced resolution</option></select></div><div class="setting mouse-options"><label><input id="mouseProtection" type="checkbox" checked> Mouse snap protection</label><p class="setting-note">Rejects unusually large individual mouse events. Turn off if it interrupts intentional fast flicks.</p><label><input id="rawMouse" type="checkbox"> Try raw mouse input</label><p class="setting-note">Applies next time you capture the mouse. Falls back to standard input if unsupported.</p></div><div id="voiceChatSettings" class="setting"></div><div class="controls-list"><div><kbd>X (hold)</kbd><span>Push-to-talk · when Open mic is off</span></div><div><kbd>M</kbd><span>Players · voice mute &amp; volume</span></div><div><kbd>W A S D</kbd><span>Move</span></div><div><kbd>Mouse</kbd><span>Look · click to capture</span></div><div><kbd>Shift</kbd><span>Run</span></div><div><kbd>R</kbd><span>Open / close door</span></div><div><kbd>Q / E</kbd><span>Hold to lean left / right</span></div><div><kbd>C</kbd><span>Toggle crouch · rebind in Controls</span></div><div><kbd>Space</kbd><span>Jump</span></div><div><kbd>F</kbd><span>Flashlight / holster</span></div><div><kbd>Tab</kbd><span>Focus tablet while powered</span></div><div><kbd>Esc</kbd><span>Pause</span></div></div><p id="gameplaySettingsNote" class="setting-note">V opens or stows your tablet; its 15-second charge drains only while open. Tab focuses the map. Use inventory batteries on your tablet or flashlight. The entry door unlocks after 15 seconds and stays closed until you press R. Keep food, water and sleep supplied; an empty meter drains health. Beds take 40 seconds; R or Esc wakes you early without restoring rest. Search kitchens and side passages for food and water. Pocket shortcuts follow the items in slots 1–8. Use R to open or close doors; the starting room’s latch works from either side. The monitor beside AUX POWER shows the live view outside. Press C to crouch. Ctrl cannot be bound. Hold Q or E to lean; Space jumps. F switches your handheld flashlight.</p><button id="settingsDisclaimers" class="secondary">Disclaimers &amp; troubleshooting</button></div></div></section>
+<section id="settingsScreen" class="screen panel-screen hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="panel settings"><header class="menu-panel-heading"><div class="menu-panel-heading-copy"><p class="eyebrow">MAKE YOURSELF COMFORTABLE</p><h2 id="settingsTitle">Settings.</h2></div><button id="closeSettings" class="secondary">Close settings</button></header><div class="menu-panel-content"><div class="setting"><label for="volume">Sound volume <output id="volumeOut">70%</output></label><input id="volume" type="range" min="0" max="100" value="70"></div><div class="setting"><label for="sensitivity">Mouse sensitivity <output id="sensitivityOut">1.00×</output></label><input id="sensitivity" type="range" min="10" max="100" value="50"></div><div class="setting"><label for="quality">Graphics</label><select id="quality"><option value="high" selected>High · shadows & full resolution</option><option value="balanced">Balanced · adaptive resolution</option><option value="low">Performance · reduced resolution</option></select></div><div class="setting mouse-options"><label><input id="mouseProtection" type="checkbox" checked> Mouse snap protection</label><p class="setting-note">Rejects unusually large individual mouse events. Turn off if it interrupts intentional fast flicks.</p><label><input id="rawMouse" type="checkbox"> Try raw mouse input</label><p class="setting-note">Applies next time you capture the mouse. Falls back to standard input if unsupported.</p></div><div id="voiceChatSettings" class="setting"></div><div class="controls-list"><div><kbd>X (hold)</kbd><span>Push-to-talk · when Open mic is off</span></div><div><kbd>M</kbd><span>Players · voice mute &amp; volume</span></div><div><kbd>W A S D</kbd><span>Move</span></div><div><kbd>Mouse</kbd><span>Look · click to capture</span></div><div><kbd>Shift</kbd><span>Run</span></div><div><kbd>R</kbd><span>Open / close door</span></div><div><kbd>Q / E</kbd><span>Hold to lean left / right</span></div><div><kbd>C</kbd><span>Toggle crouch · rebind in Controls</span></div><div><kbd>Space</kbd><span>Jump</span></div><div><kbd>F</kbd><span>Flashlight / holster</span></div><div><kbd>Tab</kbd><span>Focus tablet while powered</span></div><div><kbd>Esc</kbd><span>Pause</span></div></div><p id="gameplaySettingsNote" class="setting-note">V opens or stows your tablet; its 15-second charge drains only while open. Tab focuses the map. Use inventory batteries on your tablet or flashlight. The entry door unlocks after 15 seconds and stays closed until you press R. Keep food, water and sleep supplied; an empty meter drains health. Beds take 40 seconds; R or Esc wakes you early without restoring rest. Search kitchens and side passages for food and water. Pocket shortcuts follow the items in slots 1–8. Use R to open or close doors; the starting room’s latch works from either side. The monitor beside AUX POWER shows the live view outside. Press C to crouch. Ctrl cannot be bound. Hold Q or E to lean; Space jumps. F switches your handheld flashlight.</p><button id="settingsDisclaimers" class="secondary">Disclaimers &amp; troubleshooting</button></div></div></section>
 <section id="deathScreen" class="screen death hidden"><div id="deathBackdrop"></div><video id="deathVideo" preload="auto" playsinline></video><div id="deathResult" class="death-result hidden"><p class="eyebrow">END OF ROUTE</p><h2>YOU DIED</h2><p id="deathScore">0 mazes cleared</p><p id="deathBest"></p><button id="retryButton" class="primary">Try again</button><button id="deathMenu" class="secondary">Main menu</button></div><button id="skipDeath" class="skip-death hidden">Skip</button></section>
 <div id="transition" class="transition hidden"><p id="transitionText">Somewhere else…</p></div>
 <div id="touchControls" class="hidden"><div id="joystick"><span></span></div><div id="lookPad"></div><div class="touch-actions"><button id="touchInteract" aria-label="Open or close door">R</button><button id="touchLight" aria-label="Toggle flashlight">F</button><button id="touchRun">RUN</button><button id="touchLeanLeft" aria-label="Lean left">LEAN L</button><button id="touchCrouch" aria-label="Toggle crouch" aria-pressed="false">CROUCH</button><button id="touchLeanRight" aria-label="Lean right">LEAN R</button><button id="touchJump">JUMP</button></div></div>
@@ -17305,7 +17305,7 @@ global.MazeLobbyStage=MazeLobbyStage;
     }
 
     async requestMicrophone() {
-      this.bindRoom(this.net.getMediaRoom());
+      this.bindRoom(this.net.getMediaRoom() || null);
       this.openMicAttempted = true;
       this.update();
       if (!this.getState()?.active) return;
@@ -17319,7 +17319,7 @@ global.MazeLobbyStage=MazeLobbyStage;
       }
       if (!this.context) return;
       const generation = this.generation;
-      const room = this.room;
+      const room = this.room, session = this.getState()?.session;
       this.error = this.errorDetail = '';
       this.request = (async () => {
         let stream;
@@ -17330,7 +17330,7 @@ global.MazeLobbyStage=MazeLobbyStage;
           // Disable before attaching to any peer. A late permission grant must
           // never revive a released key, a departed room, or an old session.
           for (const track of stream.getAudioTracks()) track.enabled = false;
-          if (generation !== this.generation || room !== this.room || !this.getState()?.active) {
+          if (generation !== this.generation || room !== this.room || session !== this.getState()?.session || !this.getState()?.active) {
             stream.getTracks().forEach(t => t.stop());
             return;
           }
@@ -17414,12 +17414,15 @@ global.MazeLobbyStage=MazeLobbyStage;
       this.localSamples = null;
     }
 
-    canHear(state, speaker, listener = state.local) {
+    // A floor change pauses audio, not the room's media connection. Keep the
+    // living/dead channel rule separate from temporary playback eligibility.
+    canShareVoice(state, speaker, listener = state.local) {
       if (!speaker || !listener || speaker.connected === false || listener.connected === false) return false;
-      if (state.scene === 'lobby') return true;
-      if (state.scene === 'loading' || !state.local) return false;
-      // Living voices reach everyone; dead voices reach only dead listeners.
-      return !dead(speaker) || dead(listener);
+      return state.scene === 'lobby' || !dead(speaker) || dead(listener);
+    }
+
+    canHear(state, speaker, listener = state.local) {
+      return state.scene !== 'loading' && this.canShareVoice(state, speaker, listener);
     }
 
     spatial(state, peer) {
@@ -17439,40 +17442,51 @@ global.MazeLobbyStage=MazeLobbyStage;
     }
 
     syncSenders(state, connected) {
-      const desired = new Set(state.players.filter(p => p.id !== this.net.id && connected[p.id] && this.canHear(state, state.local, p)).map(p => p.id));
+      const room = this.room;
+      const desired = new Set(state.players.filter(p => p.id !== this.net.id && connected[p.id] && this.canShareVoice(state, state.local, p)).map(p => p.id));
+      const remove = (id, send) => {
+        // A stale operation must never remove a replacement connection's track.
+        if (room.getPeers()[id] !== send.connection) return;
+        try { room.removeStream(send.stream, { target: id }); } catch (_) {}
+      };
       for (const [id, send] of this.sends) {
-        if (!desired.has(id) || send.connection !== connected[id]) {
-          try { this.room.removeStream(this.stream, { target: id }); } catch (_) {}
-          this.sends.delete(id);
-        }
+        const current = send.connection === connected[id] && send.stream === this.stream;
+        const wanted = current && desired.has(id);
+        if (!wanted && !send.cancelled) remove(id, send);
+        send.cancelled = !wanted;
+        // Retain a pending attachment on this connection until it settles. A
+        // quick death/revival can reuse it rather than start a second addTrack.
+        if (!wanted && (send.ready || !current)) this.sends.delete(id);
       }
       if (!this.stream) return;
       for (const id of desired) {
         if (this.sends.has(id) || performance.now() < (this.retryAt.get(id) || 0)) continue;
-        const send = { connection: connected[id], stream: this.stream, ready: false };
-        const room = this.room;
+        const send = { connection: connected[id], stream: this.stream, ready: false, cancelled: false };
         this.sends.set(id, send);
+        const failed = () => {
+          if (this.room !== room || this.sends.get(id) !== send) return;
+          remove(id, send);this.sends.delete(id);
+          if (!send.cancelled) { this.sendError = true;this.retryAt.set(id, performance.now() + 3000); }
+        };
         try {
-          Promise.resolve(room.addStream(send.stream, { target: id, metadata: { kind: 'maze-voice-v1' } })).then(() => {
-            if (this.room === room && this.sends.get(id) === send) { send.ready = true; this.sendError = false; this.retryAt.delete(id); }
-            else if (this.room !== room || this.sends.get(id)?.stream !== send.stream) {
-              // Trystero sends metadata before attaching a track. If the player
-              // died/left during that await, undo the late attachment as well.
-              try { room.removeStream(send.stream, { target: id }); } catch (_) {}
-            }
-          }).catch(() => {
+          const attachments = room.addStream(send.stream, { target: id, metadata: { kind: 'maze-voice-v1' } });
+          // The bundled room returns an array of per-peer promises.
+          Promise.all(Array.isArray(attachments) ? attachments : [attachments]).then(() => {
             if (this.room === room && this.sends.get(id) === send) {
-              this.sends.delete(id);
-              this.sendError = true;
-              this.retryAt.set(id, performance.now() + 3000);
-            }
-          });
-        } catch (_) { this.sends.delete(id); this.sendError = true; this.retryAt.set(id, performance.now() + 3000); }
+              if (send.cancelled) { remove(id, send);this.sends.delete(id); }
+              else { send.ready = true;this.sendError = false;this.retryAt.delete(id); }
+            } else if (this.room !== room || this.sends.get(id)?.stream !== send.stream) remove(id, send);
+          }).catch(failed);
+        } catch (_) { failed(); }
       }
     }
 
     attachPeer(id, peer) {
-      if (!this.context || peer.source) return;
+      if (!this.context) return;
+      const track = peer.stream.getAudioTracks().find(t => t.readyState === 'live');
+      if (!track) return;
+      if (peer.source && peer.sourceTrack === track) return;
+      if (peer.source) this.detachPeer(peer);
       try {
         peer.audio = new Audio();
         peer.audio.muted = true;
@@ -17481,6 +17495,7 @@ global.MazeLobbyStage=MazeLobbyStage;
         peer.audio.srcObject = peer.stream;
         peer.audio.play().catch(() => {});
         peer.source = this.context.createMediaStreamSource(peer.stream);
+        peer.sourceTrack = track;
         peer.filter = this.context.createBiquadFilter();
         peer.filter.type = 'lowpass';
         peer.filter.Q.value = .7;
@@ -17491,15 +17506,24 @@ global.MazeLobbyStage=MazeLobbyStage;
         peer.analyser.fftSize = 512;
         peer.samples = new Float32Array(512);
         peer.source.connect(peer.analyser).connect(peer.filter).connect(peer.gain).connect(peer.pan).connect(this.master);
-      } catch (_) { this.removePeer(id); }
+      } catch (_) { this.detachPeer(peer); }
+    }
+
+    detachPeer(peer) {
+      this.updatePhoneSpeakers(null,peer,null);
+      for (const key of ['source', 'filter', 'gain', 'pan', 'analyser']) {
+        try { peer[key]?.disconnect(); } catch (_) {}
+        peer[key] = null;
+      }
+      if (peer.audio) { peer.audio.pause();peer.audio.srcObject = null; }
+      peer.audio = peer.sourceTrack = peer.samples = null;
+      peer.gainValue = 0;peer.speaking = false;
     }
 
     removePeer(id) {
       const peer = this.peers.get(id);
       if (!peer) return;
-      this.updatePhoneSpeakers(null,peer,null);
-      for (const key of ['source', 'filter', 'gain', 'pan', 'analyser']) try { peer[key]?.disconnect(); } catch (_) {}
-      if (peer.audio) { peer.audio.pause(); peer.audio.srcObject = null; }
+      this.detachPeer(peer);
       this.peers.delete(id);
     }
 
@@ -17530,9 +17554,9 @@ global.MazeLobbyStage=MazeLobbyStage;
     update() {
       const state = this.getState();
       // getMediaRoom is an intentionally small bridge to the existing network.
-      const room = this.net.getMediaRoom();
+      const room = this.net.getMediaRoom() || null;
       this.bindRoom(room);
-      if (!state?.active) { this.release(); for(const peer of this.peers.values()){if(peer.gain)peer.gain.gain.value=0;this.updatePhoneSpeakers(state,peer,null);} this.render(state); return; }
+      if (!state?.active) { this.release(); for(const peer of this.peers.values()){if(peer.gain)peer.gain.gain.value=0;peer.gainValue=0;peer.speaking=false;this.updatePhoneSpeakers(state,peer,null);} this.render(state); return; }
       const connected = room?.getPeers()||{};
       const allowed = !!(state.canTalk && state.scene !== 'loading' && !document.hidden && this.focused);
       if (!allowed) this.release();
@@ -17551,7 +17575,11 @@ global.MazeLobbyStage=MazeLobbyStage;
       for (const [id, peer] of this.peers) {
         const player = state.players.find(p => p.id === id && p.connected !== false);
         const live = peer.stream.getAudioTracks().some(t => t.readyState === 'live');
-        if (!connected[id] || !live || !player && now - peer.receivedAt > 5000) { this.removePeer(id); continue; }
+        if (!connected[id] || !player && now - peer.receivedAt > 5000) { this.removePeer(id); continue; }
+        // A revoked RTC track can temporarily leave the cached stream empty.
+        // Keep admitted peers' metadata so a later track can restore playback,
+        // even when the room already consumed its stream metadata callback.
+        if (!live) { this.detachPeer(peer);continue; }
         if (!player) continue;
         this.attachPeer(id, peer);
         if (!peer.gain) continue;
@@ -21939,6 +21967,16 @@ const active=()=>mp?coopLive()&&!mp.localPaused&&!mp.ending:state.mode==='planni
 function announce(text,seconds=4){$('notice').textContent=text;$('notice').classList.add('show');state.noticeUntil=state.time+seconds;}
 function fatal(error){window.MazeBoot?.error(error?.message);survivalResetPresentation();console.error(error);state.mode='error';show('loading',false);show('errorScreen');$('errorText').textContent='Something interrupted the game. Reload to try again.';exitLock();audio.stop();}
 function saveSettings(){try{localStorage.setItem('maze3d.settings',JSON.stringify(settings));}catch(e){}}
+// Keep 50 at the original default speed; the slider now scales mouse motion
+// proportionally, while controller look keeps its separate rate setting.
+function mouseLookScale(){return .00215*C.clamp(Number(settings.sensitivity)||50,10,100)/50;}
+function updateSetting(name,element){
+ settings[name]=name==='quality'?element.value:Number(element.value);
+ if(name==='sensitivity'){settings.sensitivity=C.clamp(Number.isFinite(settings.sensitivity)?settings.sensitivity:50,10,100);mouseGuard.reset();element.value=String(settings.sensitivity);}
+ $('volumeOut').value=settings.volume+'%';$('sensitivityOut').value=(settings.sensitivity/50).toFixed(2)+'×';
+ audio.setVolume(settings.volume/100);$('deathVideo').volume=settings.volume/100;
+ if(name==='quality')setQuality();saveSettings();
+}
 function updateBest(){try{localStorage.setItem('maze3d.best',String(best));}catch(e){}$('menuBest').textContent=`BEST · ${best} CLEARED`;}
 function materialBudget(group){
  if(!group)return;group.traverse(o=>{for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[]){
@@ -22218,7 +22256,7 @@ function inputFrame(now){
  if(inputWheelState.inventoryHoldPending&&!inputWheelOpen()&&MazeInput.lastDevice()==='gamepad'&&MazeInput.down('inventory')&&(now-inputWheelState.inventoryHoldStartedAt)>=inputWheelState.thresholdMs)inputWheelShow();
  if(inputWheelOpen())inputWheelUpdate();
  if(!document.hidden&&(typeof document.hasFocus!=='function'||document.hasFocus())&&active()&&!state.tabletFocus&&!inventoryIsOpen()&&!survivalBlocked()&&!MazeInput.isCapturing()&&!inputWheelOpen()){
-  const x=MazeInput.value('lookRight')-MazeInput.value('lookLeft'),y=(MazeInput.value('lookDown')-MazeInput.value('lookUp'))*MazeInput.invertY(),s=.00055+settings.sensitivity*.000032;
+  const x=MazeInput.value('lookRight')-MazeInput.value('lookLeft'),y=(MazeInput.value('lookDown')-MazeInput.value('lookUp'))*MazeInput.invertY(),s=mouseLookScale();
   if(x||y)look(x*MazeInput.lookRate()*dt/s,y*MazeInput.lookRate()*dt/s);
   if(mp?.dead){const zoom=MazeInput.value('primary')-MazeInput.value('tabletFocus');if(zoom)coopSpectatorZoom(Math.exp(zoom*dt*2));}
  }
@@ -22512,7 +22550,7 @@ async function startRun(){
 }
 function pause(){if(state.player.sleeping)return;survivalCloseLoot(false);inventoryClose(false);if(mp?.ending)return;if(mp&&coopLive()){mp.localPaused=true;resetMovementInput();setTabletFocus(false);show('pauseScreen');$('pauseScreen').querySelector('h2').textContent='Menu';$('pauseScreen').querySelector('.panel>p:not(.eyebrow)').textContent='Your team is still playing.';exitLock();return;}if(!active())return;setTabletFocus(false);state.resume=state.mode;state.mode='paused';state.player.speed=0;resetMovementInput();show('pauseScreen');show('touchControls',false);exitLock();audio.update(0,{player:state.player,enemy:state.enemy,active:false,hidden:state.player.hidden,occlusion:0,playerSpeed:0});}
 function resume(){if(mp&&coopLive()){mp.localPaused=false;show('settingsScreen',false);show('pauseScreen',false);requestLock();audio.unlock();return;}if(state.mode!=='paused')return;state.mode=state.resume;show('pauseScreen',false);show('touchControls',touch);requestLock();audio.unlock();lastFrame=performance.now();}
-function menu(){survivalResetPresentation();inventoryClose(false);if(mp){coopLeave();return;}$('pauseScreen').querySelector('h2').textContent='Paused.';$('pauseScreen').querySelector('.panel>p:not(.eyebrow)').textContent='The maze is waiting.';setTabletFocus(false);state.loadToken++;clearTimeout(state.transitionTimer);clearTimeout(state.deathTimer);$('deathVideo').pause();state.mode='menu';resetMovementInput();exitLock();audio.stop();actor.hide();tablet.group.visible=false;goku.visible=false;for(const id of ['hud','deathScreen','pauseScreen','settingsScreen','touchControls','transition','loading'])show(id,false);show('menu');updateBest();state.seen.clear();setMenuView();updateVisibility(true);state.menuRenderAt=0;}
+function menu(){survivalResetPresentation();inventoryClose(false);if(mp){coopLeave();return;}coopVoice?.stop();$('pauseScreen').querySelector('h2').textContent='Paused.';$('pauseScreen').querySelector('.panel>p:not(.eyebrow)').textContent='The maze is waiting.';setTabletFocus(false);state.loadToken++;clearTimeout(state.transitionTimer);clearTimeout(state.deathTimer);$('deathVideo').pause();state.mode='menu';resetMovementInput();exitLock();audio.stop();actor.hide();tablet.group.visible=false;goku.visible=false;for(const id of ['hud','deathScreen','pauseScreen','settingsScreen','touchControls','transition','loading'])show(id,false);show('menu');updateBest();state.seen.clear();setMenuView();updateVisibility(true);state.menuRenderAt=0;}
 function playerCloset(){const x=C.tileAt(state.player.x),z=C.tileAt(state.player.z);return state.closetByKey.get(C.key(x,z))||null;}
 function nearestCloset(){
  let found=null,closest=2.7;const p=state.player;
@@ -22608,7 +22646,7 @@ function updatePlayer(dt){
  // Boarding alone never clears a floor; the interior button starts departure.
 }
 function escapeMaze(){if(state.mode!=='playing'||state.exit.phase!=='complete')return;inventoryClose(false);state.score++;if(state.score>best){best=state.score;updateBest();}state.mode='transition';resetMovementInput();state.player.speed=0;show('transition');$('transition').style.opacity='1';$('transitionText').textContent=`FLOOR ${state.score} CLEARED`;tablet.group.visible=false;actor.hide();goku.visible=false;state.transitionTimer=setTimeout(async()=>{if(state.mode!=='transition')return;try{buildLevel(chooseTheme(),(Math.random()*4294967296)>>>0);await warmLevelGraphics();if(state.mode!=='transition')return;state.mode='planning';lastFrame=performance.now();tablet.group.visible=false;actor.group.visible=true;show('transition',false);announce('Next floor. Collect the spare batteries before leaving.',5);}catch(e){fatal(e);}},650);}
-function die(){if(!['playing','planning'].includes(state.mode))return;forestHideHUD();state.player.sleeping=false;survivalSilence(false);survivalUI?.updateState({active:false,sleeping:false,dead:true});inventoryClose(false);show('transition',false);$('transition').style.opacity='1';setTabletFocus(false);state.mode='dead';state.player.speed=0;resetMovementInput();exitLock();audio.stop();actor.hide();goku.visible=false;tablet.group.visible=false;show('hud',false);show('touchControls',false);show('deathScreen');show('deathResult',false);show('skipDeath',false);$('deathScore').textContent=`${state.score} ${state.score===1?'maze':'mazes'} cleared`;$('deathBest').textContent=`Best run · ${best} cleared`;const v=$('deathVideo');v.currentTime=0;v.style.display='block';v.volume=settings.volume/100;v.muted=darkPoolroomsAudio();
+function die(){if(!['playing','planning'].includes(state.mode))return;if(!mp)coopVoice?.stop();forestHideHUD();state.player.sleeping=false;survivalSilence(false);survivalUI?.updateState({active:false,sleeping:false,dead:true});inventoryClose(false);show('transition',false);$('transition').style.opacity='1';setTabletFocus(false);state.mode='dead';state.player.speed=0;resetMovementInput();exitLock();audio.stop();actor.hide();goku.visible=false;tablet.group.visible=false;show('hud',false);show('touchControls',false);show('deathScreen');show('deathResult',false);show('skipDeath',false);$('deathScore').textContent=`${state.score} ${state.score===1?'maze':'mazes'} cleared`;$('deathBest').textContent=`Best run · ${best} cleared`;const v=$('deathVideo');v.currentTime=0;v.style.display='block';v.volume=settings.volume/100;v.muted=darkPoolroomsAudio();
  const play=v.play();if(play?.catch)play.catch(()=>showDeathResult());state.deathTimer=setTimeout(()=>{if(state.mode==='dead'){show('skipDeath');if(MazeInput.lastDevice()==='gamepad')$('skipDeath').focus({preventScroll:true});}},7000);
 }
 function showDeathResult(){if(state.mode!=='dead')return;clearTimeout(state.deathTimer);$('deathVideo').pause();$('deathVideo').style.display='none';show('skipDeath',false);show('deathResult');if(MazeInput.lastDevice()==='gamepad')$('retryButton').focus({preventScroll:true});}
@@ -22763,14 +22801,14 @@ function openSettings(){if(state.player.sleeping)return;survivalCloseLoot(false)
 function bindUI(){
  bindDisclaimers();
  $('startButton').onclick=startRun;$('retryButton').onclick=startRun;$('deathMenu').onclick=menu;$('quitButton').onclick=menu;$('resumeButton').onclick=resume;$('pauseButton').onclick=pause;$('settingsButton').onclick=openSettings;$('pauseSettings').onclick=openSettings;$('closeSettings').onclick=()=>{MazeInput.cancelCapture();if(settingsFrom==='mp'){show('settingsScreen',false);show('pauseScreen');return;}state.mode=settingsFrom;show('settingsScreen',false);if(settingsFrom==='paused')show('pauseScreen');};$('reloadButton').onclick=()=>location.reload();$('skipDeath').onclick=showDeathResult;$('deathVideo').addEventListener('ended',showDeathResult);$('deathVideo').addEventListener('error',()=>{if(state.mode==='dead')showDeathResult();});
- for(const name of ['volume','sensitivity','quality']){const el=$(name);el.value=settings[name];el.oninput=()=>{settings[name]=name==='quality'?el.value:Number(el.value);$('volumeOut').value=settings.volume+'%';$('sensitivityOut').value=settings.sensitivity+'%';audio.setVolume(settings.volume/100);$('deathVideo').volume=settings.volume/100;if(name==='quality')setQuality();saveSettings();};}$('volumeOut').value=settings.volume+'%';$('sensitivityOut').value=settings.sensitivity+'%';
+ for(const name of ['volume','sensitivity','quality']){const el=$(name);el.value=settings[name];el.oninput=()=>updateSetting(name,el);if(name==='sensitivity')el.onchange=el.oninput;}$('volumeOut').value=settings.volume+'%';$('sensitivityOut').value=(settings.sensitivity/50).toFixed(2)+'×';
  $('themeSelect').onchange=()=>{if(state.mode!=='menu')return;try{const theme=$('themeSelect').value==='random'?'garden':$('themeSelect').value;buildLevel(theme,C.hashSeed('maze3d-title'));}catch(e){fatal(e);}};
  addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();resizeRender();resizeTabletView();state.visibilityTick=0;state.shadowTick=0;state.shadowDirty=true;});
  document.addEventListener('pointerlockchange',()=>{mouseGuard.reset();const was=state.locked,skip=state.skipUnlockPause;state.skipUnlockPause=false;state.locked=document.pointerLockElement===$('world');inputUpdateCaptureHint();if(was&&!state.locked&&performance.now()>inputIgnoreUnlockUntil&&active()&&!skip&&!inventoryIsOpen()&&!survivalBlocked()&&!mp?.voiceListOpen&&!mp?.dead){if(state.tabletFocus)setTabletFocus(false);else pause();}});
  document.addEventListener('pointerlockerror',()=>{state.locked=document.pointerLockElement===$('world');inputUpdateCaptureHint();});
  $('world').addEventListener('click',inputRecoverCamera);
  $('world').addEventListener('pointerdown',event=>{if(!mp?.dead||!coopLive()||mp.ending||mp.localPaused||document.pointerLockElement!==$('world')||state.tabletFocus||inventoryIsOpen()||survivalBlocked()||event.ctrlKey||event.metaKey)return;if(event.button===0||event.button===2){event.preventDefault();coopCycleSpectator(event.button===0?-1:1);}},false);
- document.addEventListener('mousemove',event=>{if(!active()||document.hidden||!document.hasFocus()||document.pointerLockElement!==$('world')||state.tabletFocus||inventoryIsOpen()||survivalBlocked()||inputMenuRoot())return;state.locked=true;const move=mouseGuard.read(event.movementX,event.movementY,.00055+settings.sensitivity*.000032,performance.now(),settings.mouseProtection);if(move)look(move.x,move.y);});
+ document.addEventListener('mousemove',event=>{if(!active()||document.hidden||!document.hasFocus()||document.pointerLockElement!==$('world')||state.tabletFocus||inventoryIsOpen()||survivalBlocked()||inputMenuRoot())return;state.locked=true;const move=mouseGuard.read(event.movementX,event.movementY,mouseLookScale(),performance.now(),settings.mouseProtection);if(move)look(move.x,move.y);});
  document.addEventListener('keydown',event=>{if(event.defaultPrevented||MazeInput.isCapturing()||MazeInput.isTextTarget(event.target)||event.target?.closest?.('button,a'))return;if(event.code==='Enter'&&state.mode==='menu'){event.preventDefault();startRun();}});
  addEventListener('blur',()=>{mouseGuard.reset();resetMovementInput();if(active())pause();});document.addEventListener('visibilitychange',()=>{if(document.hidden&&active())pause();});
  $('world').addEventListener('contextmenu',e=>e.preventDefault());$('world').addEventListener('webglcontextlost',e=>{e.preventDefault();pause();fatal(new Error('The graphics context was interrupted. Reload to start a new run.'));});
@@ -22790,7 +22828,7 @@ function bindUI(){
  // Read-only performance / geometry diagnostics; player-free mode is a separate startup path.
  window.MazeDiagnostics={getStatus:()=>({build:'V7.20 · Phone Endurance / Door Recovery',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable},performance:{...clientFrames.status(),simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
 }
-function look(dx,dy){if(phoneUI.isOpen)return;if(!Number.isFinite(dx)||!Number.isFinite(dy)||inventoryIsOpen()||survivalBlocked())return;const s=.00055+settings.sensitivity*.000032;if(mp?.dead){if(coopLive()&&!mp.ending&&!mp.localPaused&&mp.spectatorView==='orbit'){mp.spectatorYaw=(Number.isFinite(mp.spectatorYaw)?mp.spectatorYaw:0)-dx*s;mp.spectatorPitch=C.clamp((Number.isFinite(mp.spectatorPitch)?mp.spectatorPitch:.12)-dy*s,-Math.PI/2,Math.PI/2);}return;}const p=state.player,inversion=MazeBerryGameplay.mouseMultiplier(p,state.time);p.yaw-=dx*s*inversion;p.pitch=C.clamp(p.pitch-dy*s*inversion,-1.43,1.25);}
+function look(dx,dy){if(phoneUI.isOpen)return;if(!Number.isFinite(dx)||!Number.isFinite(dy)||inventoryIsOpen()||survivalBlocked())return;const s=mouseLookScale();if(mp?.dead){if(coopLive()&&!mp.ending&&!mp.localPaused&&mp.spectatorView==='orbit'){mp.spectatorYaw=(Number.isFinite(mp.spectatorYaw)?mp.spectatorYaw:0)-dx*s;mp.spectatorPitch=C.clamp((Number.isFinite(mp.spectatorPitch)?mp.spectatorPitch:.12)-dy*s,-Math.PI/2,Math.PI/2);}return;}const p=state.player,inversion=MazeBerryGameplay.mouseMultiplier(p,state.time);p.yaw-=dx*s*inversion;p.pitch=C.clamp(p.pitch-dy*s*inversion,-1.43,1.25);}
 // Service passages occupy real half-cells; presentation and interaction use
 // the same footprint that navigation and collision use.
 const serviceMaterialCache=new WeakMap();
@@ -23369,11 +23407,18 @@ function coopUpdateAudio(dt,p,e){
 
 function coopNewSession(){return{net:MazeNetwork,room:null,players:new Map(),inputs:new Map(),readyPeers:new Set(),loadingStatusRev:0,loadingStatusSeen:-1,visuals:null,running:false,loading:false,ended:false,ending:null,lastDeath:null,dead:false,left:false,epoch:null,spec:null,time:0,accumulator:0,sendAt:0,inputAt:0,seq:0,history:[],actions:[],worldFrames:[],lastSnapshotAt:0,lastHostTime:0,localPaused:false,inHostAction:false,spectated:null,spectatorYaw:null,spectatorPitch:.12,spectatorDistance:2.7,spectatorView:'orbit',spectatorNight:true,departed:new Map(),readyToken:0,levelLoad:null,levelAuthority:null,pendingReady:new Map(),retiredEpochs:new Set(),handledDeaths:new Set(),deadPlayers:new Set(),revivalRoll:null,transitionUntil:0,prediction:new MazeCoopPrediction.Client(),commands:new MazeCoopPrediction.HostCommands(),clock:new MazeStateCodec.Clock(),world:null,worldRepairAt:0,worldAuditAt:0,worldMismatchAt:0,worldFullAt:0,mapRetries:new Map(),visualError:{x:0,y:0,z:0},netCorrections:{count:0,max:0},lastCommand:null,weaponNonce:0,weaponAck:0,weaponSeen:new Map(),weaponPending:new Map(),weaponWorldRevision:-1,inventoryNonce:0,inventorySeen:new Map(),inventoryPending:new Map(),inventoryMismatchAt:0,survivalNonce:0,survivalSeen:new Map(),survivalPending:new Map()};}
 function coopVoiceState(){
- if(!mp){const local={...state.player,id:'local',name:'Player',connected:true},active=['planning','playing'].includes(state.mode);return{active,players:[local],local,scene:'world',listener:state.player,yaw:camera?.rotation.y,canTalk:active&&!state.player.sleeping&&!state.player.dead};}
+ if(!mp){
+  const local={...state.player,id:'local',name:'Player',connected:true},playing=['planning','playing'].includes(state.mode);
+  // The browser's permission prompt can pause the game or open its settings.
+  // Keep that approval in this run, without transmitting while paused.
+  const paused=state.mode==='paused'||state.mode==='settings'&&settingsFrom==='paused';
+  const active=(playing||paused||state.mode==='transition')&&!state.player.dead;
+  return{active,session:state.loadToken,players:[local],local,scene:state.mode==='transition'?'loading':'world',listener:state.player,yaw:camera?.rotation.y,canTalk:playing&&!state.player.sleeping&&!state.player.dead};
+ }
  const active=!!mp&&!mp.left&&!!mp.net.room&&mp.net.players.some(p=>p.id===mp.net.id&&p.connected!==false)&&state.mode!=='mp-disconnected';
  const players=active?coopTeam():[],local=players.find(p=>p.id===mp?.net.id)||null;
  const scene=mp?.loading||['loading','mp-waiting','transition'].includes(state.mode)?'loading':mp?.room?.status==='lobby'?'lobby':mp?.ended?'ended':'world';
- return{active,players,local,scene,listener:mp?.dead?camera?.position:local,yaw:mp?.dead?mp.spectatorYaw:camera?.rotation.y,
+ return{active,session:mp,players,local,scene,listener:mp?.dead?camera?.position:local,yaw:mp?.dead?mp.spectatorYaw:camera?.rotation.y,
   canTalk:active&&scene!=='loading'&&(!state.player.sleeping||mp.dead)};
 }
 function coopVoiceOcclusion(a,b){
@@ -24584,7 +24629,7 @@ function survivalResetPresentation(){
  survivalUI?.updateState({active:false,sleeping:false,dead:false});actor?.clearSurvivalPose?.();camera?.layers.disable(2);
 }
 function survivalSoloDeath(reason){
- if(mp||survivalSoloAftermath)return;forestHideHUD();inventoryClose(false);survivalCloseLoot(false);setTabletFocus(false);resetMovementInput();
+ if(mp||survivalSoloAftermath)return;coopVoice?.stop();forestHideHUD();inventoryClose(false);survivalCloseLoot(false);setTabletFocus(false);resetMovementInput();
  state.mode='survival-dead';state.player.speed=0;state.player.sleeping=false;survivalSilence(false);audio.stop();
  state.skipUnlockPause=state.locked;exitLock();show('hud',false);show('touchControls',false);show('transition',false);show('deathScreen',false);
  $('deathVideo').pause();tablet.group.visible=false;torch.group.visible=false;flash.intensity=0;camera.layers.enable(2);
