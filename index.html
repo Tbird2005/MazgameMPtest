@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-build="v7.26.1-rain-lighting"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze Game 3D — Theme Worlds Review</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
+<html lang="en" data-build="v7.26.3-left-stick-wheel"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze Game 3D — Theme Worlds Review</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
 <style id="maze-boot-style">html,body{margin:0;min-height:100%;background:#070d0e}
 #maze-boot{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:28px;color:#dce9e2;background:radial-gradient(ellipse at 48% 40%,#18333780,transparent 66%),repeating-linear-gradient(0deg,#91c5bc04 0 1px,transparent 1px 4px),#070d0e;font:14px/1.5 Arial,Helvetica,sans-serif;box-sizing:border-box;color-scheme:dark}
 #maze-boot *{box-sizing:border-box}#maze-boot-panel{width:min(430px,100%);border-top:1px solid #729b9670;padding-top:25px}#maze-boot-brand{margin:0 0 34px;color:#c9dcc2;letter-spacing:.19em;font-size:13px;font-weight:700}#maze-boot-brand b{float:right;color:#6f9792;font-size:11px;font-weight:400;letter-spacing:.08em}#maze-boot h1{margin:0 0 7px;font-size:24px;font-weight:400;letter-spacing:-.02em}#maze-boot-meta{min-height:22px;margin:0;color:#91b2ac;font-size:12px}#maze-boot-track{height:11px;margin:25px 0 11px;border:1px solid #4f716b;background:#050b0c;padding:2px;box-shadow:inset 0 1px 3px #0009}#maze-boot-fill{height:5px;width:0;background:#b7d9a1;box-shadow:0 0 10px #a9d49735}#maze-boot-bottom{display:flex;justify-content:space-between;gap:16px;color:#75928d;font-size:12px;font-variant-numeric:tabular-nums}#maze-boot-percent{color:#c3d9b9}#maze-boot-retry{margin-top:22px;padding:9px 18px;border:1px solid #7caaa2;background:#18332e;color:#daebdf;font:inherit;cursor:pointer}#maze-boot-retry[hidden]{display:none}#maze-boot-note{margin:25px 0 0;color:#5e7a76;font-size:11px}#maze-boot[data-error] #maze-boot-fill{background:#d4967f}</style><style id="maze-voice-style">
@@ -39,7 +39,7 @@ body.maze-spectator-map #tabletFocus .tablet-power,body.maze-spectator-map #tabl
 body.maze-spectator-map #tabletFocus .tablet-close{margin-left:auto}
 </style></head><body><section id="maze-boot" role="status" aria-live="polite" aria-label="Loading Maze Game 3D"><div id="maze-boot-panel"><p id="maze-boot-brand">MAZE GAME / 3D <b>INITIALIZING</b></p><h1 id="maze-boot-title">Receiving game data</h1><p id="maze-boot-meta">Your game is arriving. Keep this tab open.</p><div id="maze-boot-track" role="progressbar" aria-label="Game data received" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="maze-boot-fill"></div></div><div id="maze-boot-bottom"><span id="maze-boot-eta">Estimating remaining time…</span><span id="maze-boot-percent">0%</span></div><button id="maze-boot-retry" type="button" hidden>Reload game</button><p id="maze-boot-note">Progress updates as game data arrives.</p></div></section><script>(function(w,d){
 'use strict';
-const total=21280740,start=performance.now(),parts=Object.create(null),byId=id=>d.getElementById(id),root=byId('maze-boot');
+const total=21293290,start=performance.now(),parts=Object.create(null),byId=id=>d.getElementById(id),root=byId('maze-boot');
 let bytes=0,done=false,failed=false,received=false,initialized=false,last=0,watch=null,timer=null;
 const title=byId('maze-boot-title'),meta=byId('maze-boot-meta'),eta=byId('maze-boot-eta'),percent=byId('maze-boot-percent'),track=byId('maze-boot-track'),fill=byId('maze-boot-fill');
 function units(n){return(n/1000000).toFixed(1)+' MB';}
@@ -8589,7 +8589,7 @@ function buildHouses(T,data){
    furnitureDepth(f.id,f.kind,fg,data.colliders.filter(c=>c.furnitureRootId===f.id||c.survivalId===f.id));
   }
   for(const p of(data.wardrobes||[]).filter(p=>p.roomId===room.id)){if(!root.MazeForestWardrobes)throw new Error('Forest wardrobe models were not loaded.');const wardrobe=root.MazeForestWardrobes.create(T,p);rg.add(wardrobe.group);wardrobes.push(wardrobe);furnitureDepth(p.id,'wardrobe',wardrobe.group,[p.collider,...wardrobe.colliders]);}
-  for(const section of room.sections||[{cells:room.cells}]){const lx=section.cells.reduce((n,c)=>n+c.x,0)*4/section.cells.length,lz=section.cells.reduce((n,c)=>n+c.z,0)*4/section.cells.length;ceilingFixtures.add(rg,lx,lz,section.kind==='sleeping'?'opal':['larder','closet'].includes(section.kind)?'utility':'pendant',3.04);}
+  for(const section of room.sections||[{cells:room.cells}]){if(section.kind==='bathroom')continue;const lx=section.cells.reduce((n,c)=>n+c.x,0)*4/section.cells.length,lz=section.cells.reduce((n,c)=>n+c.z,0)*4/section.cells.length;ceilingFixtures.add(rg,lx,lz,section.kind==='sleeping'?'opal':['larder','closet'].includes(section.kind)?'utility':'pendant',3.04);}
  }
  // Keep each furniture root intact for exact flashlight depth. Architecture
  // and each rigid piece still merge by material; wardrobe hinges stay live.
@@ -16969,7 +16969,10 @@ const storageKey='maze3d.bindings.v1',bindings=JSON.parse(JSON.stringify(default
 const options={deadzone:.18,lookSpeed:55,invertY:false,controllerSprintToggle:false};
 const keyNames={Space:'Space',ShiftLeft:'Shift',AltLeft:'Alt',Escape:'Esc',Tab:'Tab',Enter:'Enter',Equal:'=',Minus:'−',BracketLeft:'[',BracketRight:']',Backquote:'`',Backslash:'\\',Semicolon:';',Quote:"'",Comma:',',Period:'.',Slash:'/',ArrowLeft:'←',ArrowRight:'→',ArrowUp:'↑',ArrowDown:'↓'};
 const padNames=['A / Cross','B / Circle','X / Square','Y / Triangle','LB / L1','RB / R1','LT / L2','RT / R2','View / Select','Menu / Start','Left stick press','Right stick press','D-pad ↑','D-pad ↓','D-pad ←','D-pad →','Home'];
-let config={},capture=null,view=null,padIndex=null,padName='',padStandard=true,padFault='',lastDevice='keyboard',lastPoll=0,menuDirection=0,menuRepeat=0,menuButtons=new Set(),menuSelect=null;
+// Media queries choose only the initial layout, never which hardware may work.
+const initialTouch=!!root.matchMedia?.('(pointer: coarse)').matches&&!root.matchMedia?.('(any-pointer: fine)').matches;
+let config={},capture=null,view=null,padIndex=null,padName='',padStandard=true,padFault='',lastDevice=initialTouch?'touch':'keyboard',lastPoll=0,menuDirection=0,menuRepeat=0,menuButtons=new Set(),menuSelect=null;
+const padActivityHistory=new Map();let exposedPads=[],lastMousePoint=null;
 const held=new Map(),padValues=new Map(),sent=new Map(),blockedPad=new Set(),previousPadTokens=new Set(),previousPadActivity=new Set();
  let controllerSprintLatched=false;
 const normalKey=code=>code==='ShiftRight'?'ShiftLeft':code==='AltRight'?'AltLeft':code;
@@ -16997,6 +17000,12 @@ function tokenLabel(token){
 }
 function label(action,device='key'){return tokenLabel(bindings[action]?.[device]);}
 function isTextTarget(target){return !!target?.closest?.('input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="button"]),textarea,select,[contenteditable="true"],[role="textbox"]');}
+// A hidden lobby/name field must not mute a controller after the lobby closes.
+// Visible text editing still owns the keyboard and suspends gameplay controls.
+function isEditingText(target){
+ if(!isTextTarget(target)||!target.isConnected||target.closest('[hidden],.hidden,[inert],[aria-hidden="true"]')||!target.getClientRects().length)return false;
+ const style=root.getComputedStyle(target);return style.visibility!=='hidden'&&style.visibility!=='collapse';
+}
 function eventToken(e){if(typeof e.code==='string'&&e.code)return normalKey(e.code);if(Number.isInteger(e.button)&&e.button>=0)return'Mouse'+e.button;return null;}
 function matches(action,event){return !!bindings[action]?.key&&bindings[action].key===eventToken(event)&&!event.ctrlKey&&!event.metaKey;}
 function value(action){return Math.max(held.get(action)?.size?1:0,padValues.get(action)||0);}
@@ -17037,7 +17046,7 @@ function press(e,source){
  inputDevice(source);
  if(menuSelect&&e.code==='Escape'){e.preventDefault();e.stopImmediatePropagation();closeMenuSelect();return;}
  if(captureEvent(e))return;
- if(e.ctrlKey||e.metaKey||e.altKey&&!/^Alt/.test(e.code||'')||e.isComposing||isTextTarget(e.target))return;
+ if(e.ctrlKey||e.metaKey||e.altKey&&!/^Alt/.test(e.code||'')||e.isComposing||isEditingText(e.target))return;
  const token=eventToken(e);if(!token)return;let handled=false;
  for(const [id]of definitions){if(bindings[id].key!==token||!canHandle(id,e,source))continue;handled=true;if(e.repeat)continue;const set=held.get(id)||new Set();set.add(token);held.set(id,set);emit(id,source);}
  if(handled)e.preventDefault();
@@ -17049,22 +17058,68 @@ function release(e,source){
 }
 root.addEventListener('keydown',e=>press(e,'keyboard'),true);
 root.addEventListener('keyup',e=>release(e,'keyboard'),true);
-root.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'||e.pointerType==='pen')press(e,'mouse');},true);
-root.addEventListener('pointerup',e=>{if(e.pointerType==='mouse'||e.pointerType==='pen')release(e,'mouse');},true);
-root.addEventListener('pointermove',e=>{if((e.pointerType==='mouse'||e.pointerType==='pen')&&(e.movementX||e.movementY))inputDevice('mouse');},true);
-root.addEventListener('wheel',e=>{if(e.deltaX||e.deltaY)inputDevice('mouse');},{capture:true,passive:true});
+const directTouch=e=>e.pointerType==='touch'||e.pointerType==='pen';
+root.addEventListener('pointerdown',e=>{
+ if(directTouch(e)){inputDevice('touch');return;}
+ if(e.pointerType==='mouse'&&!e.sourceCapabilities?.firesTouchEvents)press(e,'mouse');
+},true);
+root.addEventListener('pointerup',e=>{if(e.pointerType==='mouse'&&!e.sourceCapabilities?.firesTouchEvents)release(e,'mouse');},true);
+root.addEventListener('pointermove',e=>{
+ if(e.pointerType!=='mouse'||e.sourceCapabilities?.firesTouchEvents)return;
+ const moved=e.movementX||e.movementY||!lastMousePoint||e.clientX!==lastMousePoint.x||e.clientY!==lastMousePoint.y;
+ lastMousePoint={x:e.clientX,y:e.clientY};if(moved)inputDevice('mouse');
+},true);
+root.addEventListener('wheel',e=>{if(!e.sourceCapabilities?.firesTouchEvents&&(e.deltaX||e.deltaY))inputDevice('mouse');},{capture:true,passive:true});
 root.addEventListener('pointercancel',()=>releaseAll(),true);
 root.addEventListener('auxclick',e=>{if(capture||e.button>=3&&definitions.some(([id])=>bindings[id].key==='Mouse'+e.button))e.preventDefault();},true);
 root.addEventListener('contextmenu',e=>{if(capture)e.preventDefault();},true);
 root.addEventListener('blur',()=>{releaseAll();cancelCapture();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){releaseAll();cancelCapture();}});
 root.addEventListener('focusin',e=>{if(isTextTarget(e.target))releaseAll();},true);
-root.addEventListener('gamepaddisconnected',e=>{if(e.gamepad.index===padIndex){padIndex=null;padName='';controllerSprintLatched=false;for(const [id]of definitions){padValues.delete(id);emit(id,'gamepad');}previousPadTokens.clear();previousPadActivity.clear();blockedPad.clear();if(lastDevice==='gamepad')inputDevice('keyboard');updatePadStatus();}});
-function rawPadValue(pad,token){
- if(!token)return 0;if(token.startsWith('PadButton'))return Math.max(0,Math.min(1,Number(pad.buttons[Number(token.slice(9))]?.value)||0));
- const m=token.match(/^PadAxis(\d+)([+-])$/);if(!m)return 0;return Math.max(0,(Number(pad.axes[+m[1]])||0)*(m[2]==='-'?-1:1));
+function clearPadState(){
+ controllerSprintLatched=false;
+ for(const [id]of definitions){padValues.delete(id);emit(id,'reset');}
+ previousPadTokens.clear();previousPadActivity.clear();blockedPad.clear();menuButtons.clear();menuDirection=0;menuRepeat=0;
+ config.controllerChanged?.();
 }
-function padTokens(pad,threshold=.65){const tokens=new Set();pad.buttons.forEach((b,i)=>{if(b.pressed||b.value>threshold)tokens.add('PadButton'+i);});pad.axes.forEach((v,i)=>{if(Math.abs(v)>threshold)tokens.add('PadAxis'+i+(v<0?'-':'+'));});return tokens;}
+root.addEventListener('gamepaddisconnected',e=>{
+ padActivityHistory.delete(e.gamepad.index);exposedPads=exposedPads.filter(p=>p.index!==e.gamepad.index);
+ if(e.gamepad.index!==padIndex)return;
+ clearPadState();padIndex=null;padName='';if(lastDevice==='gamepad')inputDevice(initialTouch?'touch':'keyboard');updatePadStatus();
+});
+function buttonValue(button){
+ if(typeof button==='number')return Math.max(0,Math.min(1,Number.isFinite(button)?button:0));
+ return Math.max(button?.pressed?1:0,Math.max(0,Math.min(1,Number(button?.value)||0)));
+}
+function rawPadValue(pad,token){
+ if(!token)return 0;if(token.startsWith('PadButton'))return buttonValue(pad.buttons?.[Number(token.slice(9))]);
+ const m=token.match(/^PadAxis(\d+)([+-])$/);if(!m)return 0;
+ const axis=Number(pad.axes?.[+m[1]]);return Number.isFinite(axis)?Math.max(0,Math.min(1,axis*(m[2]==='-'?-1:1))):0;
+}
+function padTokens(pad,threshold=.65){
+ const tokens=new Set();Array.from(pad.buttons||[]).forEach((b,i)=>{if(buttonValue(b)>threshold)tokens.add('PadButton'+i);});
+ Array.from(pad.axes||[]).forEach((v,i)=>{if(Number.isFinite(v)&&Math.abs(v)>threshold)tokens.add('PadAxis'+i+(v<0?'-':'+'));});return tokens;
+}
+function chooseActivePad(pads){
+ const current=pads.find(p=>p.index===padIndex&&p.id===padName);
+ let choice=current||pads.find(p=>p.mapping==='standard')||pads[0]||null,best=0;
+ const live=new Set(),threshold=Math.max(.35,options.deadzone+.1);
+ for(const pad of pads){
+  live.add(pad.index);const activity=padTokens(pad,threshold),prior=padActivityHistory.get(pad.index);
+  let score=0;
+  for(const token of activity){
+   if(prior?.id===pad.id&&prior.tokens.has(token))continue;
+   // A new button press outranks a stick. An unmapped device's permanently
+   // deflected initial axes (common for wheels/triggers) cannot seize control.
+   if(token.startsWith('PadButton'))score+=8;
+   else if(prior?.id===pad.id||!current&&pad.mapping==='standard')score+=1;
+  }
+  if(score>best||score===best&&score>0&&pad===current){choice=pad;best=score;}
+  padActivityHistory.set(pad.index,{id:pad.id,tokens:activity});
+ }
+ for(const index of padActivityHistory.keys())if(!live.has(index))padActivityHistory.delete(index);
+ return choice;
+}
 function visible(el){return !!el&&!el.disabled&&!el.closest('[hidden],.hidden')&&el.getClientRects().length>0;}
 function menuFocus(panel,direction){
  // Follow the rendered layout, including responsive grids and scrollable panels.
@@ -17114,12 +17169,12 @@ function openMenuSelect(select,panel){
  panel.append(root);(selectedButton||box.querySelector('button')).focus({preventScroll:true});(selectedButton||box.querySelector('button')).scrollIntoView({block:'nearest'});return true;
 }
 function menuNavigate(pad,dt,panel,consumed){
- const rawButtons=new Set(pad.buttons.map((b,i)=>b.pressed||b.value>.6?i:-1).filter(i=>i>=0));
+ const rawButtons=new Set(Array.from(pad.buttons||[]).map((b,i)=>buttonValue(b)>.6?i:-1).filter(i=>i>=0));
  const masked=token=>blockedPad.has(token)||consumed.has(token);
  // A captured or already-dispatched button must not also activate a menu.
  // Keep raw edge history so releasing a mask cannot invent another press.
  const buttons=new Set([...rawButtons].filter(i=>!masked('PadButton'+i)));
- const axis=i=>{const value=pad.axes[i]||0;return masked('PadAxis'+i+(value<0?'-':'+'))?0:value;};
+ const axis=i=>{const value=pad.axes?.[i]||0;return masked('PadAxis'+i+(value<0?'-':'+'))?0:value;};
  const vertical=buttons.has(13)||axis(1)>.6?1:buttons.has(12)||axis(1)<-.6?-1:0,horizontal=buttons.has(15)||axis(0)>.6?1:buttons.has(14)||axis(0)<-.6?-1:0;
  const direction=vertical||horizontal,navigation=vertical?vertical*2:horizontal;
  menuRepeat-=dt;
@@ -17136,13 +17191,25 @@ function menuNavigate(pad,dt,panel,consumed){
  const el=document.activeElement;if(panel.contains(el)&&el?.matches?.('input[type="range"]')){const step=Number(el.step)||1,delta=buttons.has(7)&&!menuButtons.has(7)?1:buttons.has(6)&&!menuButtons.has(6)?-1:0;if(delta){el.value=String(Math.max(Number(el.min),Math.min(Number(el.max),Number(el.value)+delta*step)));el.dispatchEvent(new Event('input',{bubbles:true}));}}
  menuButtons=rawButtons;
 }
-function updatePadStatus(){if(!view)return;view.padStatus.textContent=padFault|| (padName?'Connected: '+padName+(padStandard?'':' · custom layout; remap buttons below'):'Connect a controller, then press one of its buttons.');}
+function updatePadStatus(){
+ if(!view)return;
+ const message=padFault||(padName?'Connected: '+padName+(padStandard?'':' · custom layout; remap buttons below')+(exposedPads.length>1?' · '+exposedPads.length+' controllers detected; use the one you want to play with.':''):'Connect a controller, focus the game, then press one of its buttons.');
+ if(view.padStatus.textContent!==message)view.padStatus.textContent=message;
+}
 function poll(dt=.016){
- if(document.hidden)return;dt=Math.min(.1,Math.max(0,dt));let pads;
- try{pads=typeof navigator.getGamepads==='function'?[...navigator.getGamepads()].filter(p=>p?.connected):[];padFault=typeof navigator.getGamepads==='function'?'':'This browser does not expose controller input.';}catch(e){pads=[];padFault='Controller access is unavailable in this browser context.';}
- let pad=pads.find(p=>p.index===padIndex)||pads[0]||null;
- if(!pad){controllerSprintLatched=false;if(padIndex!==null){padIndex=null;padName='';for(const [id]of definitions){padValues.delete(id);emit(id,'gamepad');}}previousPadTokens.clear();previousPadActivity.clear();blockedPad.clear();if(lastDevice==='gamepad')inputDevice('keyboard');updatePadStatus();return;}
- if(pad.index!==padIndex||pad.id!==padName||padStandard!==(pad.mapping==='standard')){previousPadActivity.clear();padIndex=pad.index;padName=pad.id;padStandard=pad.mapping==='standard';updatePadStatus();renderRows();}
+ if(document.hidden||typeof document.hasFocus==='function'&&!document.hasFocus())return;
+ dt=Math.min(.1,Math.max(0,dt));let pads;
+ try{
+  pads=typeof navigator.getGamepads==='function'?Array.from(navigator.getGamepads()||[]).filter(p=>p?.connected):[];
+  padFault=typeof navigator.getGamepads==='function'?'':root.isSecureContext===false?'Controller input is unavailable here. Open the game directly over HTTPS or localhost.':'This browser does not expose controller input.';
+ }catch(e){pads=[];padFault=e?.name==='SecurityError'?'Browser permissions block controller access. Open the game directly, not in a restricted embedded preview.':'Controller access failed: '+(e?.name||'unknown browser error');}
+ exposedPads=pads.map(p=>({index:p.index,id:p.id,mapping:p.mapping||'custom',buttons:p.buttons?.length||0,axes:p.axes?.length||0}));
+ const pad=chooseActivePad(pads);
+ if(!pad){if(padIndex!==null)clearPadState();padIndex=null;padName='';previousPadTokens.clear();previousPadActivity.clear();blockedPad.clear();if(lastDevice==='gamepad')inputDevice(initialTouch?'touch':'keyboard');updatePadStatus();return;}
+ if(pad.index!==padIndex||pad.id!==padName||padStandard!==(pad.mapping==='standard')){
+  clearPadState();padIndex=pad.index;padName=pad.id;padStandard=pad.mapping==='standard';updatePadStatus();renderRows();
+ }
+ updatePadStatus();
  const tokens=padTokens(pad),newTokens=[...tokens].filter(t=>!previousPadTokens.has(t));
  // A fresh, deliberate controller input changes hints. Idle drift or a button
  // already held when the mouse/keyboard took over must not steal them back.
@@ -17163,7 +17230,7 @@ function poll(dt=.016){
   let v=raw;
   if(token?.startsWith('PadAxis'))v=raw<=options.deadzone?0:(raw-options.deadzone)/(1-options.deadzone);
   else v=raw>.5?1:0;
-  if(!canHandle(id,null,'gamepad')||isTextTarget(document.activeElement)||menu&&!['voice','pause','inventory','players'].includes(id))v=0;
+  if(!canHandle(id,null,'gamepad')||isEditingText(document.activeElement)||menu&&!['voice','pause','inventory','players'].includes(id))v=0;
   if(id==='sprint'&&options.controllerSprintToggle&&v&&token&&newTokens.includes(token)){
     // Use the physical press edge, not poll frames: one L3 press = one toggle.
     controllerSprintLatched=!controllerSprintLatched;
@@ -17171,7 +17238,7 @@ function poll(dt=.016){
    if(v){padValues.set(id,v);if(menu&&token)consumed.add(token);}else padValues.delete(id);emit(id,'gamepad');
  }
  if(menuPanel&&config.menuRoot?.()===menuPanel)menuNavigate(pad,dt,menuPanel,consumed);
- else{menuDirection=0;menuButtons=new Set(pad.buttons.map((b,i)=>b.pressed||b.value>.6?i:-1).filter(i=>i>=0));}
+ else{menuDirection=0;menuButtons=new Set(Array.from(pad.buttons||[]).map((b,i)=>buttonValue(b)>.6?i:-1).filter(i=>i>=0));}
  previousPadTokens.clear();for(const t of tokens)previousPadTokens.add(t);
 }
 function renderRows(){if(!view)return;for(const [id,cells]of view.rows)for(const device of ['key','pad']){const active=capture?.action===id&&capture.device===device;cells[device].textContent=active?'Press input…':label(id,device);cells[device].classList.toggle('is-listening',active);cells[device].setAttribute('aria-label',definitions.find(r=>r[0]===id)[1]+', '+(device==='key'?'keyboard or mouse':'controller')+': '+cells[device].textContent);}view.cancel.hidden=!capture;}
@@ -17188,12 +17255,12 @@ function mount(host){
  const invert=make('label','maze-pad-invert'),invertInput=make('input');invertInput.type='checkbox';invertInput.checked=options.invertY;invertInput.onchange=()=>{options.invertY=invertInput.checked;save();};invert.append(invertInput,make('span','','Invert controller look Y'));settings.append(invert);
   const controllerSprint=make('label','maze-pad-invert'),controllerSprintInput=make('input');controllerSprintInput.type='checkbox';controllerSprintInput.id='maze-controller-toggle-sprint';controllerSprintInput.checked=options.controllerSprintToggle;controllerSprintInput.onchange=()=>{options.controllerSprintToggle=controllerSprintInput.checked;controllerSprintLatched=false;save();};controllerSprint.append(controllerSprintInput,make('span','','Toggle sprint with controller (L3 by default)'));settings.append(controllerSprint);
   const sprintNote=make('p','maze-binding-note','Off: hold L3 to sprint. On: tap L3 once to sprint, again to walk. Keyboard Shift always remains hold-to-sprint.');sprintNote.style.gridColumn='1 / -1';settings.append(sprintNote);
- const help=make('p','maze-binding-note','Pocket shortcuts use only slots 1–8. Backpack storage has no hotkeys. Hold the controller inventory button to open the quick item wheel, aim with the right stick, and release to equip. Drop held item instantly drops whatever is in your hands; it does nothing with empty hands. Controller menus: D-pad / left stick selects, A / Cross activates or opens dropdown choices, B / Circle cancels a dropdown or goes back. Triggers adjust focused sliders. While spectating: D-pad changes player, triggers zoom.');
+ const help=make('p','maze-binding-note','Pocket shortcuts use only slots 1–8. Backpack storage has no hotkeys. Hold the controller inventory button to open the quick item wheel, aim with the left stick, and release to equip. Drop held item instantly drops whatever is in your hands; it does nothing with empty hands. Controller menus: D-pad / left stick selects, A / Cross activates or opens dropdown choices, B / Circle cancels a dropdown or goes back. Triggers adjust focused sliders. While spectating: D-pad changes player, triggers zoom.');
  const message=make('p','maze-binding-status');message.setAttribute('role','status');message.setAttribute('aria-live','polite');const cancel=make('button','maze-binding-reset','Cancel binding');cancel.type='button';cancel.hidden=true;cancel.onclick=cancelCapture;
  section.append(head,note,padStatus,settings,header,table,help,message,cancel);host.append(section);view={section,rows,status:message,padStatus,cancel};renderRows();updatePadStatus();
  const style=make('style');style.textContent='.maze-bindings{margin:22px 0 16px;border-top:1px solid #79999566;padding-top:16px}.maze-bindings-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}.maze-bindings h3{margin:0;font-size:17px}.maze-binding-note,.maze-pad-status{font-size:11px!important;line-height:1.5!important;margin:10px 0!important;color:#abc1ba!important}.maze-pad-status{color:#d7e5c5!important}.maze-binding-table{max-height:315px;overflow-y:auto;border:1px solid #819a9055;border-radius:5px}.maze-binding-row{display:grid;grid-template-columns:minmax(110px,1.15fr) minmax(105px,1fr) minmax(110px,1fr);align-items:center;gap:8px;padding:7px 8px;border-bottom:1px solid #71908424;font-size:11px;text-align:left}.maze-binding-header{color:#98afa6;font-size:9px;text-transform:uppercase;letter-spacing:.08em}.maze-binding-cell{display:flex;gap:3px;min-width:0}.maze-binding-button{min-width:0;flex:1;color:#e7f0d9;background:#223c35;border:1px solid #7e9a7f80;border-radius:3px;padding:7px 3px;font-size:10px}.maze-binding-clear{width:19px;flex:none;border-radius:3px;background:#17312b;color:#91aea0}.maze-binding-button.is-listening{border-color:#d4f596;background:#38583e;color:#effbd8}.maze-binding-reset{padding:6px 9px;border:1px solid #75998666;border-radius:4px;background:#173b34;color:#d6e8cf;font-size:10px}.maze-binding-status{min-height:16px;font-size:11px!important;color:#d4f596!important;line-height:1.4!important}.maze-pad-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}.maze-pad-option{font-size:10px!important;display:grid;gap:5px}.maze-pad-option input{width:100%}.maze-pad-invert{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:11px!important}.maze-pad-invert input{width:15px;height:15px;margin:0}.panel.settings{width:min(710px,calc(100vw - 32px));max-height:calc(100dvh - 48px);overflow-y:auto}#settingsScreen{overflow:hidden}@media(max-width:560px){.maze-binding-row{grid-template-columns:minmax(85px,1fr) minmax(90px,1fr) minmax(95px,1fr);gap:4px;font-size:10px}.maze-binding-table{max-height:270px}}';document.head.append(style);
 }
-root.MazeInput={configure:callbacks=>{config=callbacks||{};},definitions,bindings,options,label,tokenLabel,matches,isTextTarget,isCapturing:()=>!!capture,down:action=>action==='sprint'?sprintDown():value(action)>.001,value,poll,mount,setBinding,beginCapture,cancelCapture,releaseAll,releaseGameplay,lastDevice:()=>lastDevice,controllerConnected:()=>padIndex!==null,lookRate:()=>.5+options.lookSpeed*.045,invertY:()=>options.invertY?-1:1,getStatus:()=>({device:lastDevice,controller:padName||null,controllerMapping:padStandard?'standard':'custom',capturing:!!capture,controllerSprintMode:options.controllerSprintToggle?'toggle':'hold',controllerSprintLatched,held:definitions.filter(([id])=>value(id)>.001).map(([id])=>id)})};
+root.MazeInput={configure:callbacks=>{config=callbacks||{};},definitions,bindings,options,label,tokenLabel,matches,isTextTarget,isCapturing:()=>!!capture,down:action=>action==='sprint'?sprintDown():value(action)>.001,value,poll,mount,setBinding,beginCapture,cancelCapture,releaseAll,releaseGameplay,lastDevice:()=>lastDevice,controllerConnected:()=>padIndex!==null,lookRate:()=>.5+options.lookSpeed*.045,invertY:()=>options.invertY?-1:1,getStatus:()=>({device:lastDevice,controller:padName||null,controllerIndex:padIndex,controllers:exposedPads.map(p=>({...p})),controllerError:padFault||null,gamepadAPI:typeof navigator.getGamepads==='function',secureContext:!!root.isSecureContext,documentFocused:document.hasFocus(),textEditing:isEditingText(document.activeElement),primaryPointerCoarse:!!root.matchMedia?.('(pointer: coarse)').matches,anyFinePointer:!!root.matchMedia?.('(any-pointer: fine)').matches,controllerMapping:padStandard?'standard':'custom',capturing:!!capture,controllerSprintMode:options.controllerSprintToggle?'toggle':'hold',controllerSprintLatched,held:definitions.filter(([id])=>value(id)>.001).map(([id])=>id)})};
 })(window);
 
 </script><script>MazeBoot.advance(22372);</script><script>
@@ -20042,6 +20109,17 @@ function attach(T,data,built){
    const window=(room?.windows||[]).some(w=>w.cell.x===f.cell.x&&w.cell.z===f.cell.z&&w.dx===f.dx&&w.dz===f.dz),spans=f.doorId?[[-1.49,.82,1.02,1.96],[1.49,.82,1.02,1.96]]:window?[[-1.36,1.02,1.02,1.96],[1.36,1.02,1.02,1.96],[0,1.70,.52,.96]]:[[0,3.78,1.02,1.96]];
    for(const[x,w,y,h]of spans){box(panel,'Glazed bathroom wall tile',tile,x,y,0,w,h,.025);box(panel,'Bathroom mosaic border',accent,x,y+h/2-.16,-.017,w,.13,.009);for(let iy=0;iy<5;iy++){const yy=.22+iy*.37;if(yy<y+h/2)box(panel,'Wall horizontal grout',grout,x,yy,-.018,w,.009,.006);}for(let ix=-3;ix<=3;ix++){const xx=ix*.48;if(Math.abs(xx-x)<w/2-.03)box(panel,'Wall vertical grout',grout,xx,y,-.019,.009,h,.006);}}
   }
+  // Reuse the existing authored ceiling-fixture kit with this bathroom's
+  // metal and porcelain finish. Its source stays in the existing light pool.
+  const lampGlass=material('opal bathroom lamp diffuser',b.theme==='poolrooms'?0xe4faf6:0xffedd1,{emissive:b.theme==='poolrooms'?0xe4faf6:0xffedd1,emissiveIntensity:1.1,roughness:.62});
+  const lampKind=['poolrooms','school'].includes(b.theme)?'bulkhead':['forest','hotel'].includes(b.theme)?'opal':'utility',lampKit=root.MazeCeilingFixtures.createKit(T,resources,{metal,shade:ceramic,glass:lampGlass,trim:ceramic});
+  for(const cell of b.section.cells){
+   const dx=cell.x*4-b.x,dz=cell.z*4-b.z,c=Math.cos(b.yaw),sn=Math.sin(b.yaw),ceiling=b.theme==='garden'?2.954:3.05;
+   const lamp=lampKit.add(g,c*dx-sn*dz,sn*dx+c*dz,lampKind,ceiling);lamp.userData.bathroomLamp=true;
+   batch(lamp);lamp.userData.bathroomDynamic=true;lamp.traverse(o=>{if(o.isMesh)o.castShadow=false;});
+   const light=(built.lights||data.lights||[]).find(l=>Math.abs(l.x-cell.x*4)<.05&&Math.abs(l.z-cell.z*4)<.05);
+   if(light){light.y=ceiling-(lampKind==='bulkhead'?.39:lampKind==='utility'?.29:.30);light.color=b.theme==='poolrooms'?0xd5f3ed:0xffe4bf;}
+  }
   // A separate shallow mirror and shelf provide no camera / AI occlusion box.
   box(g,'Towel shelf',accent,-1.53,1.075,-.52,.62,.065,.90);box(g,'Bathroom mirror trim',metal,-1.831,1.79,.18,.045,.91,.76);box(g,'Bathroom mirror',mirror,-1.803,1.79,.18,.012,.82,.67);
   const sinkG=new T.Group();sinkG.position.set(-1.50,0,.20);sinkG.rotation.y=-Math.PI/2;g.add(sinkG);
@@ -20086,7 +20164,10 @@ function attach(T,data,built){
   const back=localBounds(b,.82,1.72,1.72,.10,base+.44,b.id+':bath-back',{standable:b.variant==='bathtub',footstepSurface:'tile'});colliders.push(back);
   pipe(showerG,'Exposed shower riser',metal,[0,base,.81],[0,2.36,.81],.026);cyl(showerG,'Shower riser floor flange',metal,0,base+.015,.81,.085,.03);for(const y of[.55,1.88]){pipe(showerG,'Shower wall mounting bracket',metal,[0,y,.81],[0,y,1.0],.022);box(showerG,'Shower wall mounting plate',metal,0,y,1.0,.11,.11,.035);}pipe(showerG,'Shower overhead arm',metal,[0,2.36,.81],[0,2.36,.28],.027);const head=cyl(showerG,'Rain shower head',metal,0,2.32,.28,.18,.06);cyl(showerG,'Shower head spray plate',dark,0,2.286,.28,.156,.008);
   const controls=new T.Group();controls.position.set(0,1.16,.765);showerG.add(controls);box(controls,'Accessible shower mixer plate',metal,0,0,0,.19,.27,.045);const valve=box(controls,'Shower on-off lever',accent,0,0,-.059,.14,.035,.07);
-  const spoint=localPoint(b,.82,.86),hpoint=localPoint(b,.82,1.14),shower={id:b.id+':shower',kind:'shower',variant:b.variant,on:false,x:spoint.x,y:1.2,z:spoint.z,audioPoint:{x:hpoint.x,y:2.32,z:hpoint.z},group:showerG,interactionRoots:[controls,head],interactionIgnore:[],canInteract:p=>Math.hypot(p.x-spoint.x,p.z-spoint.z)<3.1,contains(p){const dx=p.x-b.x,dz=p.z-b.z,x=dx*Math.cos(b.yaw)-dz*Math.sin(b.yaw)-.82,z=dx*Math.sin(b.yaw)+dz*Math.cos(b.yaw)-.86;return Math.abs(x)<.75&&Math.abs(z)<.78&&(p.y||0)<1.2;}};
+  const spoint=localPoint(b,.82,.86),shower={id:b.id+':shower',kind:'shower',variant:b.variant,on:false,x:spoint.x,y:1.2,z:spoint.z,group:showerG,interactionRoots:[controls,head],interactionIgnore:[],canInteract:p=>Math.hypot(p.x-spoint.x,p.z-spoint.z)<3.1,contains(p){const dx=p.x-b.x,dz=p.z-b.z,x=dx*Math.cos(b.yaw)-dz*Math.sin(b.yaw)-.82,z=dx*Math.sin(b.yaw)+dz*Math.cos(b.yaw)-.86;return Math.abs(x)<.75&&Math.abs(z)<.78&&(p.y||0)<1.2;}};
+  // Derive the emitter from the actual head transform after both the shower
+  // offset and the rotated room transform. Mixer/reach/AI targets stay intact.
+  head.updateWorldMatrix(true,false);shower.soundPosition=head.getWorldPosition(new T.Vector3());shower.soundObject=head;
   const jets=[];for(let n=0;n<21;n++){const angle=n*2.399963,r=.035+Math.sqrt(n/21)*.15,j=cyl(showerG,'Individual shower stream',water,Math.cos(angle)*r,1.20,.28+Math.sin(angle)*r,.006,2.07);jets.push(j);}const splash=part(showerG,'Shower splash pool',sphereG,water,0,base+.015,.20,.54,.012,.52);
   shower.updateVisual=()=>{for(const j of jets)j.visible=shower.on;splash.visible=shower.on;valve.rotation.z=shower.on?-.75:0;};shower.animate=t=>{for(let n=0;n<jets.length;n++){jets[n].scale.x=jets[n].scale.z=.0045+.002*Math.sin(t*13+n);jets[n].position.x+=Math.sin(t*7+n)*.0003;}splash.scale.x=.49+.04*Math.sin(t*7);};shower.updateVisual();fixtures.push(shower);
   built.footstepSurfaces??=[];built.footstepSurfaces.push({minX:b.x-1.9,maxX:b.x+1.9,minZ:b.z-1.9,maxZ:b.z+1.9,y:.058,surface:'tile',source:pal.name});
@@ -20446,7 +20527,6 @@ function build(THREE,data){
  const mats={dormWall:material('dormitory painted plaster',0x788b82),dormLower:material('dormitory timber panels',0x655e4c),kitchenWall:material('kitchen glazed pale ceramic',0xa9bab0,{roughness:.42}),kitchenLower:material('kitchen dark green tile',0x536d65,{roughness:.45}),grout:material('ceramic grout',0x7b9187),ceiling:material('acoustic ceiling',0xb2b5a2),wall:material('wall',palette.wall),floor:material('floor',palette.floor),metal:material('metal',palette.metal,{metalness:.6,roughness:.46}),wood:material('wood',palette.wood),cloth:material('cloth',palette.cloth),linen:material('linen',0xc9c8b1),dark:material('dark',0x19272a),accent:material('brass',palette.accent,{metalness:.48}),ceramic:material('ceramic',0xb5c6bb),glass:material('oven glass',0x142c31,{metalness:.3,roughness:.22}),light:material('frosted light',0xd4e5d6,{emissive:0xd4e5d6,emissiveIntensity:.25})};
  const fixtureGlass=material('opal ceiling fixture glass',theme==='poolrooms'?0xe4faf6:0xffedd1,{emissive:theme==='poolrooms'?0xe4faf6:0xffedd1,emissiveIntensity:1.1,roughness:.62});
  const ceilingFixtures=root.MazeCeilingFixtures.createKit(T,resources,{metal:mats.accent,shade:mats.metal,glass:fixtureGlass,trim:mats.linen});
- const bathroomKeys=new Set((data.bathrooms||[]).flatMap(b=>(b.section?.cells||[b.cell]).map(c=>key(c.x,c.z))));
  const roomColors={backrooms:[0xe4d2ad,0xad774f,0xe4d2ad,0xad774f,0xdbd3b9],garden:[0xc4b997,0x7e9270,0xd4caa8,0x75826a,0xb1ad8a],poolrooms:[0xd7e5df,0x66a5a4,0xd7e5df,0x6dadaf,0xe5e7d7],school:[0xc1cfbf,0x749089,0xd8d7bb,0x8caa8e,0xd5d9ce],catacombs:[0x92877b,0x6d665d,0x938979,0x746957,0x6d685e],industrial:[0x849493,0x526866,0xb6bab0,0x627d74,0x9ea6a0],hotel:[0xd2bda0,0x654d3e,0xdecbae,0x78604c,0xcbb699]}[theme];
  ['dormWall','dormLower','kitchenWall','kitchenLower','ceiling'].forEach((k,i)=>mats[k].color.setHex(roomColors[i]));
  mats.leaf=material('living foliage',0x52764d);mats.terracotta=material('terracotta',0xb77d58);mats.water=material('ceramic basin blue',0x4da6b0,{roughness:.28});
@@ -20619,11 +20699,13 @@ function build(THREE,data){
   }
   for(const cell of room.cells){const base=new T.Group();base.position.set(cell.x*4,0,cell.z*4);rg.add(base);
    if(!dorm){box(base,theme==='poolrooms'?'Submerged hydration gallery tiles':'Room floor finish',mats.floor,0,.012,0,3.995,.018,3.995);footstepSurfaces.push({minX:cell.x*4-1.9975,maxX:cell.x*4+1.9975,minZ:cell.z*4-1.9975,maxZ:cell.z*4+1.9975,y:.021,surface:mats.floor.userData.footstepSurface,source:'kitchen ceramic floor'});const joints=[-1.5,-1,-.5,0,.5,1,1.5];for(const v of joints){part(base,'Kitchen floor tile grout',geoplane,mats.grout,0,.024,v,3.99,.009,1,[-Math.PI/2,0,0]);for(const[a,b]of segments(-1.995,1.995,joints,.0045))part(base,'Kitchen floor tile grout',geoplane,mats.grout,v,.024,(a+b)/2,.009,b-a,1,[-Math.PI/2,0,0]);}}
+   // The bathroom pass supplies a real shared lamp model, not this room
+   // tile's generic cube / fluorescent. Keep the floor but skip its old lamp.
+   if((data.bathrooms||[]).some(b=>b.section.cells.some(c=>c.x===cell.x&&c.z===cell.z)))continue;
    // Recess only perimeter ceiling edges behind the wall lining. A full-size
    // box put its outer cap exactly on the public doorway lintel and flickered.
    const edges=room.boundaries.filter(b=>b.cell.x===cell.x&&b.cell.z===cell.z),edge=(dx,dz)=>edges.some(b=>b.dx===dx&&b.dz===dz),x0=-2+(edge(-1,0)?.04:0),x1=2-(edge(1,0)?.04:0),z0=-2+(edge(0,-1)?.04:0),z1=2-(edge(0,1)?.04:0),cx=(x0+x1)/2,cz=(z0+z1)/2;
-   if(bathroomKeys.has(key(cell.x,cell.z)))ceilingFixtures.add(base,0,0,'bulkhead',3.05);
-   else if(theme==='garden'){box(base,'Suspended pavilion lantern frame',mats.wood,0,2.94,0,.25,.29,.25);box(base,'Pavilion lantern inset',mats.light,0,2.925,-.133,.16,.19,.012);}
+   if(theme==='garden'){box(base,'Suspended pavilion lantern frame',mats.wood,0,2.94,0,.25,.29,.25);box(base,'Pavilion lantern inset',mats.light,0,2.925,-.133,.16,.19,.012);}
    else if(theme==='catacombs'||theme==='poolrooms'){
     const rib=theme==='catacombs'?mats.wall:mats.kitchenLower;
     for(const x of[-1.82,1.82])box(base,'Vault springing stone',rib,x,2.80,0,.18,.36,3.86);
@@ -21105,7 +21187,7 @@ root.MazeSurvivalUI=MazeSurvivalUI;
     const w = Math.max(1, global.innerWidth || doc.documentElement.clientWidth), h = Math.max(1, global.innerHeight || doc.documentElement.clientHeight);
     // Desktop always keeps the same layout at the same aspect ratio. Touch
     // devices keep the compact layout and usable touch targets in portrait.
-    const touchDevice = coarse.matches, portraitTouch = touchDevice && w < h;
+    const touchDevice = global.MazeInput ? global.MazeInput.lastDevice() === 'touch' : coarse.matches && !global.matchMedia('(any-pointer: fine)').matches, portraitTouch = touchDevice && w < h;
     const designW = touchDevice ? (portraitTouch ? 390 : 800) : 1280, designH = touchDevice ? (portraitTouch ? 720 : 420) : 720;
     const scale = Math.min(w / designW, h / designH), width = w / scale, height = h / scale;
     const changed = Math.abs(layout.scale - scale) > .000001 || Math.abs(layout.width - width) > .001 || Math.abs(layout.height - height) > .001 || layout.dpr !== global.devicePixelRatio;
@@ -21147,6 +21229,7 @@ root.MazeSurvivalUI=MazeSurvivalUI;
   global.addEventListener('resize', update);
   global.visualViewport?.addEventListener('resize', update);
   coarse.addEventListener?.('change', update);
+  global.addEventListener('maze-input-device', update);
   let resolution;
   function followResolution() {
     resolution?.removeEventListener?.('change', resolutionChanged);
@@ -22666,7 +22749,7 @@ function initialize(level){
  for(const p of candidates){if(garden.ivy.length>=Math.min(15,Math.max(7,Math.floor(level.floors.length/35))))break;
   const k=key(p.x,p.z);if(garden.ivy.some(v=>Math.hypot(v.tx-p.x,v.tz-p.z)<2))continue;
   const trial=new Set([...blocked,k]);if(!connectivitySafe(level,trial))continue;
-  const ivy={id:'ivy:'+k,tx:p.x,tz:p.z,x:p.x*CELL,z:p.z*CELL,radius:CELL/2,active:true};garden.ivy.push(ivy);garden.ivyByTile.set(k,ivy);blocked.add(k);
+  const ivy={id:'ivy:'+k,tx:p.x,tz:p.z,x:p.x*4,z:p.z*4,radius:2,halfExtent:C.CELL/2,active:true};garden.ivy.push(ivy);garden.ivyByTile.set(k,ivy);blocked.add(k);
  }
  // Every accepted patch has a normal, ivy-free route around it. Nothing is
  // converted to a collider, and every original non-ivy floor remains reachable.
@@ -22678,13 +22761,26 @@ function initialize(level){
  if(r()<.78){const options=shuffle(candidates.filter(p=>Math.hypot(p.x-level.safe.entry.x,p.z-level.safe.entry.z)>5),r);for(const p of options){if(garden.snakes.length>=2+Math.floor(r()*3))break;if(garden.snakes.some(s=>Math.hypot(s.x-p.x*4,s.z-p.z*4)<20))continue;garden.snakes.push({id:'snake:'+garden.snakes.length,x:p.x*4,z:p.z*4,homeX:p.x*4,homeZ:p.z*4,yaw:r()*6.28,alive:true,targetId:null,biteAt:0,rattleAt:0,repathAt:0,path:[],motion:0});}}
  garden.connectivityVerified=connectivitySafe(level,blocked);return garden;
 }
-function ivyAt(level,x,z){const p=level.garden?.ivyByTile.get(key(tileAt(x),tileAt(z)));return p?.active?p:null;}
-function segmentHitsBox(a,b,minX,maxX,minZ,maxZ){
- let lo=0,hi=1;for(const axis of ['x','z']){const start=a[axis],delta=b[axis]-start,min=axis==='x'?minX:minZ,max=axis==='x'?maxX:maxZ;if(Math.abs(delta)<1e-9){if(start<min||start>max)return false;continue;}let t0=(min-start)/delta,t1=(max-start)/delta;if(t0>t1)[t0,t1]=[t1,t0];lo=Math.max(lo,t0);hi=Math.min(hi,t1);if(lo>hi)return false;}return true;
+function ivyAt(level,x,z){
+ // Tile ownership is half-open, exactly like the floor grid. Corners and thin
+ // edge strips are not exemptions; cleared tiles immediately stop applying.
+ if(!level?.garden||!Number.isFinite(x)||!Number.isFinite(z))return null;
+ const patch=level.garden.ivyByTile.get(key(tileAt(x),tileAt(z)));
+ return patch?.active?patch:null;
 }
 function segmentBlocked(level,a,b,radius=0){
- if(!level.garden?.ivy.length)return false;const half=CELL/2+Math.max(0,radius);
- for(const p of level.garden.ivy)if(p.active&&segmentHitsBox(a,b,p.x-half,p.x+half,p.z-half,p.z+half))return true;return false;
+ if(!level.garden?.ivy.length)return false;
+ const dx=b.x-a.x,dz=b.z-a.z,padding=Math.max(0,Number(radius)||0);
+ // Segment / expanded AABB intersection prevents diagonal corner-cutting by
+ // Goku as well as straight movement through the formerly safe side strips.
+ for(const p of level.garden.ivy){
+  if(!p.active)continue;const h=(p.halfExtent??C.CELL/2)+padding;let lo=0,hi=1;
+  if(Math.abs(dx)<1e-9){if(a.x<p.x-h||a.x>p.x+h)continue;}
+  else{let t0=(p.x-h-a.x)/dx,t1=(p.x+h-a.x)/dx;if(t0>t1)[t0,t1]=[t1,t0];lo=Math.max(lo,t0);hi=Math.min(hi,t1);if(lo>hi)continue;}
+  if(Math.abs(dz)<1e-9){if(a.z<p.z-h||a.z>p.z+h)continue;}
+  else{let t0=(p.z-h-a.z)/dz,t1=(p.z+h-a.z)/dz;if(t0>t1)[t0,t1]=[t1,t0];lo=Math.max(lo,t0);hi=Math.min(hi,t1);if(lo>hi)continue;}
+  return true;
+ }return false;
 }
 function exposed(level,x,z){
  if(level.theme!=='garden')return false;const tx=tileAt(x),tz=tileAt(z),k=key(tx,tz),type=level.get(tx,tz);
@@ -22830,37 +22926,66 @@ function parseSnapshot(level,data){
  return{revision:data.revision,clear,snakes};
 }
 function applySnapshot(level,data){const parsed=parseSnapshot(level,data);if(!parsed)return false;const g=level.garden;for(const p of g.ivy)p.active=!parsed.clear.has(p.id);for(const value of parsed.snakes){const s=g.snakes.find(s=>s.id===value.id);Object.assign(s,value);}g.revision=parsed.revision;return true;}
-function buildStorm(T,level,group,resources,options={}){
- const quality=options.quality||'balanced';
- const night=level.gardenWeather.night,rr=C.rng(C.hashSeed('rain-v3:'+level.seed)),count=quality==='low'?1100:quality==='high'?2600:1900;
- const own=v=>(resources.push(v),v),wetTiles=exposureTiles(level),isWet=(x,z)=>wetTiles.has(key(tileAt(x),tileAt(z)));
- // Apply the same final tile fade as the environment, after lights and fog.
- // The per-vertex / per-instance attribute keeps one draw call per effect.
- const lit=material=>{
-  const before=material.onBeforeCompile;
-  material.onBeforeCompile=function(shader,renderer){
-   before?.call(this,shader,renderer);
-   shader.vertexShader='attribute float weatherLight;\nvarying float vWeatherLight;\n'+shader.vertexShader;
-   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvWeatherLight=weatherLight;');
-   shader.fragmentShader='varying float vWeatherLight;\n'+shader.fragmentShader;
-   shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif(vWeatherLight<=0.0)discard;');
-   shader.fragmentShader=shader.fragmentShader.replace('#include <dithering_fragment>','#include <dithering_fragment>\ngl_FragColor.rgb*=vWeatherLight;');
+/* Weather is ordinary lit world geometry, not a full-bright overlay. */
+function weatherLighting(T,level,resources){
+ const b=level.bounds,minX=b.minX-1,minZ=b.minZ-1,width=b.maxX-b.minX+3,height=b.maxZ-b.minZ+3;
+ const pixels=new Uint8Array(width*height*4);pixels.fill(255);
+ const texture=new T.DataTexture(pixels,width,height,T.RGBAFormat);texture.name='Weather tile visibility';texture.minFilter=texture.magFilter=T.NearestFilter;texture.generateMipmaps=false;texture.needsUpdate=true;resources.push(texture);
+ const uniforms={uMazeWeatherVisibility:{value:texture},uMazeWeatherGrid:{value:new T.Vector4(minX,minZ,width,height)}};
+ function material(m){
+  const before=m.onBeforeCompile,cacheKey=m.customProgramCacheKey;
+  m.onBeforeCompile=function(shader,renderer){
+   before?.call(this,shader,renderer);Object.assign(shader.uniforms,uniforms);
+   shader.vertexShader='varying vec3 vMazeWeatherWorld;\n'+shader.vertexShader;
+   shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>',`#include <project_vertex>
+    vec4 weatherWorld=vec4(transformed,1.0);
+    #ifdef USE_INSTANCING
+     weatherWorld=instanceMatrix*weatherWorld;
+    #endif
+    vMazeWeatherWorld=(modelMatrix*weatherWorld).xyz;`);
+   shader.fragmentShader='varying vec3 vMazeWeatherWorld; uniform sampler2D uMazeWeatherVisibility; uniform vec4 uMazeWeatherGrid;\n'+shader.fragmentShader;
+   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
+    vec2 weatherCell=floor((vMazeWeatherWorld.xz+vec2(2.0))/4.0);
+    vec2 weatherUV=(weatherCell-uMazeWeatherGrid.xy+vec2(0.5))/uMazeWeatherGrid.zw;
+    if(any(lessThan(weatherUV,vec2(0.0)))||any(greaterThan(weatherUV,vec2(1.0))))discard;
+    float weatherShade=texture2D(uMazeWeatherVisibility,weatherUV).r;
+    if(weatherShade<0.005)discard;
+    diffuseColor.rgb*=weatherShade;`);
   };
-  material.customProgramCacheKey=()=> 'maze-weather-tile-light-v1';
-  return own(material);
- };
- const lightingAttribute=(geometry,n,instanced=false)=>{
-  const a=new (instanced?T.InstancedBufferAttribute:T.BufferAttribute)(new Float32Array(n).fill(1),1);
-  a.setUsage(T.DynamicDrawUsage);geometry.setAttribute('weatherLight',a);return a;
- };
- // Lit line segments need normals just like the other standard materials.
- const waterNormals=(geometry,n)=>{const a=new Float32Array(n*3);for(let i=0;i<n;i++)a[i*3+1]=1;geometry.setAttribute('normal',new T.BufferAttribute(a,3));};
- let lightMap=null;
- const lightAt=(x,z)=>lightMap?C.clamp(lightMap.get(key(tileAt(x),tileAt(z)))||0,0,1):1;
- const positions=new Float32Array(count*6),drops=Array.from({length:count},()=>({x:(rr()-.5)*44,z:(rr()-.5)*44,y:rr()*18,speed:17+rr()*9,seeded:false}));
- const geo=own(new T.BufferGeometry());geo.setAttribute('position',new T.BufferAttribute(positions,3).setUsage(T.DynamicDrawUsage));
- waterNormals(geo,count*2);const rainLight=lightingAttribute(geo,count*2);
- const rain=new T.LineSegments(geo,lit(new T.MeshStandardMaterial({color:0xb2c7d5,roughness:.65,transparent:true,opacity:night?.45:.54,depthWrite:false})));rain.name='Wind-driven roof-aware rainfall';rain.frustumCulled=false;rain.receiveShadow=true;group.add(rain);
+  m.customProgramCacheKey=function(){return(cacheKey?.call(this)||'')+'|weather-world-light-v1';};m.needsUpdate=true;return m;
+ }
+ function setTileVisibility(lightMap){
+  // One small reusable texture per storm; no per-drop lights or raycasts.
+  let changed=false;for(let z=0;z<height;z++)for(let x=0;x<width;x++){
+   const value=lightMap?.get(key(x+minX,z+minZ))||0,v=value>0?Math.round(Math.max(.025,Math.min(1,Math.round(value*40)/40))*255):0,i=(z*width+x)*4;
+   if(pixels[i]!==v){pixels[i]=pixels[i+1]=pixels[i+2]=v;changed=true;}
+  }if(changed)texture.needsUpdate=true;
+ }
+ return{material,setTileVisibility,texture};
+}
+function litRainRibbons(T,segments,material,resources,name){
+ const geometry=new T.BufferGeometry(),positions=new Float32Array(segments*12),normals=new Float32Array(segments*12),indices=new Uint16Array(segments*6);
+ for(let i=0;i<segments;i++){const v=i*4,o=i*6;indices.set([v,v+1,v+2,v+2,v+1,v+3],o);}
+ geometry.setIndex(new T.BufferAttribute(indices,1));geometry.setAttribute('position',new T.BufferAttribute(positions,3).setUsage(T.DynamicDrawUsage));geometry.setAttribute('normal',new T.BufferAttribute(normals,3).setUsage(T.DynamicDrawUsage));resources.push(geometry);
+ const mesh=new T.Mesh(geometry,material);mesh.name=name;mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=true;mesh.userData.weatherRibbon=true;
+ function write(i,ax,ay,az,bx,by,bz,view,halfWidth){
+  const mx=(ax+bx)*.5,mz=(az+bz)*.5;let nx=view.x-mx,nz=view.z-mz;const len=Math.hypot(nx,nz)||1;nx/=len;nz/=len;
+  // Thin upright, viewer-facing sheets have real normals. Directional, point,
+  // spot, magic lights and fog now evaluate each segment at its own position.
+  const sx=nz*halfWidth,sz=-nx*halfWidth,o=i*12;
+  positions[o]=ax-sx;positions[o+1]=ay;positions[o+2]=az-sz;positions[o+3]=ax+sx;positions[o+4]=ay;positions[o+5]=az+sz;
+  positions[o+6]=bx-sx;positions[o+7]=by;positions[o+8]=bz-sz;positions[o+9]=bx+sx;positions[o+10]=by;positions[o+11]=bz+sz;
+  for(let v=0;v<4;v++){normals[o+v*3]=nx;normals[o+v*3+1]=0;normals[o+v*3+2]=nz;}
+ }
+ return{mesh,write,commit(){geometry.attributes.position.needsUpdate=true;geometry.attributes.normal.needsUpdate=true;}};
+}
+function buildStorm(T,level,group,resources,quality='balanced'){
+ const night=level.gardenWeather.night,rr=C.rng(C.hashSeed('rain-v3:'+level.seed)),count=quality==='low'?1100:quality==='high'?2600:1900;
+ const own=v=>(resources.push(v),v),lighting=weatherLighting(T,level,resources),wetTiles=exposureTiles(level),isWet=(x,z)=>wetTiles.has(key(tileAt(x),tileAt(z)));
+ const drops=Array.from({length:count},()=>({x:(rr()-.5)*44,z:(rr()-.5)*44,y:rr()*18,speed:17+rr()*9,seeded:false}));
+ const rainMat=own(lighting.material(new T.MeshStandardMaterial({color:0xb2c7d5,roughness:.5,metalness:0,transparent:true,opacity:.54,depthWrite:false,side:T.DoubleSide})));
+ rainMat.name='Rain / scene-lit water';
+ const streaks=litRainRibbons(T,count,rainMat,resources,'Wind-driven roof-aware rainfall'),rain=streaks.mesh;group.add(rain);
  // Broad, slowly moving layers of procedural cloud cover, no flashing lights.
  const cloudMat=own(new T.ShaderMaterial({side:T.BackSide,depthWrite:false,depthTest:true,fog:false,uniforms:{time:{value:0},night:{value:night?1:0}},
   vertexShader:'varying vec3 vDirection;void main(){vDirection=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
@@ -22874,49 +22999,38 @@ function buildStorm(T,level,group,resources,options={}){
  // Persistent shallow puddles on outdoor tiles, drawn as one batch.
  const puddleGeo=own(new T.CircleGeometry(1,28));const attr=puddleGeo.attributes.position;
  for(let i=1;i<attr.count;i++){const x=attr.getX(i),y=attr.getY(i),a=Math.atan2(y,x),r=.92+.055*Math.sin(a*3)+.035*Math.cos(a*7);attr.setXY(i,x*r,y*r);}attr.needsUpdate=true;puddleGeo.computeBoundingSphere();
- const puddleMat=lit(new T.MeshPhysicalMaterial({color:0x586c70,roughness:.15,metalness:.06,clearcoat:1,clearcoatRoughness:.08,transparent:true,opacity:.44,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1}));
+ const puddleMat=own(lighting.material(new T.MeshPhysicalMaterial({color:0x586c70,roughness:.15,metalness:.06,clearcoat:1,clearcoatRoughness:.08,transparent:true,opacity:.44,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1})));puddleMat.name='Rain / scene-lit puddles';
  const puddles=[];for(const k of wetTiles){const[x,z]=k.split(',').map(Number);if(rr()>.64)continue;for(let i=0;i<1+(rr()<.28?1:0);i++)puddles.push({x:x*4+(rr()-.5)*2.4,z:z*4+(rr()-.5)*2.4,sx:.3+rr()*.65,sz:.25+rr()*.5,angle:rr()*6.28});}
- const puddleLight=lightingAttribute(puddleGeo,puddles.length,true);
  const puddleMesh=new T.InstancedMesh(puddleGeo,puddleMat,puddles.length),dummy=new T.Object3D();puddleMesh.name='Rainwater puddles';puddleMesh.receiveShadow=true;
  puddles.forEach((p,i)=>{dummy.position.set(p.x,.026,p.z);dummy.rotation.set(-Math.PI/2,0,p.angle);dummy.scale.set(p.sx,p.sz,1);dummy.updateMatrix();puddleMesh.setMatrixAt(i,dummy.matrix);});puddleMesh.computeBoundingSphere();group.add(puddleMesh);
  // Reuse a fixed splash pool; no meshes or arrays allocated by each impact.
- const splashCount=quality==='low'?72:144,ringGeo=own(new T.RingGeometry(.76,1,12)),splashGeo=own(new T.BufferGeometry()),splashes=Array.from({length:splashCount},()=>({x:0,z:0,born:-100,life:.32})),splashPositions=new Float32Array(splashCount*12);
- splashGeo.setAttribute('position',new T.BufferAttribute(splashPositions,3).setUsage(T.DynamicDrawUsage));
- waterNormals(splashGeo,splashCount*4);const sprayLight=lightingAttribute(splashGeo,splashCount*4),rippleLight=lightingAttribute(ringGeo,splashCount,true);
- const splashMat=lit(new T.MeshStandardMaterial({color:0xb5d0db,roughness:.65,transparent:true,opacity:.38,depthWrite:false})),rippleMat=lit(new T.MeshStandardMaterial({color:0xb9d4df,roughness:.45,transparent:true,opacity:.25,depthWrite:false,side:T.DoubleSide}));
- rippleMat.forceSinglePass=true;
- const spray=new T.LineSegments(splashGeo,splashMat),ripples=new T.InstancedMesh(ringGeo,rippleMat,splashCount);spray.name='Rain impact droplets';ripples.name='Expanding ground rain ripples';spray.frustumCulled=ripples.frustumCulled=false;spray.receiveShadow=ripples.receiveShadow=true;ripples.instanceMatrix.setUsage(T.DynamicDrawUsage);group.add(spray,ripples);
+ const splashCount=quality==='low'?72:144,ringGeo=own(new T.RingGeometry(.76,1,12)),splashes=Array.from({length:splashCount},()=>({x:0,z:0,born:-100,life:.32}));
+ const splashMat=own(lighting.material(new T.MeshStandardMaterial({color:0xb5d0db,roughness:.48,transparent:true,opacity:.38,depthWrite:false,side:T.DoubleSide}))),rippleMat=own(lighting.material(new T.MeshStandardMaterial({color:0xb9d4df,roughness:.38,transparent:true,opacity:.25,depthWrite:false,side:T.DoubleSide})));
+ splashMat.name='Rain / scene-lit splash droplets';rippleMat.name='Rain / scene-lit ground ripples';
+ const splashRibbons=litRainRibbons(T,splashCount*2,splashMat,resources,'Rain impact droplets'),spray=splashRibbons.mesh,ripples=new T.InstancedMesh(ringGeo,rippleMat,splashCount);ripples.name='Expanding ground rain ripples';ripples.frustumCulled=false;ripples.receiveShadow=true;ripples.instanceMatrix.setUsage(T.DynamicDrawUsage);group.add(spray,ripples);
  let cursor=0,nextImpact=0;
- return {rain,clouds,puddles:puddleMesh,ripples,spray,tick(dt,time,player){
+ return {rain,clouds,puddles:puddleMesh,ripples,spray,setTileVisibility:lighting.setTileVisibility,tick(dt,time,player){
   if(!player)return;dt=Math.min(.1,dt);clouds.position.set(player.x,0,player.z);cloudMat.uniforms.time.value=time;
-  lightMap=options.getLightMap?.()||null;
-  let puddleLightingChanged=false;for(let i=0;i<puddles.length;i++){const value=lightAt(puddles[i].x,puddles[i].z);if(Math.abs(puddleLight.array[i]-value)>1e-4){puddleLight.array[i]=value;puddleLightingChanged=true;}}if(puddleLightingChanged)puddleLight.needsUpdate=true;
   const wind=1.5+Math.sin(time*.17)*.45;
   for(let i=0;i<count;i++){
    const d=drops[i];if(!d.seeded){d.x+=player.x;d.z+=player.z;d.seeded=true;}d.x+=wind*dt;d.z+=.65*dt;d.y-=dt*d.speed;
    if(d.x<player.x-22)d.x+=44;if(d.x>player.x+22)d.x-=44;if(d.z<player.z-22)d.z+=44;if(d.z>player.z+22)d.z-=44;
    const wet=isWet(d.x,d.z);
    if(d.y<.03){if(wet&&Math.hypot(d.x-player.x,d.z-player.z)<14){const s=splashes[cursor++%splashCount];s.x=d.x;s.z=d.z;s.born=time;s.life=.28+rr()*.18;}d.y+=18;}
-   const y=wet?d.y:-30,o=i*6;positions[o]=d.x;positions[o+1]=y;positions[o+2]=d.z;positions[o+3]=d.x-.065*wind;positions[o+4]=y+.65;positions[o+5]=d.z-.045;
-   rainLight.array[i*2]=rainLight.array[i*2+1]=wet?lightAt(d.x,d.z):0;
+   const y=wet?d.y:-30;streaks.write(i,d.x,y,d.z,d.x-.065*wind,y+.65,d.z-.045,player,.007);
   }
   // Extra nearby impacts keep ground detail readable without a giant rain batch.
   if(time>=nextImpact){nextImpact=time+.045;for(let n=0;n<5;n++){const x=player.x+(rr()-.5)*16,z=player.z+(rr()-.5)*16;if(!isWet(x,z))continue;const s=splashes[cursor++%splashCount];s.x=x;s.z=z;s.born=time;s.life=.35;}}
   for(let i=0;i<splashCount;i++){
    const s=splashes[i],age=(time-s.born)/s.life,live=age>=0&&age<1,r=live?.025+age*.17:0,y=live?.03:-30;
-   const brightness=live?lightAt(s.x,s.z):0;rippleLight.array[i]=brightness;sprayLight.array.fill(brightness,i*4,i*4+4);
    dummy.position.set(s.x,y,s.z);dummy.rotation.set(-Math.PI/2,0,0);dummy.scale.setScalar(r);dummy.updateMatrix();ripples.setMatrixAt(i,dummy.matrix);
-   const h=live?Math.sin(age*Math.PI)*.14:0,o=i*12;
-   splashPositions[o]=s.x-r*.4;splashPositions[o+1]=y+h;splashPositions[o+2]=s.z;
-   splashPositions[o+3]=s.x-r*.55;splashPositions[o+4]=y+h*.5;splashPositions[o+5]=s.z;
-   splashPositions[o+6]=s.x+r*.4;splashPositions[o+7]=y+h*.8;splashPositions[o+8]=s.z+r*.2;
-   splashPositions[o+9]=s.x+r*.5;splashPositions[o+10]=y+h*.35;splashPositions[o+11]=s.z+r*.2;
+   const h=live?Math.sin(age*Math.PI)*.14:0;
+   splashRibbons.write(i*2,s.x-r*.4,y+h,s.z,s.x-r*.55,y+h*.5,s.z,player,.006);
+   splashRibbons.write(i*2+1,s.x+r*.4,y+h*.8,s.z+r*.2,s.x+r*.5,y+h*.35,s.z+r*.2,player,.006);
   }
-  geo.attributes.position.needsUpdate=true;splashGeo.attributes.position.needsUpdate=true;ripples.instanceMatrix.needsUpdate=true;
-  rainLight.needsUpdate=sprayLight.needsUpdate=rippleLight.needsUpdate=true;
+  streaks.commit();splashRibbons.commit();ripples.instanceMatrix.needsUpdate=true;
  }};
 }
-
 
 function build(T,level,options={}){
  const g=level.garden,group=new T.Group();group.name='Garden ecology · flowers, ivy, snakes and weather';if(!g)return{group,tick(){},dispose(){}};
@@ -22927,19 +23041,18 @@ function build(T,level,options={}){
  const grasses=[],petals=[],hearts=[],stems=[],colors=[0xec6b91,0x9878df,0xf4cd5e,0xe8e5cc,0x71bde1,0xe67d52];
  for(const p of g.decorations){const h=.27*p.size;for(let j=0;j<4;j++){const a=p.yaw+j*1.5;grasses.push({x:p.x+Math.cos(a)*.10,y:h*.5,z:p.z+Math.sin(a)*.1,sx:.05*p.size,sy:h,sz:.018,ry:a,rz:.3});}if(!p.flower)continue;stems.push({x:p.x,y:h*.7,z:p.z,sx:1,sy:h*1.4,sz:1});hearts.push({x:p.x,y:h*1.45,z:p.z,sx:.047,sy:.035,sz:.047});for(let j=0;j<5;j++){const a=j*Math.PI*2/5;petals.push({x:p.x+Math.cos(a)*.066,y:h*1.4,z:p.z+Math.sin(a)*.066,sx:.068,sy:.02,sz:.041,ry:-a,color:colors[p.color]});}}
  instances(leafGeo,green,grasses);instances(stemGeo,green,stems);instances(leafGeo,petalMat,petals);instances(sphere,yellow,hearts);
- const ivyVisuals=new Map();for(const p of g.ivy){const rg=new T.Group();rg.position.set(p.x,0,p.z);rg.name='Poison ivy · leaves of three';group.add(rg);const rr=C.rng(C.hashSeed('ivy-visual:'+p.id+':'+level.seed)),stems=new T.InstancedMesh(stemGeo,stemMat,30),leaves=new T.InstancedMesh(leafGeo,ivyMat,90);rg.add(stems,leaves);for(let i=0;i<30;i++){const a=rr()*6.28,x=(rr()-.5)*(CELL-0.22),z=(rr()-.5)*(CELL-0.22),h=.32+rr()*.47;dummy.position.set(x,h/2,z);dummy.rotation.set(0,0,0);dummy.scale.set(1,h,1);dummy.updateMatrix();stems.setMatrixAt(i,dummy.matrix);for(let j=0;j<3;j++){const la=a+(j-1)*1.1;dummy.position.set(x+Math.cos(la)*.16,h,z+Math.sin(la)*.16);dummy.scale.set(.24,.035,.12);dummy.rotation.set(.12,-la,.15);dummy.updateMatrix();leaves.setMatrixAt(i*3+j,dummy.matrix);}}leaves.receiveShadow=stems.receiveShadow=true;leaves.instanceMatrix.needsUpdate=true;stems.instanceMatrix.needsUpdate=true;leaves.computeBoundingSphere();stems.computeBoundingSphere();ivyVisuals.set(p.id,rg);}
+ const ivyVisuals=new Map();for(const p of g.ivy){const rg=new T.Group();rg.position.set(p.x,0,p.z);rg.name='Poison ivy · leaves of three';group.add(rg);const rr=C.rng(C.hashSeed('ivy-visual:'+p.id+':'+level.seed)),stems=new T.InstancedMesh(stemGeo,stemMat,49),leaves=new T.InstancedMesh(leafGeo,ivyMat,147);rg.userData.ivyTile=p.id;rg.add(stems,leaves);for(let i=0;i<49;i++){const a=rr()*6.28,x=-1.86+(i%7+.18+rr()*.64)*(3.72/7),z=-1.86+(Math.floor(i/7)+.18+rr()*.64)*(3.72/7),h=.32+rr()*.47;dummy.position.set(x,h/2,z);dummy.rotation.set(0,0,0);dummy.scale.set(1,h,1);dummy.updateMatrix();stems.setMatrixAt(i,dummy.matrix);for(let j=0;j<3;j++){const la=a+(j-1)*1.1;dummy.position.set(x+Math.cos(la)*.16,h,z+Math.sin(la)*.16);dummy.scale.set(.24,.035,.12);dummy.rotation.set(.12,-la,.15);dummy.updateMatrix();leaves.setMatrixAt(i*3+j,dummy.matrix);}}leaves.receiveShadow=stems.receiveShadow=true;leaves.instanceMatrix.needsUpdate=true;stems.instanceMatrix.needsUpdate=true;leaves.computeBoundingSphere();stems.computeBoundingSphere();ivyVisuals.set(p.id,rg);}
  const snakes=new Map();for(const s of g.snakes){const sg=new T.Group();sg.name='Garden rattlesnake';group.add(sg);const segments=[];for(let i=0;i<10;i++){const mesh=new T.Mesh(sphere,snakeMat);mesh.scale.set(.11-(i/10)*.045,.08-(i/10)*.025,.13);mesh.position.z=-i*.16;sg.add(mesh);segments.push(mesh);if(i%2===1){const diamond=new T.Mesh(sphere,dark);diamond.position.set(0,.07,-i*.16);diamond.scale.set(.077,.015,.07);sg.add(diamond);}}
   const head=new T.Mesh(sphere,snakeMat);head.scale.set(.17,.105,.18);head.position.set(0,.015,.13);sg.add(head);for(const x of[-.115,.115]){const eye=new T.Mesh(sphere,dark);eye.position.set(x,.07,.22);eye.scale.set(.023,.024,.024);sg.add(eye);}for(let i=0;i<4;i++){const rattle=new T.Mesh(sphere,rattleMat);rattle.position.set(0,.025,-1.55-i*.065);rattle.scale.set(.065-i*.01,.055-i*.008,.045);sg.add(rattle);}snakes.set(s.id,{group:sg,segments});}
- const storm=level.gardenWeather.raining?buildStorm(T,level,group,resources,options):null;
- return{group,ivyVisuals,snakes,storm,tick(dt,time,player){for(const p of g.ivy){const visual=ivyVisuals.get(p.id);if(visual)visual.visible=p.active;}for(const s of g.snakes){const v=snakes.get(s.id);v.group.visible=s.alive;if(!s.alive)continue;v.group.position.set(s.x,.12,s.z);v.group.rotation.y=s.yaw;for(let i=0;i<v.segments.length;i++)v.segments[i].position.x=Math.sin(time*(s.motion>.001?13:2)-i*.7)*(s.motion>.001?.055:.012);}
+ const storm=level.gardenWeather.raining?buildStorm(T,level,group,resources,options.quality):null;
+ return{group,ivyVisuals,snakes,storm,setTileVisibility(map){storm?.setTileVisibility(map);},tick(dt,time,player){for(const p of g.ivy){const visual=ivyVisuals.get(p.id);if(visual)visual.visible=p.active;}for(const s of g.snakes){const v=snakes.get(s.id);v.group.visible=s.alive;if(!s.alive)continue;v.group.position.set(s.x,.12,s.z);v.group.rotation.y=s.yaw;for(let i=0;i<v.segments.length;i++)v.segments[i].position.x=Math.sin(time*(s.motion>.001?13:2)-i*.7)*(s.motion>.001?.055:.012);}
    storm?.tick(dt,time,player);},dispose(){group.traverse(o=>{if(o.isInstancedMesh)o.dispose?.();});for(const r of resources)r.dispose?.();group.removeFromParent();}};
 }
 root.MazeGardenUpdate={initialize,ivyAt,segmentBlocked,exposed,clearIvy,applyAtmosphere,update,snapshot,parseSnapshot,applySnapshot,build,connectivitySafe,floorComponents,closedDoorBetween,snakeRoute,snakeSegmentClear,rainAudibility,ignoresPlayer,updateIvyPatience};
 if(typeof module!=='undefined'&&module.exports)module.exports=root.MazeGardenUpdate;
 })(typeof window!=='undefined'?window:globalThis);
 </script>
-<script>/* Garden polish v7.27: live-lit rain, full-tile ivy, gated rustle, modeled bath lights, showerhead audio. */
-/* Garden status effects use simulation seconds; inventory owns physical wet items. */
+<script>/* Garden status effects use simulation seconds; inventory owns physical wet items. */
 (function(root){
 'use strict';
 const BODY_DRY_SECONDS=180,ITEM_DRY_SECONDS=300;
@@ -22966,7 +23079,7 @@ function createPresentation(T,scene){
  const wrap=document.createElement('div');wrap.id='garden-status-effects';wrap.innerHTML='<div data-ivy></div><div data-venom></div><div data-damp></div>';
  const style=document.createElement('style');style.textContent='#garden-status-effects{position:fixed;inset:0;pointer-events:none;z-index:3}#garden-status-effects>div{position:absolute;inset:0;opacity:0;transition:opacity .25s}#garden-status-effects [data-ivy]{box-shadow:inset 0 0 100px 24px #ce242477}#garden-status-effects [data-venom]{background:radial-gradient(ellipse at center,transparent 46%,#47cf3866 100%)}#garden-status-effects [data-damp]{background:radial-gradient(ellipse at 13% 5%,#afdfff25,transparent 12%),radial-gradient(ellipse at 85% 8%,#b3e5ff20,transparent 9%)}#garden-status-effects p{position:absolute;right:24px;bottom:72px;max-width:330px;padding:10px 14px;background:#08150dba;border-left:2px solid #9bcea3;color:#e8f4e2;font:12px/1.7 Arial;white-space:pre-line}';document.head.appendChild(style);document.body.appendChild(wrap);
  const layers=wrap.querySelectorAll('div'),geometry=new T.CircleGeometry(.075,8),material=new T.MeshStandardMaterial({color:0x7daec0,roughness:.1,transparent:true,opacity:.28,depthWrite:false}),drips=[];let dripAt=0;
- for(let i=0;i<48;i++){const mesh=new T.Mesh(geometry,material);mesh.rotation.x=-Math.PI/2;mesh.visible=false;scene.add(mesh);drips.push({mesh,until:0});}
+ for(let i=0;i<48;i++){const mesh=new T.Mesh(geometry,material);mesh.rotation.x=-Math.PI/2;mesh.receiveShadow=true;mesh.visible=false;scene.add(mesh);drips.push({mesh,until:0});}
  return {update(p,time,active){const s=init(p);wrap.style.display=active?'':'none';layers[0].style.opacity=s.ivy?String(.65+.15*Math.sin(time*2)):0;layers[1].style.opacity=s.venom.length?.8:0;layers[2].style.opacity=s.bodyWet>0?.5:0;if(active&&s.bodyWet>0&&time>dripAt){dripAt=time+.65;const drop=drips.find(x=>x.until<time)||drips[0];drop.until=time+18;drop.mesh.position.set(p.x+Math.sin(time*5)*.17,(p.y||0)+.012,p.z+Math.cos(time*4)*.17);drop.mesh.scale.setScalar(.65+(time%1));}for(const d of drips)d.mesh.visible=active&&d.until>time;},dispose(){wrap.remove();style.remove();for(const d of drips)scene.remove(d.mesh);geometry.dispose();material.dispose();}};
 }
 root.MazeWetness={BODY_DRY_SECONDS,ITEM_DRY_SECONDS,init,wetOutfit,wet,ivy,bite,wash,towel,step,movement,encode,valid,restore,carry,createDrying,createPresentation};
@@ -22977,13 +23090,13 @@ class GardenAudio{
  constructor(audio,assets){this.audio=audio;this.assets=assets;this.buffers=new Map();this.pending=new Map();this.loops=new Map();this.shots=new Set();}
  load(kind){const ctx=this.audio._ctx;if(!ctx)return null;if(this.buffers.has(kind))return Promise.resolve(this.buffers.get(kind));if(this.pending.has(kind))return this.pending.get(kind);const url=this.assets[kind];if(!url)return;const job=fetch(url).then(r=>r.arrayBuffer()).then(b=>ctx.decodeAudioData(b)).then(b=>this.buffers.set(kind,b)).catch(e=>console.warn('Garden sound unavailable:',kind,e.message)).finally(()=>this.pending.delete(kind));this.pending.set(kind,job);return job;}
  voice(kind,point,loop=false,ambient=false){const ctx=this.audio._ctx,buffer=this.buffers.get(kind);if(!ctx||ctx.state!=='running'||!buffer||!this.audio._mix)return null;const source=ctx.createBufferSource(),gain=ctx.createGain(),filter=ctx.createBiquadFilter(),pan=ambient?null:ctx.createPanner();source.buffer=buffer;source.loop=loop;filter.type='lowpass';filter.frequency.value=16000;source.connect(filter);if(pan){pan.panningModel='HRTF';pan.distanceModel='inverse';pan.refDistance=2;pan.rolloffFactor=.65;pan.maxDistance=80;filter.connect(pan);pan.connect(gain);}else filter.connect(gain);gain.connect(this.audio._mix);const v={source,gain,pan,filter};this.position(v,point);source.start();return v;}
- position(v,p){const n=v.pan;if(!n)return;n.positionX.value=p?.x||0;n.positionY.value=p?.y||1;n.positionZ.value=p?.z||0;}
- stopVoice(v){try{v.source.stop();}catch{}for(const n of [v.source,v.gain,v.pan,v.filter])try{n.disconnect();}catch{}}
+ position(v,p){const n=v.pan;if(!n)return;n.positionX.value=Number.isFinite(p?.x)?p.x:0;n.positionY.value=Number.isFinite(p?.y)?p.y:1;n.positionZ.value=Number.isFinite(p?.z)?p.z:0;}
+ stopVoice(v){v.source.onended=null;try{v.gain.gain.cancelScheduledValues(this.audio._ctx.currentTime);v.gain.gain.setValueAtTime(0,this.audio._ctx.currentTime);v.source.stop(0);}catch{}for(const n of [v.source,v.gain,v.pan,v.filter])try{n.disconnect();}catch{}}
  shot(kind,point,volume=.65){if(!this.buffers.has(kind)){const pending=this.load(kind);pending?.then(()=>{if(this.buffers.has(kind)&&this.audio._canPlayEffect?.())this.shot(kind,point,volume);});return;}if(!this.audio._canPlayEffect?.())return;const v=this.voice(kind,point);if(!v)return;v.gain.gain.value=volume;this.shots.add(v);v.source.onended=()=>{this.shots.delete(v);this.stopVoice(v);};}
- update(fixtures,listener,rain,exposed,active,bushPlayers=[]){
+ update(fixtures,listener,rain,exposed,active,rustlers=[]){
   if(!active||!this.audio._canPlayEffect?.()){this.stop();return;}const live=new Set(),ctx=this.audio._ctx;for(const kind of ['rainloop2','showerloop','runningwater','toilet_flush','rattlesnake_sound','bushwalk'])this.load(kind);
-  const entries=(fixtures||[]).filter(f=>f.on&&['sink','shower'].includes(f.kind)).map(f=>({id:f.id,kind:f.kind==='shower'?'showerloop':'runningwater',point:f.audioPoint||f,volume:.65,filter:15000}));
-  for(const p of bushPlayers||[])entries.push({id:'bush:'+String(p.id||'local'),kind:'bushwalk',point:p,volume:.38,filter:15000});
+  const entries=(fixtures||[]).filter(f=>f.on&&['sink','shower'].includes(f.kind)).map(f=>({id:f.id,kind:f.kind==='shower'?'showerloop':'runningwater',point:f.soundPosition||f,volume:.65,filter:15000}));
+  for(const p of rustlers)entries.push({id:'ivy-rustle:'+String(p.id||'local'),kind:'bushwalk',point:{x:p.x,y:(p.y||0)+.45,z:p.z},volume:.38,filter:15000});
   if(rain){const openness=Math.max(0,Math.min(1,Number(exposed)||0));entries.push({id:'weather:rain',kind:'rainloop2',ambient:true,point:listener,volume:.12+.43*openness,filter:1000+14000*openness});}
   for(const e of entries){if(Math.hypot(e.point.x-listener.x,e.point.z-listener.z)>50)continue;live.add(e.id);this.load(e.kind);let v=this.loops.get(e.id);if(!v){v=this.voice(e.kind,e.point,true,e.ambient);if(v)this.loops.set(e.id,v);}if(!v)continue;this.position(v,e.point);v.gain.gain.setTargetAtTime(e.volume,ctx.currentTime,.18);v.filter.frequency.setTargetAtTime(e.filter,ctx.currentTime,.25);}
   for(const [id,v] of this.loops)if(!live.has(id)){this.stopVoice(v);this.loops.delete(id);}
@@ -23004,7 +23117,8 @@ const assets=Object.assign({gokuModel:'assets/goku.glb',deathImage:'assets/death
 // Map-only inspection never fetches, parses, animates, or renders the player asset.
 const worldOnly=new URLSearchParams(location.search).get('worldOnly')==='1';
 const reviewStart=(()=>{const query=new URLSearchParams(location.search),theme=query.get('reviewTheme'),seed=query.get('reviewSeed');return ['garden','poolrooms','school','catacombs','industrial','hotel','forest','backrooms'].includes(theme)&&/^(0|[1-9][0-9]{0,9})$/.test(seed||'')&&Number(seed)<=4294967295?{theme,seed:Number(seed)}:null;})();
-const touch=matchMedia('(pointer:coarse)').matches;
+let touch=MazeInput.lastDevice()==='touch';
+let inputResetTouch=()=>{};
 const settings={volume:70,sensitivity:50,quality:'balanced',qualityDefaultVersion:3,mouseProtection:true,rawMouse:false};
 const mouseGuard=new MazeClientHealth.MouseGuard(),clientFrames=new MazeClientHealth.FrameStats();
 const MOTION={standEye:1.53,crouchEye:1.195,jumpSpeed:C.PLAYER_JUMP_SPEED,gravity:C.PLAYER_GRAVITY,leanReach:.42};
@@ -23147,7 +23261,7 @@ function adaptRender(elapsed){
  if(state.slowFrames>.65&&state.adaptiveScale>.65){state.adaptiveScale=Math.max(.65,state.adaptiveScale-.05);state.slowFrames=0;resizeRender();}
  else if(state.fastFrames>14&&state.adaptiveScale<1){state.adaptiveScale=Math.min(1,state.adaptiveScale+.025);state.fastFrames=0;resizeRender();}
 }
-let inputLockSerial=0,inputIgnoreUnlockUntil=0,inputLastFrame=0,inputResumeButton=null,inputQuickSlot=-1,inputRawUnavailable=false,inputMouseMode='standard';
+let inputLockSerial=0,inputIgnoreUnlockUntil=0,inputLastFrame=0,inputResumeButton=null,inputQuickSlot=-1,inputRawUnavailable=false,inputMouseMode='standard',inputLockAttempt=null,inputLockError='';
 function inputVisible(element){return !!element&&!element.closest?.('.hidden,[hidden]')&&!element.hidden&&element.style.display!=='none';}
 
 let inputWheelState={root:null,center:null,slots:[],selection:0,open:false,inventoryHoldStartedAt:0,inventoryHoldPending:false,actionHeld:false,thresholdMs:190};
@@ -23208,14 +23322,16 @@ function inputSetHint(groups){setControlHint(groups.filter(Boolean).join(''));}
 function inputWheelOpen(){return !!inputWheelState.open;}
 function inputWheelUsable(item){return !!inventoryPocketAction(item);}
 function inputWheelMeta(item){if(!item)return'';if(item.type==='shotgun')return `${item.ammo||0} / 4`;if(item.type==='shells'||item.type==='food'||MI.isBerry(item.type))return '×'+(item.count||1);if(MazeMagicLights.isLight(item.type))return Math.ceil(MazeMagicLights.remaining(item,phoneTime()))+'s';if(['tablet','flashlight'].includes(item.type))return Math.ceil(item.charge||0)+'s';return '';} 
-function inputWheelEnsure(){inputHintStyles();if(inputWheelState.root)return;const root=document.createElement('section');root.id='controllerItemWheel';root.setAttribute('aria-hidden','true');const ring=document.createElement('div');ring.className='wheel-ring';const center=document.createElement('div');center.className='wheel-center';center.innerHTML='<strong>Select pocket item</strong><span>Hold the inventory button, aim with the right stick, then release to equip.</span>';ring.append(center);root.append(ring);document.body.append(root);inputWheelState.root=root;inputWheelState.ring=ring;inputWheelState.center=center;}
+function inputWheelEnsure(){inputHintStyles();if(inputWheelState.root)return;const root=document.createElement('section');root.id='controllerItemWheel';root.setAttribute('aria-hidden','true');const ring=document.createElement('div');ring.className='wheel-ring';const center=document.createElement('div');center.className='wheel-center';center.innerHTML='<strong>Select pocket item</strong><span>Hold the inventory button, aim with the left stick, then release to equip.</span>';ring.append(center);root.append(ring);document.body.append(root);inputWheelState.root=root;inputWheelState.ring=ring;inputWheelState.center=center;}
 function inputWheelSlots(){const slots=[];for(let i=0;i<8;i++){const item=MI.read(state.player,i);if(inputWheelUsable(item))slots.push({slot:i,item});}return slots;}
-function inputWheelRender(){inputWheelEnsure();const ring=inputWheelState.ring;[...ring.querySelectorAll('.wheel-slot')].forEach(n=>n.remove());const slots=inputWheelState.slots;const count=slots.length||1;const radius=(Math.min(window.innerWidth,window.innerHeight)<720?122:156);slots.forEach((entry,index)=>{const angle=-Math.PI/2+index*(Math.PI*2/count),x=Math.cos(angle)*radius,y=Math.sin(angle)*radius,cell=document.createElement('div');cell.className='wheel-slot'+(index===inputWheelState.selection?' selected':'');cell.style.transform=`translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;const name=window.MazeItemSprites?.name(entry.item)||'Item',meta=inputWheelMeta(entry.item);cell.innerHTML=`<div class="slot-index">${inputEsc(MazeInput.label('slot'+(entry.slot+1))||String(entry.slot+1))}</div><div class="slot-icon">${window.MazeItemSprites?.svg(entry.item)||''}</div><div class="slot-name">${inputEsc(name)}</div><div class="slot-meta">${inputEsc(meta||' ')}</div>`;if(index===inputWheelState.selection)inputWheelState.center.innerHTML=`<strong>${inputEsc(name)}</strong><span>${meta?inputEsc(meta)+' · ':''}${inputEsc(MazeInput.label('inventory','pad'))} release to equip</span>`;ring.append(cell);});if(!slots.length)inputWheelState.center.innerHTML='<strong>No pocket items</strong><span>Put equipable items in slots 1–8 to use the quick wheel.</span>';inputWheelState.root.setAttribute('aria-hidden','false');inputWheelState.root.classList.add('open');}
+function inputWheelRender(){inputWheelEnsure();const ring=inputWheelState.ring;[...ring.querySelectorAll('.wheel-slot')].forEach(n=>n.remove());const slots=inputWheelState.slots;const count=slots.length||1;const radius=(Math.min(window.innerWidth,window.innerHeight)<720?122:156);slots.forEach((entry,index)=>{const angle=-Math.PI/2+index*(Math.PI*2/count),x=Math.cos(angle)*radius,y=Math.sin(angle)*radius,cell=document.createElement('div');cell.className='wheel-slot'+(index===inputWheelState.selection?' selected':'');cell.style.transform=`translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;const name=window.MazeItemSprites?.name(entry.item)||'Item',meta=inputWheelMeta(entry.item);cell.innerHTML=`<div class="slot-index">${inputEsc(MazeInput.label('slot'+(entry.slot+1))||String(entry.slot+1))}</div><div class="slot-icon">${window.MazeItemSprites?.svg(entry.item)||''}</div><div class="slot-name">${inputEsc(name)}</div><div class="slot-meta">${inputEsc(meta||' ')}</div>`;if(index===inputWheelState.selection)inputWheelState.center.innerHTML=`<strong>${inputEsc(name)}</strong><span>${meta?inputEsc(meta)+' · ':''}Left stick selects<br>${inputEsc(MazeInput.label('inventory','pad'))} release to equip</span>`;ring.append(cell);});if(!slots.length)inputWheelState.center.innerHTML='<strong>No pocket items</strong><span>Put equipable items in slots 1–8 to use the quick wheel.</span>';inputWheelState.root.setAttribute('aria-hidden','false');inputWheelState.root.classList.add('open');}
 function inputWheelShow(){inputWheelEnsure();inputWheelState.slots=inputWheelSlots();const held=inputHeldItem();const currentIndex=inputWheelState.slots.findIndex(entry=>held&&entry.slot===held.from);inputWheelState.selection=Math.max(0,currentIndex);inputWheelState.open=true;inputWheelRender();}
 function inputWheelClose(){if(!inputWheelState.root)return;inputWheelState.open=false;inputWheelState.root.classList.remove('open');inputWheelState.root.setAttribute('aria-hidden','true');}
 function inputWheelCommit(){if(!inputWheelState.open){inputWheelState.inventoryHoldPending=false;inputWheelState.actionHeld=false;return false;}const entry=inputWheelState.slots[inputWheelState.selection];inputWheelClose();inputWheelState.inventoryHoldPending=false;inputWheelState.actionHeld=false;if(entry){if(state.tabletFocus)setTabletFocus(false);inputQuickSlot=entry.slot;inventoryEquipSlot(entry.slot);return true;}return false;}
 function inputWheelCancel(){inputWheelState.inventoryHoldPending=false;inputWheelState.actionHeld=false;inputWheelClose();}
-function inputWheelUpdate(){if(!inputWheelState.open)return;const x=MazeInput.value('lookRight')-MazeInput.value('lookLeft'),y=MazeInput.value('lookDown')-MazeInput.value('lookUp');const mag=Math.hypot(x,y);if(mag<.35||inputWheelState.slots.length<2)return;const angle=Math.atan2(y,x);let best=0,bestDiff=Infinity;const count=inputWheelState.slots.length;for(let i=0;i<count;i++){const a=-Math.PI/2+i*(Math.PI*2/count),diff=Math.abs(Math.atan2(Math.sin(angle-a),Math.cos(angle-a)));if(diff<bestDiff){bestDiff=diff;best=i;}}if(best!==inputWheelState.selection){inputWheelState.selection=best;inputWheelRender();}}
+// Select with the movement stick (left by default), not the look stick.
+// This follows saved movement bindings and does not use camera-Y inversion.
+function inputWheelUpdate(){if(!inputWheelState.open)return;const x=MazeInput.value('right')-MazeInput.value('left'),y=MazeInput.value('backward')-MazeInput.value('forward');const mag=Math.hypot(x,y);if(mag<.35||inputWheelState.slots.length<2)return;const angle=Math.atan2(y,x);let best=0,bestDiff=Infinity;const count=inputWheelState.slots.length;for(let i=0;i<count;i++){const a=-Math.PI/2+i*(Math.PI*2/count),diff=Math.abs(Math.atan2(Math.sin(angle-a),Math.cos(angle-a)));if(diff<bestDiff){bestDiff=diff;best=i;}}if(best!==inputWheelState.selection){inputWheelState.selection=best;inputWheelRender();}}
 function inputWheelArmInventoryHold(){if(inputWheelState.open||inventoryIsOpen()||survivalBlocked()||state.player?.sleeping||mp?.dead||!active())return false;inputWheelState.inventoryHoldStartedAt=performance.now();inputWheelState.inventoryHoldPending=true;return true;}
 function inputWheelReleaseInventoryHold(){if(inputWheelState.open){inputWheelCommit();return true;}const wasPending=inputWheelState.inventoryHoldPending;inputWheelState.inventoryHoldPending=false;if(wasPending){if(inventoryIsOpen())inventoryUI?.handleBack();else inventoryToggle();return true;}return false;}
 function inputWheelPressAction(){if(inputWheelState.open||inventoryIsOpen()||survivalBlocked()||state.player?.sleeping||mp?.dead||!active())return false;inputWheelState.actionHeld=true;inputWheelShow();return true;}
@@ -23226,31 +23342,62 @@ function inputMenuRoot(){
 }
 function inputWorldReady(){return ['planning','playing'].includes(state.mode)&&(!mp||coopLive())&&!mp?.ending;}
 function inputCanCapture(){return !state.spectatorMap&&!document.hidden&&!inventoryIsOpen()&&!survivalBlocked()&&!mp?.voiceListOpen&&!inputMenuRoot()&&inputWorldReady();}
+function inputSyncDevice(){
+ const next=MazeInput.lastDevice()==='touch';
+ if(touch!==next){touch=next;inputResetTouch();}
+ if(touch&&document.pointerLockElement===$('world'))exitLock();
+ if(typeof weaponHUD!=='undefined'&&weaponHUD)weaponHUD.style.bottom=touch?'190px':'98px';
+ inputUpdateCaptureHint();state.visibilityTick=0;inputRefreshHints();
+}
 function inputUpdateCaptureHint(){
  if(!inputResumeButton)return;
- state.locked=document.pointerLockElement===$('world');
- inputResumeButton.hidden=state.locked||!inputCanCapture()||state.tabletFocus||touch||MazeInput.lastDevice()==='gamepad';
+ state.locked=document.pointerLockElement===$('world');const ready=inputCanCapture()&&!state.tabletFocus;
+ show('touchControls',touch&&ready&&!mp?.dead);
+ inputResumeButton.hidden=state.locked||!ready||touch||MazeInput.lastDevice()==='gamepad';
+ const caption=inputLockError?'Mouse capture unavailable — click to retry':'Click to resume mouse look';
+ if(inputResumeButton.textContent!==caption)inputResumeButton.textContent=caption;
+ inputResumeButton.title=inputLockError?'Browser mouse-capture error: '+inputLockError+'. Open the game directly and allow mouse capture.':'';
 }
 function requestLock(){
  const canvas=$('world');state.locked=document.pointerLockElement===canvas;
  if(state.locked){inputUpdateCaptureHint();return true;}
- if(touch||document.hidden||inventoryIsOpen()||survivalBlocked()||mp?.voiceListOpen||inputVisible($('pauseScreen'))||inputVisible($('settingsScreen')))return false;
- const serial=++inputLockSerial;
- const finish=()=>{if(serial!==inputLockSerial)return;state.locked=document.pointerLockElement===canvas;inputUpdateCaptureHint();};
+ if(!inputCanCapture()||state.tabletFocus||touch||MazeInput.lastDevice()==='gamepad')return false;
+ // A pointerdown and its later click are one gesture, not two lock requests.
+ if(inputLockAttempt&&performance.now()-inputLockAttempt.at<1800)return true;
+ const serial=++inputLockSerial;inputLockError='';
  const acquire=raw=>{
   if(serial!==inputLockSerial||!inputCanCapture())return;
-  const failed=error=>{if(serial!==inputLockSerial)return;if(raw&&(error?.name==='NotSupportedError'||error?.name==='TypeError')){inputRawUnavailable=true;acquire(false);}else finish();};
-  try{const pending=raw?canvas.requestPointerLock({unadjustedMovement:true}):canvas.requestPointerLock();inputMouseMode=raw?'raw requested':'standard';if(pending&&typeof pending.then==='function')pending.then(finish,failed);else finish();}catch(error){failed(error);}
+  const attempt={serial,raw,at:performance.now(),fail:null};inputLockAttempt=attempt;
+  const failed=error=>{
+   if(inputLockAttempt!==attempt||serial!==inputLockSerial)return;
+   const name=error?.name||'PointerLockError';
+   if(raw&&(!error||name==='NotSupportedError'||name==='TypeError')){inputRawUnavailable=true;acquire(false);return;}
+   inputLockAttempt=null;inputLockError=name;state.locked=document.pointerLockElement===canvas;inputUpdateCaptureHint();
+  };
+  attempt.fail=failed;
+  const finish=()=>{
+   if(inputLockAttempt!==attempt||serial!==inputLockSerial)return;
+   state.locked=document.pointerLockElement===canvas;
+   if(state.locked){inputMouseMode=raw?'raw':'standard';inputLockAttempt=null;inputLockError='';}
+   inputUpdateCaptureHint();
+  };
+  if(typeof canvas.requestPointerLock!=='function'){failed({name:'PointerLockUnavailable'});return;}
+  try{
+   inputMouseMode=raw?'raw requested':'standard';
+   const pending=raw?canvas.requestPointerLock({unadjustedMovement:true}):canvas.requestPointerLock();
+   if(pending&&typeof pending.then==='function')pending.then(finish,failed);
+   // Legacy implementations return void; wait for pointerlockchange/error.
+  }catch(error){failed(error);}
  };
- mouseGuard.reset();acquire(settings.rawMouse&&!inputRawUnavailable);
- return true;
+ mouseGuard.reset();acquire(settings.rawMouse&&!inputRawUnavailable);return true;
 }
 function exitLock(){
- ++inputLockSerial;mouseGuard.reset();inputIgnoreUnlockUntil=performance.now()+500;
+ ++inputLockSerial;inputLockAttempt=null;inputLockError='';mouseGuard.reset();inputIgnoreUnlockUntil=performance.now()+500;
  if(document.pointerLockElement)try{document.exitPointerLock();}catch(error){}
  state.locked=false;state.skipUnlockPause=false;inputUpdateCaptureHint();
 }
-function inputRecoverCamera(){
+function inputRecoverCamera(event){
+ if(event?.pointerType==='touch'||event?.pointerType==='pen'||event?.sourceCapabilities?.firesTouchEvents)return;
  if(!inputWorldReady()||inputMenuRoot()||inventoryIsOpen()||survivalBlocked()||inputWheelOpen())return;
  if(mp){if(!inputVisible(coopUI?.playerList)){mp.voiceListOpen=false;delete mp.voiceListWasPaused;}mp.localPaused=false;delete mp.inventoryPreviousPaused;delete mp.survivalPreviousPaused;}
  const focused=document.activeElement;if(focused&&focused!==$('world')&&focused!==document.body)focused.blur?.();
@@ -23260,7 +23407,7 @@ function inputClearLevelUI(){phoneUI?.close(false);phoneAudio?.stop();
  MazeInput.cancelCapture();inputWheelCancel();inventoryClose(false);survivalCloseLoot(false);coopUI?.hidePlayerList(false);
  show('settingsScreen',false);show('pauseScreen',false);setTabletFocus(false);
  if(mp){mp.voiceListOpen=false;mp.localPaused=false;delete mp.voiceListWasPaused;delete mp.inventoryPreviousPaused;delete mp.survivalPreviousPaused;delete mp.backgroundPaused;}
- state.skipUnlockPause=false;resetMovementInput();++inputLockSerial;state.locked=document.pointerLockElement===$('world');
+ state.skipUnlockPause=false;resetMovementInput();++inputLockSerial;inputLockAttempt=null;state.locked=document.pointerLockElement===$('world');
 }
 function inputCanHandle(action,event,source){
  if(document.hidden||typeof document.hasFocus==='function'&&!document.hasFocus())return false;
@@ -23272,7 +23419,9 @@ function inputCanHandle(action,event,source){
  if(survivalLootId)return action==='inventory'||action==='interact';
  if(action==='inventory')return inventoryIsOpen()||active()&&!mp?.dead;
  if(action==='itemWheel')return active()&&!inventoryIsOpen()&&!survivalBlocked()&&!mp?.dead;
- if(inputWheelOpen())return ['inventory','itemWheel','pause','voice','players','lookLeft','lookRight','lookUp','lookDown'].includes(action);
+ // The wheel consumes the movement stick; both simulation routes already
+ // block walking while it is open. Leave camera-look actions out of this UI.
+ if(inputWheelOpen())return ['inventory','itemWheel','pause','voice','players','forward','backward','left','right'].includes(action);
  if(!active()||inventoryIsOpen()||survivalBlocked()||inputMenuRoot())return false;
  if(mp?.dead){if(state.spectatorMap)return ['tabletFocus','tablet','zoomIn','zoomOut','primary','forward','backward','left','right'].includes(action);return ['slotPrev','slotNext','spectatePrev','spectateNext','zoomIn','zoomOut','tabletFocus','tablet','primary','lookLeft','lookRight','lookUp','lookDown','crouch','flashlight'].includes(action);}
  if(action==='primary')return !state.tabletFocus&&(source!=='mouse'||document.pointerLockElement===$('world'));
@@ -23407,7 +23556,7 @@ function inputInit(){
  $('resetOrbPose').onclick=()=>{MazeMagicLightPose.resetPose();$('orbPoseStatus').textContent='Orb pose reset to your two-handed Blender pose.';};
 
  $('gameplaySettingsNote').textContent='Your tablet has 15 seconds of charge and drains only while open. Left-click an empty held tablet to fit a carried battery. You can also drag a battery onto a tablet or flashlight in your inventory. The entry door unlocks after 15 seconds. Keep food, water and sleep supplied; empty needs drain health. Beds take 40 seconds. Waking early restores no rest.';
- MazeInput.configure({canHandle:inputCanHandle,menuRoot:inputMenuRoot,menuBack:inputBack});window.addEventListener('maze-input-action',inputAction);window.addEventListener('maze-input-bindings',inputRefreshStaticLabels);window.addEventListener('maze-input-device',()=>{state.visibilityTick=0;inputRefreshHints();});
+ MazeInput.configure({canHandle:inputCanHandle,menuRoot:inputMenuRoot,menuBack:inputBack,controllerChanged:inputWheelCancel});window.addEventListener('maze-input-action',inputAction);window.addEventListener('maze-input-bindings',inputRefreshStaticLabels);window.addEventListener('maze-input-device',inputSyncDevice);
  $('world').tabIndex=-1;
  inputResumeButton=document.createElement('button');inputResumeButton.id='mouseLookResume';inputResumeButton.type='button';inputResumeButton.hidden=true;inputResumeButton.textContent='Click to resume mouse look';Object.assign(inputResumeButton.style,{position:'fixed',left:'50%',top:'55%',transform:'translate(-50%,-50%)',zIndex:'44',padding:'14px 22px',border:'1px solid #a4c191',borderRadius:'6px',background:'#132923ed',color:'#e2f0d6',font:'600 13px system-ui',cursor:'pointer'});inputResumeButton.onclick=inputRecoverCamera;document.body.append(inputResumeButton);
  inputRefreshStaticLabels();
@@ -23480,7 +23629,7 @@ function shadeGroup(group,value){
  if(cache.value===value)return;cache.value=value;for(const entry of cache.materials){const m=entry.m;if(entry.color)m.color.copy(entry.color).multiplyScalar(value);if(m.emissive)m.emissiveIntensity=entry.emissive*value;}
 }
 function updateVisibility(menuView=false){
- const p={x:camera.position.x,z:camera.position.z,yaw:camera.rotation.y,bodyX:menuView?camera.position.x:coopViewing().x,bodyZ:menuView?camera.position.z:coopViewing().z};const previous=state.lights;state.lights=C.tileVisibility(state.level,p,state.time,state.seen,{fov:2*Math.atan(Math.tan(T.MathUtils.degToRad(camera.fov)/2)*camera.aspect)});if(previous.size!==state.lights.size||[...state.lights.keys()].some(k=>!previous.has(k)))state.shadowDirty=true;state.env.setTileVisibility(state.lights);
+ const p={x:camera.position.x,z:camera.position.z,yaw:camera.rotation.y,bodyX:menuView?camera.position.x:coopViewing().x,bodyZ:menuView?camera.position.z:coopViewing().z};const previous=state.lights;state.lights=C.tileVisibility(state.level,p,state.time,state.seen,{fov:2*Math.atan(Math.tan(T.MathUtils.degToRad(camera.fov)/2)*camera.aspect)});if(previous.size!==state.lights.size||[...state.lights.keys()].some(k=>!previous.has(k)))state.shadowDirty=true;state.env.setTileVisibility(state.lights);state.gardenVisuals?.setTileVisibility?.(state.lights);
  const safeV=Math.max(0,...state.level.safe.cells.map(p=>state.lights.get(C.key(p.x,p.z))||0));shadeGroup(state.safe.group,safeV);safeLight.intensity=state.level.poolVariant==='dark'?0:safeV*12;
  for(const c of state.closets)shadeGroup(c.group,Math.max(0,...(c.p.cells||[c.p]).map(cell=>state.lights.get(C.key(cell.x,cell.z))||0)));shadeGroup(state.exit.group,state.lights.get(C.key(state.level.exit.x,state.level.exit.z))||0);
  for(const d of state.serviceDoors)shadeGroup(d.group,serviceDoorLight(d,state.lights));
@@ -23885,8 +24034,8 @@ function renderSecurityFeed(feedCamera,lightMap,viewGroup,step){
  const e=state.enemy,brightness=lightMap.get(C.key(C.tileAt(e.x),C.tileAt(e.z)))||0;
  const visible=['playing','planning'].includes(state.mode)&&brightness>0;
  const animationStep=mp?0:enemyVisible?0:Math.min(.20,Math.max(0,state.time-(state.enemyAnimationAt??(state.time-step))));gokuActor.update(animationStep,e,visible,brightness);if(visible)state.enemyAnimationAt=state.time;placePointLights(lightMap,feedCamera.position);
- fillLight.intensity=0;try{renderer.render(scene,feedCamera);}
- finally{if(flashlightOcclusion)flashlightOcclusion.secondaryPass=savedSecondaryPass;fillLight.intensity=savedPlayerFill;for(const entry of pickupOutlines)entry.outline.visible=entry.visible;state.env.group.visible=envVisible;actor.group.visible=bodyVisible;viewGroup.visible=false;for(const o of saved){shadeGroup(o.group,o.value);o.group.visible=o.visible;}gokuActor.setAppearance(enemyVisible,state.enemyBrightness);placePointLights(state.lights,coopViewing());for(const entry of coopSaved)if(entry.id!==mp?.net.id)mp?.visuals?.setVisible(entry.id,entry.visible);}
+ fillLight.intensity=0;state.gardenVisuals?.setTileVisibility?.(lightMap);try{renderer.render(scene,feedCamera);}
+ finally{state.gardenVisuals?.setTileVisibility?.(state.lights);if(flashlightOcclusion)flashlightOcclusion.secondaryPass=savedSecondaryPass;fillLight.intensity=savedPlayerFill;for(const entry of pickupOutlines)entry.outline.visible=entry.visible;state.env.group.visible=envVisible;actor.group.visible=bodyVisible;viewGroup.visible=false;for(const o of saved){shadeGroup(o.group,o.value);o.group.visible=o.visible;}gokuActor.setAppearance(enemyVisible,state.enemyBrightness);placePointLights(state.lights,coopViewing());for(const entry of coopSaved)if(entry.id!==mp?.net.id)mp?.visuals?.setVisible(entry.id,entry.visible);}
 }
 function frame(now){
  state.viewFrameStarted=performance.now();
@@ -23961,7 +24110,7 @@ function bindDisclaimers(){
  $('useBalanced').onclick=()=>{settings.quality='balanced';$('quality').value='balanced';setQuality();saveSettings();$('helpActionStatus').textContent='Balanced graphics enabled. Close this panel to keep playing.';};
  $('copyDiagnostics').onclick=async()=>{
   const status=window.MazeDiagnostics?.getStatus(),p=status?.performance||{},m=status?.mouse||{},net=status?.multiplayer;
-  const text=JSON.stringify({build:status?.build,role:net?(net.host?'host':'guest'):'solo',players:net?.players.length||1,theme:status?.theme,quality:status?.quality,renderRatio:status?.renderRatio,performance:p,mouse:m,pingMs:net?.players.map(v=>v.pingMs??null)||[],browser:navigator.userAgent},null,2);
+  const text=JSON.stringify({build:status?.build,role:net?(net.host?'host':'guest'):'solo',players:net?.players.length||1,theme:status?.theme,quality:status?.quality,renderRatio:status?.renderRatio,performance:p,input:status?.input,mouseCaptured:status?.mouseCaptured,mouse:m,pingMs:net?.players.map(v=>v.pingMs??null)||[],browser:navigator.userAgent},null,2);
   try{await navigator.clipboard.writeText(text);$('helpActionStatus').textContent='Diagnostics copied. Send them with a description of the problem.';}
   catch(error){const box=$('diagnosticsText');box.hidden=false;box.value=text;box.focus();box.select();$('helpActionStatus').textContent='Select and copy these diagnostics.';}
  };
@@ -23980,19 +24129,41 @@ function bindUI(){
  for(const name of ['volume','sensitivity','quality']){const el=$(name);el.value=settings[name];el.oninput=()=>updateSetting(name,el);if(name==='sensitivity')el.onchange=el.oninput;}$('volumeOut').value=settings.volume+'%';$('sensitivityOut').value=(settings.sensitivity/50).toFixed(2)+'×';
  $('themeSelect').onchange=()=>{if(state.mode!=='menu')return;try{const theme=$('themeSelect').value==='random'?'garden':$('themeSelect').value;buildLevel(theme,C.hashSeed('maze3d-title'));}catch(e){fatal(e);}};
  addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();resizeRender();resizeTabletView();state.visibilityTick=0;state.shadowTick=0;state.shadowDirty=true;});
- document.addEventListener('pointerlockchange',()=>{mouseGuard.reset();const was=state.locked,skip=state.skipUnlockPause;state.skipUnlockPause=false;state.locked=document.pointerLockElement===$('world');inputUpdateCaptureHint();if(was&&!state.locked&&performance.now()>inputIgnoreUnlockUntil&&active()&&!skip&&!inventoryIsOpen()&&!survivalBlocked()&&!mp?.voiceListOpen&&!mp?.dead){if(state.tabletFocus)setTabletFocus(false);else pause();}});
- document.addEventListener('pointerlockerror',()=>{state.locked=document.pointerLockElement===$('world');inputUpdateCaptureHint();});
+ document.addEventListener('pointerlockchange',()=>{mouseGuard.reset();const was=state.locked,skip=state.skipUnlockPause;state.skipUnlockPause=false;state.locked=document.pointerLockElement===$('world');if(state.locked&&(!inputCanCapture()||state.tabletFocus||touch)){exitLock();return;}if(state.locked){inputMouseMode=inputLockAttempt?.raw?'raw':inputMouseMode==='raw requested'?'raw':inputMouseMode;inputLockAttempt=null;inputLockError='';}inputUpdateCaptureHint();if(was&&!state.locked&&performance.now()>inputIgnoreUnlockUntil&&active()&&!skip&&!inventoryIsOpen()&&!survivalBlocked()&&!mp?.voiceListOpen&&!mp?.dead){if(state.tabletFocus)setTabletFocus(false);else pause();}});
+ document.addEventListener('pointerlockerror',()=>{if(inputLockAttempt)inputLockAttempt.fail();else{state.locked=document.pointerLockElement===$('world');inputUpdateCaptureHint();}});
  $('world').addEventListener('click',inputRecoverCamera);
+ // Capture mouse input even when the first click originally hit a touch pad.
+ // The shared input listener has already switched modes; do not turn that
+ // capture-only click into a shot, item use, or touchscreen drag.
+ document.addEventListener('pointerdown',event=>{
+  if(event.pointerType!=='mouse'||event.sourceCapabilities?.firesTouchEvents||event.button!==0||event.ctrlKey||event.metaKey||document.pointerLockElement===$('world'))return;
+  if(event.target===$('world')||$('touchControls').contains(event.target)||event.target===inputResumeButton)inputRecoverCamera(event);
+ },true);
  $('world').addEventListener('pointerdown',event=>{if(!mp?.dead||!coopLive()||mp.ending||mp.localPaused||document.pointerLockElement!==$('world')||mapViewOpen()||inventoryIsOpen()||survivalBlocked()||event.ctrlKey||event.metaKey)return;if(event.button===0||event.button===2){event.preventDefault();coopCycleSpectator(event.button===0?-1:1);}},false);
  document.addEventListener('mousemove',event=>{if(!active()||document.hidden||!document.hasFocus()||document.pointerLockElement!==$('world')||mapViewOpen()||inventoryIsOpen()||survivalBlocked()||inputMenuRoot())return;state.locked=true;const move=mouseGuard.read(event.movementX,event.movementY,mouseLookScale(),performance.now(),settings.mouseProtection);if(move)look(move.x,move.y);});
  document.addEventListener('keydown',event=>{if(event.defaultPrevented||MazeInput.isCapturing()||MazeInput.isTextTarget(event.target)||event.target?.closest?.('button,a'))return;if(event.code==='Enter'&&state.mode==='menu'){event.preventDefault();startRun();}});
  addEventListener('blur',()=>{mouseGuard.reset();resetMovementInput();if(active())pause();});document.addEventListener('visibilitychange',()=>{if(document.hidden&&active())pause();});
  $('world').addEventListener('contextmenu',e=>e.preventDefault());$('world').addEventListener('webglcontextlost',e=>{e.preventDefault();pause();fatal(new Error('The graphics context was interrupted. Reload to start a new run.'));});
- $('touchInteract').onclick=interact;$('touchLight').onclick=toggleFlashlight;$('touchRun').onpointerdown=e=>{e.preventDefault();touchRun=true;};for(const type of ['pointerup','pointercancel','pointerleave'])$('touchRun').addEventListener(type,()=>touchRun=false);
- $('touchCrouch').onclick=toggleCrouch;$('touchJump').onpointerdown=e=>{e.preventDefault();requestJump();};
- for(const [id,direction]of [['touchLeanLeft',-1],['touchLeanRight',1]]){const button=$(id);button.onpointerdown=e=>{e.preventDefault();button.setPointerCapture(e.pointerId);touchLean=direction;};for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,()=>{if(touchLean===direction)touchLean=0;});}
- const stick=$('joystick');let sid=null;stick.addEventListener('pointerdown',e=>{sid=e.pointerId;stick.setPointerCapture(sid);updateStick(e);});stick.addEventListener('pointermove',e=>{if(e.pointerId===sid)updateStick(e);});for(const type of ['pointerup','pointercancel'])stick.addEventListener(type,()=>{sid=null;joystick.x=joystick.y=0;stick.firstElementChild.style.transform='';});function updateStick(e){const r=stick.getBoundingClientRect(),x=(e.clientX-r.left-r.width/2)/(40*(window.MazeViewport?.scale||1)),y=(e.clientY-r.top-r.height/2)/(40*(window.MazeViewport?.scale||1)),n=Math.max(1,Math.hypot(x,y));joystick.x=x/n;joystick.y=y/n;stick.firstElementChild.style.transform=`translate(${joystick.x*32}px,${joystick.y*32}px)`;}
- const pad=$('lookPad');let lid=null,lx=0,ly=0;pad.addEventListener('pointerdown',e=>{lid=e.pointerId;lx=e.clientX;ly=e.clientY;pad.setPointerCapture(lid);});pad.addEventListener('pointermove',e=>{if(e.pointerId!==lid||!active()||state.tabletFocus)return;look((e.clientX-lx)*1.6,(e.clientY-ly)*1.6);lx=e.clientX;ly=e.clientY;});for(const type of ['pointerup','pointercancel'])pad.addEventListener(type,()=>lid=null);
+ const touchPointer=e=>e.pointerType==='touch'||e.pointerType==='pen';
+ const touchReady=()=>touch&&active()&&!mapViewOpen()&&!inventoryIsOpen()&&!survivalBlocked()&&!inputMenuRoot()&&!mp?.dead;
+ $('touchInteract').onclick=()=>{if(touchReady())interact();};$('touchLight').onclick=()=>{if(touchReady())toggleFlashlight();};
+ $('touchRun').onpointerdown=e=>{if(!touchPointer(e)||!touchReady())return;e.preventDefault();$('touchRun').setPointerCapture(e.pointerId);touchRun=true;};
+ for(const type of ['pointerup','pointercancel','lostpointercapture'])$('touchRun').addEventListener(type,()=>touchRun=false);
+ $('touchCrouch').onclick=()=>{if(touchReady())toggleCrouch();};$('touchJump').onpointerdown=e=>{if(!touchPointer(e)||!touchReady())return;e.preventDefault();requestJump();};
+ for(const [id,direction]of [['touchLeanLeft',-1],['touchLeanRight',1]]){const button=$(id);button.onpointerdown=e=>{if(!touchPointer(e)||!touchReady())return;e.preventDefault();button.setPointerCapture(e.pointerId);touchLean=direction;};for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,()=>{if(touchLean===direction)touchLean=0;});}
+ const stick=$('joystick');let sid=null;
+ function clearStick(e){if(e&&e.pointerId!==sid)return;const old=sid;sid=null;joystick.x=joystick.y=0;stick.firstElementChild.style.transform='';if(old!==null&&stick.hasPointerCapture(old))try{stick.releasePointerCapture(old);}catch(_){}}
+ stick.addEventListener('pointerdown',e=>{if(!touchPointer(e)||!touchReady()||sid!==null)return;e.preventDefault();sid=e.pointerId;stick.setPointerCapture(sid);updateStick(e);});
+ stick.addEventListener('pointermove',e=>{if(touchPointer(e)&&e.pointerId===sid&&touchReady())updateStick(e);});
+ for(const type of ['pointerup','pointercancel','lostpointercapture'])stick.addEventListener(type,clearStick);
+ function updateStick(e){const r=stick.getBoundingClientRect(),x=(e.clientX-r.left-r.width/2)/(40*(window.MazeViewport?.scale||1)),y=(e.clientY-r.top-r.height/2)/(40*(window.MazeViewport?.scale||1)),n=Math.max(1,Math.hypot(x,y));joystick.x=x/n;joystick.y=y/n;stick.firstElementChild.style.transform=`translate(${joystick.x*32}px,${joystick.y*32}px)`;}
+ const pad=$('lookPad');let lid=null,lx=0,ly=0;
+ function clearLook(e){if(e&&e.pointerId!==lid)return;const old=lid;lid=null;if(old!==null&&pad.hasPointerCapture(old))try{pad.releasePointerCapture(old);}catch(_){}}
+ pad.addEventListener('pointerdown',e=>{if(!touchPointer(e)||!touchReady()||lid!==null)return;e.preventDefault();lid=e.pointerId;lx=e.clientX;ly=e.clientY;pad.setPointerCapture(lid);});
+ pad.addEventListener('pointermove',e=>{if(!touchPointer(e)||e.pointerId!==lid||!touchReady())return;look((e.clientX-lx)*1.6,(e.clientY-ly)*1.6);lx=e.clientX;ly=e.clientY;});
+ for(const type of ['pointerup','pointercancel','lostpointercapture'])pad.addEventListener(type,clearLook);
+ inputResetTouch=()=>{clearStick();clearLook();touchRun=false;touchLean=0;};
+ addEventListener('blur',inputResetTouch);document.addEventListener('visibilitychange',()=>{if(document.hidden)inputResetTouch();});
  $('tabletButton').onclick=()=>tabletRequest({op:'toggle'});$('closeTablet').onclick=tabletStowFocused;$('mapZoomIn').onclick=()=>zoomTablet(1.35);$('mapZoomOut').onclick=()=>zoomTablet(1/1.35);$('mapFit').onclick=resetMapView;
  document.addEventListener('wheel',coopSpectatorWheel,{passive:false});
  document.addEventListener('wheel',event=>{if(event.ctrlKey||event.metaKey||!mapViewOpen())return;event.preventDefault();const scroll=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);zoomTablet(Math.exp(-scroll*.0015),event);},{passive:false});
@@ -24002,7 +24173,7 @@ function bindUI(){
  for(const event of ['pointerup','pointercancel'])mapCanvas.addEventListener(event,()=>mapDrag=null);
  const context=document.modelContext;if(context?.registerTool){try{Promise.resolve(context.registerTool({name:'get_maze_status',title:'Read maze status',description:'Read the current maze, cleared count, phase, and tablet battery.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(input){if(!input||Object.keys(input).length)throw new Error('This tool takes no arguments.');return{phase:state.mode,maze:state.score+1,cleared:state.score,theme:state.env.theme.name,tabletSeconds:Math.ceil(tabletCharge()),hidden:state.player.hidden};}})).catch(()=>{});}catch(e){}}
  // Read-only performance / geometry diagnostics; player-free mode is a separate startup path.
- window.MazeDiagnostics={getStatus:()=>({build:'V7.27.1 · Bed pickup interaction fix',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable},performance:{...clientFrames.status(),simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),safeRoomViews:{passes:safeRoomViews.passes,skipped:safeRoomViews.skipped,lastCostMs:safeRoomViews.lastCost},spectatorMap:!!state.spectatorMap,flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
+ window.MazeDiagnostics={getStatus:()=>({build:'V7.26.2 · Hybrid mouse / touch and active controller fix',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable,captureError:inputLockError||null,capturePending:!!inputLockAttempt,touchMode:touch,pointerLockAPI:typeof $('world').requestPointerLock==='function'},performance:{...clientFrames.status(),simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),safeRoomViews:{passes:safeRoomViews.passes,skipped:safeRoomViews.skipped,lastCostMs:safeRoomViews.lastCost},spectatorMap:!!state.spectatorMap,flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
 }
 function look(dx,dy){if(phoneUI.isOpen||state.spectatorMap)return;if(!Number.isFinite(dx)||!Number.isFinite(dy)||inventoryIsOpen()||survivalBlocked())return;const s=mouseLookScale();if(mp?.dead){if(coopLive()&&!mp.ending&&!mp.localPaused&&mp.spectatorView==='orbit'){mp.spectatorYaw=(Number.isFinite(mp.spectatorYaw)?mp.spectatorYaw:0)-dx*s;mp.spectatorPitch=C.clamp((Number.isFinite(mp.spectatorPitch)?mp.spectatorPitch:.12)-dy*s,-Math.PI/2,Math.PI/2);}return;}const p=state.player,inversion=MazeBerryGameplay.mouseMultiplier(p,state.time);p.yaw-=dx*s*inversion;p.pitch=C.clamp(p.pitch-dy*s*inversion,-1.43,1.25);}
 // Service passages occupy real half-cells; presentation and interaction use
@@ -24344,7 +24515,7 @@ function weaponRender(dt){
 }
 function weaponBind(){
  weaponHUD=document.createElement('div');weaponHUD.id='weaponHUD';Object.assign(weaponHUD.style,{position:'absolute',right:'20px',bottom:touch?'190px':'98px',padding:'9px 12px',background:'rgba(5,10,8,.78)',border:'1px solid #718472',color:'#e6e5cc',font:'600 12px monospace',letterSpacing:'.035em',pointerEvents:'none',display:'none'});$('hud').appendChild(weaponHUD);
- if(touch){for(const [id,label,op,bottom]of [['touchShotgun','GUN','equip',170],['touchFire','FIRE','fire',230]]){const button=document.createElement('button');button.id=id;button.className='touch-button';button.textContent=label;Object.assign(button.style,{position:'absolute',right:'18px',bottom:bottom+'px',width:'70px',height:'48px',pointerEvents:'auto'});button.onclick=()=>weaponRequest({op});$('touchControls').appendChild(button);}}
+ {for(const [id,label,op,bottom]of [['touchShotgun','GUN','equip',170],['touchFire','FIRE','fire',230]]){const button=document.createElement('button');button.id=id;button.className='touch-button';button.textContent=label;Object.assign(button.style,{position:'absolute',right:'18px',bottom:bottom+'px',width:'70px',height:'48px',pointerEvents:'auto'});button.onclick=()=>{if(touch&&active()&&!inputMenuRoot())weaponRequest({op});};$('touchControls').appendChild(button);}}
 }
 
 // Multiplayer runs the shared world on the host. Remote clients submit input,
@@ -25555,11 +25726,6 @@ function interactionBedColliders(bed){
 }
 function interactionSupportingBed(item){
  if(!item||![item.x,item.y,item.z].every(Number.isFinite))return null;
- // Natural bed loot carries the exact parent bed identity. Prefer that stable
- // metadata before the geometric fallback so straps/gaps or tiny placement
- // offsets cannot make a pickup lose priority to the mattress behind it.
- const explicitBedId=item.bedId||(item.support==='bed'?item.supportId:null);
- if(explicitBedId){const exact=(state.survivalWorld?.beds||[]).find(b=>b.id===explicitBedId);if(exact)return exact;}
  for(const bed of state.survivalWorld?.beds||[]){
   const top=bed.collider?.maxY??bed.y,dx=item.x-bed.x,dz=item.z-bed.z,c=Math.cos(bed.yaw||0),s=Math.sin(bed.yaw||0),x=c*dx-s*dz,z=s*dx+c*dz;
   if(Math.abs(x)>(bed.width||1.72)/2+.08||Math.abs(z)>(bed.length||2.27)/2+.08)continue;
@@ -25680,14 +25846,9 @@ function interactionCandidates(p,origin,direction){
   const closest=interactionBounds.clampPoint(new T.Vector3(p.x,origin.y,p.z),new T.Vector3());if(Math.hypot(closest.x-p.x,closest.z-p.z)>reach)return;
   const hits=interactionRay.intersectObjects(roots,true),hit=hits.find(h=>h.object.material?.visible!==false);
   if(kind==='safe'&&(!hit||ref.door.worldToLocal(hit.point.clone()).z>-.064))return;
-  const pickupKind=['drop','loot','alarm-clock','corpse'].includes(kind),support=pickupKind?interactionSupportingBed(ref):null;
+  const support=['drop','loot','alarm-clock','corpse'].includes(kind)?interactionSupportingBed(ref):null;
   if(support)ignore=[...new Set([...ignore,...interactionBedColliders(support)])];
-  // Pickups use their world AABB as a fallback when the exact triangle ray
-  // slips through straps, handles or other modeled gaps. This is especially
-  // important for loot resting on a bed: aiming at the visible item must beat
-  // the much larger sleep surface behind it. Structural occlusion still wins.
-  const boxHit=pickupKind?MazeInteractionTargeting.rayBox(origin,direction,{minX:interactionBounds.min.x,maxX:interactionBounds.max.x,minY:interactionBounds.min.y,maxY:interactionBounds.max.y,minZ:interactionBounds.min.z,maxZ:interactionBounds.max.z}):Infinity;
-  const target={kind,id,ref,action,bedSupport:support?.id||null,hitDistance:hit?.distance??boxHit,point:point||(pickupKind?interactionBounds.getCenter(new T.Vector3()):null),visibleAt:q=>interactionVisible(origin,q,ignore)};
+  const target={kind,id,ref,action,bedSupport:support?.id||null,hitDistance:hit?.distance??Infinity,point:point||(['drop','loot','alarm-clock','corpse'].includes(kind)?interactionBounds.getCenter(new T.Vector3()):null),visibleAt:q=>interactionVisible(origin,q,ignore)};
   candidates.push(target);
  };
  const s=state.level.safe,safe=state.safe;
@@ -25751,8 +25912,6 @@ function interactionPickupReachable(p,item,action=null){
  item.group.updateWorldMatrix(true,true);interactionBounds.setFromObject(item.group);const point=interactionBounds.getCenter(new T.Vector3()),view=action?interactionActionView(p,action):interactionView(p);if(!view)return false;
  interactionRay.set(view.origin,view.direction);interactionRay.near=0;interactionRay.far=5;
  const hit=interactionRay.intersectObject(item.group,true)[0];if(hit&&interactionVisible(view.origin,hit.point,ignore))return true;
- const boxHit=MazeInteractionTargeting.rayBox(view.origin,view.direction,{minX:interactionBounds.min.x,maxX:interactionBounds.max.x,minY:interactionBounds.min.y,maxY:interactionBounds.max.y,minZ:interactionBounds.min.z,maxZ:interactionBounds.max.z});
- if(Number.isFinite(boxHit)){const q=new T.Vector3(view.origin.x+view.direction.x*boxHit,view.origin.y+view.direction.y*boxHit,view.origin.z+view.direction.z*boxHit);if(interactionVisible(view.origin,q,ignore))return true;}
  return interactionVisible(view.origin,point,ignore)&&view.direction.dot(point.sub(view.origin).normalize())>.9;
 }
 function interactionPerform(forcedTarget=null){
@@ -26696,7 +26855,7 @@ let gardenPresentation=null,gardenNoiseAt=0;
 function gardenRaining(){return !!(state.level?.gardenWeather?.raining||state.level?.gardenWeather?.rain);}
 function gardenFixtures(){return [...(state.survivalWorld?.waterSources||[]),...(state.survivalWorld?.bathroomFixtures||[])];}
 function gardenClean(){gardenSound.stop();gardenDrying.reset();gardenPresentation?.dispose();gardenPresentation=null;if(state.gardenVisuals){scene.remove(state.gardenVisuals.group);state.gardenVisuals.dispose?.();state.gardenVisuals=null;}}
-function gardenBuild(){state.gardenVisuals=MazeGardenUpdate.build(T,state.level,{quality:settings.quality,getLightMap:()=>state.lights});if(state.gardenVisuals?.group)scene.add(state.gardenVisuals.group);gardenPresentation=MazeWetness.createPresentation(T,scene);gardenNoiseAt=0;audio._gardenRain=gardenRaining();}
+function gardenBuild(){state.gardenVisuals=MazeGardenUpdate.build(T,state.level,{quality:settings.quality});if(state.gardenVisuals?.group)scene.add(state.gardenVisuals.group);gardenPresentation=MazeWetness.createPresentation(T,scene);gardenNoiseAt=0;audio._gardenRain=gardenRaining();}
 function gardenWaterNoise(source,tiles){
  const e=state.enemy;if(!e||Math.abs(e.x-source.x)>tiles*2||Math.abs(e.z-source.z)>tiles*2)return;
  // Enter the same door-aware investigation used by other physical sound sources.
@@ -26748,18 +26907,20 @@ function gardenHostStep(dt,players){
 function gardenRender(dt){
  const playing=['playing','planning'].includes(state.mode)&&!mp?.dead&&!state.player?.dead;
  for(const snake of state.level.garden?.snakes||[])if(snake.alive&&(snake.rattleSerial||0)!==(snake._heardRattleSerial||0)){snake._heardRattleSerial=snake.rattleSerial;gardenSound.shot('rattlesnake_sound',snake,.65);}
- const bushPlayers=playing?survivalPlayers().filter(p=>p.speed>.15&&MazeGardenUpdate.ivyAt(state.level,p.x,p.z)):[];
+ // This list is rebuilt from actual movement and current tile occupancy.
+ // No timer or delayed decode callback can keep a rustle alive after leaving.
+ const rustlers=playing?survivalPlayers().filter(p=>!p.dead&&p.alive!==false&&p.connected!==false&&!p.loading&&!p.sleeping&&p.speed>.01&&MazeGardenUpdate.ivyAt(state.level,p.x,p.z)):[];
  state.gardenVisuals?.tick(dt,state.time,state.player);MazeBathrooms.tick(state.survivalWorld,dt,state.time,state.enemy,false);
  gardenPresentation?.update(state.player,state.time,playing&&!inventoryIsOpen()&&!inputMenuRoot());
  for(const p of survivalPlayers()){const rig=mp?.visuals?.getActor(p.id)||(p===state.player?actor:null);if(rig)MazeAppearance.apply(rig,p);}if(inventoryIsOpen())inventoryPreview?.updatePlayer(state.player);
  const listener=mp?.dead?camera.position:state.player;audio._gardenRain=gardenRaining();
- gardenSound.update(gardenFixtures(),listener,gardenRaining(),MazeGardenUpdate.rainAudibility(state.level,listener.x,listener.z),playing,bushPlayers);
+ gardenSound.update(gardenFixtures(),listener,gardenRaining(),MazeGardenUpdate.rainAudibility(state.level,listener.x,listener.z),playing,rustlers);
  for(const f of state.survivalWorld?.bathroomFixtures||[])if(f.kind==='toilet'&&(f.flushSerial||0)!==(f._heardSerial||0)){f._heardSerial=f.flushSerial;gardenSound.shot('toilet_flush',f,.9);}
 }
 function gardenTowel(p,a){const item=MI.read(p,a.from);if(item?.id!==a.itemId||p.inventory?.revision!==a.revision||!MazeWetness.towel(p,item))return false;inventoryStateChanged(p);survivalDirty=true;berryNotice(p,'Skin dried. Wet outfits still need five minutes on the floor.');return true;}
 function gardenCarrySnapshot(){return survivalPlayers().map(p=>[p.id||'local',MazeWetness.encode(p)]);}
 function gardenParsePlayers(rows,ids){if(!Array.isArray(rows)||rows.length!==ids.size)return null;const out=new Map();for(const row of rows){if(!Array.isArray(row)||row.length!==2||!ids.has(row[0])||out.has(row[0])||!MazeWetness.valid(row[1]))return null;out.set(row[0],row[1]);}return out;}
-if(new URLSearchParams(location.search).get('qa')==='1')window.MazeGardenReview={get state(){return state;},get scene(){return scene;},get camera(){return camera;},get renderer(){return renderer;},get actor(){return actor;},build:buildLevel,render:()=>renderer.render(scene,camera),hostStep:gardenHostStep,interact:interactionPerform,survival:survivalHostAction,inventory:inventoryHostAction,begin(){state.mode='playing';state.safe.unlock();show('menu',false);show('hud');},view(x,y,z,tx,ty,tz){camera.position.set(x,y,z);camera.lookAt(tx,ty,tz);scene.updateMatrixWorld(true);renderer.render(scene,camera);},reveal(){scene.traverse(o=>{if(o.userData?.tile!==undefined||o.userData?.tileKey!==undefined)o.visible=true;});for(const tile of state.env.tiles?.values?.()||[])if(tile.group)tile.group.visible=true;},audio:gardenSound,worldState:survivalWorldState,applyWorld:survivalApplyWorld,target:interactionTarget,bottleTarget:bottleWaterTarget,flush:gardenFlush,move:updatePlayer,inventoryChanged:inventoryStateChanged,hearing:phoneHearing,fixtureApproach:gardenFixtureApproach,locked:phoneLocked,waterNoise:gardenWaterNoise,updateEnemy:(dt)=>{forestBeforeAI();C.updateEnemyTeam(state.level,state.enemy,survivalPlayers(),dt,state.time);},updateDoors:(dt)=>{syncClosetDoors();for(const d of state.serviceDoors)d.update(dt,[state.enemy]);},simulationStep:(dt)=>{state.time+=dt;gardenHostStep(dt,[]);forestBeforeAI();C.updateEnemy(state.level,state.enemy,{x:-1e6,z:-1e6,alive:false,dead:true,speed:0},dt,state.time);syncClosetDoors();for(const d of state.serviceDoors)d.update(dt,[state.enemy]);MazeBathrooms.tick(state.survivalWorld,dt,state.time,state.enemy,true);},warm:warmLevelGraphics,inventoryUI:()=>inventoryUI};
+if(new URLSearchParams(location.search).get('qa')==='1')window.MazeGardenReview={get state(){return state;},get scene(){return scene;},get camera(){return camera;},get renderer(){return renderer;},get actor(){return actor;},build:buildLevel,render:()=>renderer.render(scene,camera),hostStep:gardenHostStep,interact:interactionPerform,survival:survivalHostAction,inventory:inventoryHostAction,begin(){state.mode='playing';state.safe.unlock();show('menu',false);show('hud');},view(x,y,z,tx,ty,tz){camera.position.set(x,y,z);camera.lookAt(tx,ty,tz);scene.updateMatrixWorld(true);renderer.render(scene,camera);},reveal(){scene.traverse(o=>{if(o.userData?.tile!==undefined||o.userData?.tileKey!==undefined)o.visible=true;});for(const tile of state.env.tiles?.values?.()||[])if(tile.group)tile.group.visible=true;},audio:gardenSound,gardenRender,updateVisibility,updateCamera,updateSun,get lights(){return{hemi,sun,flash,fillLight,safeLight,pointLights,flashTarget};},worldState:survivalWorldState,applyWorld:survivalApplyWorld,target:interactionTarget,bottleTarget:bottleWaterTarget,flush:gardenFlush,move:updatePlayer,inventoryChanged:inventoryStateChanged,hearing:phoneHearing,fixtureApproach:gardenFixtureApproach,locked:phoneLocked,waterNoise:gardenWaterNoise,updateEnemy:(dt)=>{forestBeforeAI();C.updateEnemyTeam(state.level,state.enemy,survivalPlayers(),dt,state.time);},updateDoors:(dt)=>{syncClosetDoors();for(const d of state.serviceDoors)d.update(dt,[state.enemy]);},simulationStep:(dt)=>{state.time+=dt;gardenHostStep(dt,[]);forestBeforeAI();C.updateEnemy(state.level,state.enemy,{x:-1e6,z:-1e6,alive:false,dead:true,speed:0},dt,state.time);syncClosetDoors();for(const d of state.serviceDoors)d.update(dt,[state.enemy]);MazeBathrooms.tick(state.survivalWorld,dt,state.time,state.enemy,true);},warm:warmLevelGraphics,inventoryUI:()=>inventoryUI};
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
