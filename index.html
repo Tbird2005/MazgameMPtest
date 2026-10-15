@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-build="v7.26.3-left-stick-wheel"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze Game 3D — Theme Worlds Review</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
+<html lang="en" data-build="v7.26.5-privacy-doors-spectator-rain"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze Game 3D — Theme Worlds Review</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
 <style id="maze-boot-style">html,body{margin:0;min-height:100%;background:#070d0e}
 #maze-boot{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:28px;color:#dce9e2;background:radial-gradient(ellipse at 48% 40%,#18333780,transparent 66%),repeating-linear-gradient(0deg,#91c5bc04 0 1px,transparent 1px 4px),#070d0e;font:14px/1.5 Arial,Helvetica,sans-serif;box-sizing:border-box;color-scheme:dark}
 #maze-boot *{box-sizing:border-box}#maze-boot-panel{width:min(430px,100%);border-top:1px solid #729b9670;padding-top:25px}#maze-boot-brand{margin:0 0 34px;color:#c9dcc2;letter-spacing:.19em;font-size:13px;font-weight:700}#maze-boot-brand b{float:right;color:#6f9792;font-size:11px;font-weight:400;letter-spacing:.08em}#maze-boot h1{margin:0 0 7px;font-size:24px;font-weight:400;letter-spacing:-.02em}#maze-boot-meta{min-height:22px;margin:0;color:#91b2ac;font-size:12px}#maze-boot-track{height:11px;margin:25px 0 11px;border:1px solid #4f716b;background:#050b0c;padding:2px;box-shadow:inset 0 1px 3px #0009}#maze-boot-fill{height:5px;width:0;background:#b7d9a1;box-shadow:0 0 10px #a9d49735}#maze-boot-bottom{display:flex;justify-content:space-between;gap:16px;color:#75928d;font-size:12px;font-variant-numeric:tabular-nums}#maze-boot-percent{color:#c3d9b9}#maze-boot-retry{margin-top:22px;padding:9px 18px;border:1px solid #7caaa2;background:#18332e;color:#daebdf;font:inherit;cursor:pointer}#maze-boot-retry[hidden]{display:none}#maze-boot-note{margin:25px 0 0;color:#5e7a76;font-size:11px}#maze-boot[data-error] #maze-boot-fill{background:#d4967f}</style><style id="maze-voice-style">
@@ -39,7 +39,7 @@ body.maze-spectator-map #tabletFocus .tablet-power,body.maze-spectator-map #tabl
 body.maze-spectator-map #tabletFocus .tablet-close{margin-left:auto}
 </style></head><body><section id="maze-boot" role="status" aria-live="polite" aria-label="Loading Maze Game 3D"><div id="maze-boot-panel"><p id="maze-boot-brand">MAZE GAME / 3D <b>INITIALIZING</b></p><h1 id="maze-boot-title">Receiving game data</h1><p id="maze-boot-meta">Your game is arriving. Keep this tab open.</p><div id="maze-boot-track" role="progressbar" aria-label="Game data received" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="maze-boot-fill"></div></div><div id="maze-boot-bottom"><span id="maze-boot-eta">Estimating remaining time…</span><span id="maze-boot-percent">0%</span></div><button id="maze-boot-retry" type="button" hidden>Reload game</button><p id="maze-boot-note">Progress updates as game data arrives.</p></div></section><script>(function(w,d){
 'use strict';
-const total=21293290,start=performance.now(),parts=Object.create(null),byId=id=>d.getElementById(id),root=byId('maze-boot');
+const total=21303484,start=performance.now(),parts=Object.create(null),byId=id=>d.getElementById(id),root=byId('maze-boot');
 let bytes=0,done=false,failed=false,received=false,initialized=false,last=0,watch=null,timer=null;
 const title=byId('maze-boot-title'),meta=byId('maze-boot-meta'),eta=byId('maze-boot-eta'),percent=byId('maze-boot-percent'),track=byId('maze-boot-track'),fill=byId('maze-boot-fill');
 function units(n){return(n/1000000).toFixed(1)+' MB';}
@@ -8138,7 +8138,9 @@ function wardrobeRoll(seed,roomId){
  const r=random(hash('forest-wardrobe-loot-v1:'+seed+':'+roomId)),present=random(hash('forest-wardrobe-presence-v1:'+seed+':'+roomId))()<.65,clothing=r(),style=clothing<.03?['gold','chrome','prism'][Math.floor(r()*3)]:null,palette=style?0:Math.floor(r()*5),axe=random(hash('forest-wardrobe-axe-v1:'+seed+':'+roomId))()<.20;
  return{present,outfit:clothing<.28?{palette,...(style?{style}:{} )}:null,axe};
 }
-const hasHouseWindow=boundary=>!boundary.doorId&&(boundary.cell.x+boundary.cell.z)%2===0;
+// Bathroom conversion owns an explicit opening mask; geometry, sight and
+// physical walls all read the same decision instead of rerolling the old room.
+const hasHouseWindow=boundary=>!boundary.doorId&&(typeof boundary.bathroomWindow==='boolean'?boundary.bathroomWindow:(boundary.cell.x+boundary.cell.z)%2===0);
 // Each plan is a connected polyomino with named rooms. Mirrors and optional
 // annexes change the footprint without ever stamping a wall across a trail.
 const HOUSE_PLANS=[
@@ -8527,7 +8529,7 @@ function buildHouses(T,data){
  for(let i=0;i<32;i++){const a=i/32,b=(i+1)/32,point=(u,y)=>[Math.cos(u*Math.PI*16)*.028,y,u-.5];for(const[u,y]of[[a,0],[b,0],[b,1],[a,0],[b,1],[a,1]]){curtainVertices.push(...point(u,y));curtainUVs.push(u,y);}}
  curtainGeometry.setAttribute('position',new T.Float32BufferAttribute(curtainVertices,3));curtainGeometry.setAttribute('uv',new T.Float32BufferAttribute(curtainUVs,2));curtainGeometry.computeVertexNormals();resources.geometries.add(curtainGeometry);
  function addCurtain(base,window,houseIndex){
-  if(!window?.hasCurtain)return;const id=window.curtainId,rig=new T.Group();rig.name='Operable pleated window curtains / '+id;rig.position.x=1.68;rig.userData.dynamicTransform=true;rig.userData.curtainId=id;base.add(rig);
+  if(!window?.hasCurtain)return;const id=window.curtainId,rig=new T.Group();rig.name='Operable pleated window curtains / '+id;rig.position.x=window.bathroomPrivacy?1.79:1.68;rig.userData.dynamicTransform=true;rig.userData.curtainId=id;base.add(rig);
   const color=houseIndex%4;if(!curtainMaterials.has(color))curtainMaterials.set(color,mat('Lined curtain fabric '+color,[0x778364,0x9d785e,0x748993,0xb1a681][color],{side:T.DoubleSide}));const fabric=curtainMaterials.get(color),panels=[];
   for(const side of[-1,1]){const panel=new T.Mesh(curtainGeometry,fabric);panel.name=side<0?'Left sliding curtain':'Right sliding curtain';panel.position.y=.98;panel.scale.y=1.57;panel.castShadow=panel.receiveShadow=true;panel.userData.dynamicTransform=true;rig.add(panel);panels.push({side,mesh:panel});}
   box(rig,'Curtain rod',m.metal,0,2.63,0,.045,.045,2.04);for(const z of[-.94,.94]){box(rig,'Curtain rod wall bracket',m.metal,.10,2.63,z,.20,.05,.06);part(rig,'Curtain rod finial',cylinder,m.wood,0,2.63,z*1.12,.075,.09,.075,[Math.PI/2,0,0]);}
@@ -12517,7 +12519,7 @@ function livingActor(p){return !!p&&p.alive!==false&&!p.dead&&p.connected!==fals
 // its touching bodies together. No search for a distant "safe" position occurs.
 const DOOR_SKIN=.00002,DOOR_PUSH_SPEED=4.8,DOOR_MICROSTEP=1/240;
 function doorContact(b,p){
- if(!b||b.enabled===false||!livingActor(p)||!Number.isFinite(p.x)||!Number.isFinite(p.z))return null;
+ if(!b||b.enabled===false||!livingActor(p)||p.sleeping&&!isEnemyActor(p)||!Number.isFinite(p.x)||!Number.isFinite(p.z))return null;
  const r=isEnemyActor(p)?.56:.34;
  if(p.x+r<b.minX||p.x-r>b.maxX||p.z+r<b.minZ||p.z-r>b.maxZ)return null;
  const o=b.collisionOBB,ux=o?o.ux:1,uz=o?o.uz:0,cx=o?o.x:(b.minX+b.maxX)/2,cz=o?o.z:(b.minZ+b.maxZ)/2;
@@ -12531,7 +12533,8 @@ function doorContact(b,p){
  return {x:nx*ux-nz*uz,z:nx*uz+nz*ux,depth};
 }
 function doorwayBodyOverlap(bounds,actors){return actors.some(p=>doorContact(bounds,p));}
-function tryDoorMotion(level,bounds,actors,ignore,seconds,push=true){
+function tryDoorMotion(level,bounds,actors,ignore,seconds,push=true,enemyOpening=false){
+ if(enemyOpening)return tryEnemyDoorMotion(level,bounds,actors,ignore,seconds);
  const touching=actors.filter(p=>livingActor(p)&&bounds.some(b=>doorContact(b,p)));
  if(!touching.length)return true;
  if(!push||!level||!Number.isFinite(seconds)||seconds<=0)return false;
@@ -12564,7 +12567,7 @@ function tryDoorMotion(level,bounds,actors,ignore,seconds,push=true){
   // Commit all bodies atomically, or none. A teammate, sleeping body or trapped
   // foot is a physical obstruction, never a reason to eject somebody elsewhere.
   for(const [actor,probe]of moves)for(const other of actors){
-   if(other===actor||!livingActor(other))continue;const q=moves.get(other)||other;
+   if(other===actor||!livingActor(other)||other.sleeping&&!isEnemyActor(other))continue;const q=moves.get(other)||other;
    const ay=Number(actor.y)||0,by=Number(other.y)||0,ah=actor.crouched?1.55:1.95,bh=other.crouched?1.55:1.95;
    if(ay+ah<=by+.001||by+bh<=ay+.001)continue;
    const radii=(isEnemyActor(actor)?.56:.34)+(isEnemyActor(other)?.56:.34);
@@ -12575,7 +12578,85 @@ function tryDoorMotion(level,bounds,actors,ignore,seconds,push=true){
   return true;
  }finally{for(const [b,enabled]of disabled)b.enabled=enabled;}
 }
-window.MazeDoorPhysics=Object.freeze({contact:doorContact,overlaps:doorwayBodyOverlap,tryMotion:tryDoorMotion,maxPushSpeed:DOOR_PUSH_SPEED,microstep:DOOR_MICROSTEP});
+// Goku's opening stroke is kinematic. Try a short outward/diagonal shove,
+// propagate it through adjacent awake players, and slide around a pinched wall
+// when needed. Never skip world collision or teleport to a remote free point.
+function tryEnemyDoorMotion(level,bounds,actors,ignore,seconds){
+ const bodies=(actors||[]).filter(p=>livingActor(p)&&(!p.sleeping||isEnemyActor(p)));
+ const touching=bodies.filter(p=>bounds.some(b=>doorContact(b,p)));
+ if(!touching.length)return true;
+ if(!level||!Number.isFinite(seconds)||seconds<=0)return false;
+ const limit=6.5*seconds+DOOR_SKIN,extra=level.roomColliders||[],disabled=[];
+ const originals=new Map(bodies.map(p=>[p,{x:p.x,z:p.z}])),probes=new Map(bodies.map(p=>[p,{...p}])),spent=new Map(bodies.map(p=>[p,0]));
+ const oldBounds=(ignore||[]).filter(b=>b.collisionOBB&&b.enabled!==false).map(b=>({...b,collisionOBB:{...b.collisionOBB}}));
+ const radius=p=>isEnemyActor(p)?.56:.34;
+ const height=p=>isEnemyActor(p)?1.95:p.crouched?1.1:1.65;
+ const shareHeight=(a,b)=>(Number(a.y)||0)+height(a)>(Number(b.y)||0)+.001&&(Number(b.y)||0)+height(b)>(Number(a.y)||0)+.001;
+ const save=()=>bodies.map(p=>[p,probes.get(p).x,probes.get(p).z,spent.get(p)]);
+ const restore=rows=>{for(const[p,x,z,d]of rows){Object.assign(probes.get(p),{x,z});spent.set(p,d);}};
+ const staticClear=(actor,dx,dz)=>{
+  const p=probes.get(actor),length=Math.hypot(dx,dz),n=Math.max(1,Math.ceil(length/.008));
+  for(let i=1;i<=n;i++){
+   const x=p.x+dx*i/n,z=p.z+dz*i/n;
+   if(C.collision(level,x,z,radius(actor),extra,isEnemyActor(actor),Number.isFinite(p.y)?p.y:null))return false;
+   // A sideways relief move must not cut through the leaf's current surface.
+   for(const b of oldBounds)if((doorContact(b,{...p,x,z})?.depth||0)>(doorContact(b,p)?.depth||0)+.00001)return false;
+  }
+  return true;
+ };
+ function move(actor,dx,dz,stack){
+  if(stack.has(actor)||actor.bearTrapId)return false;
+  const length=Math.hypot(dx,dz);if(!Number.isFinite(length)||length<1e-9||spent.get(actor)+length>limit+1e-8||!staticClear(actor,dx,dz))return false;
+  const before=save(),p=probes.get(actor),chain=new Set(stack);chain.add(actor);
+  p.x+=dx;p.z+=dz;spent.set(actor,spent.get(actor)+length);
+  for(const other of bodies){
+   if(other===actor||!shareHeight(actor,other))continue;
+   const q=probes.get(other),a=before.find(v=>v[0]===actor),b=before.find(v=>v[0]===other),minimum=Math.min(radius(actor)+radius(other),Math.hypot(a[1]-b[1],a[2]-b[2]));
+   const ox=q.x-p.x,oz=q.z-p.z,d=Math.hypot(ox,oz);
+   if(d<minimum-1e-7&&!shove(other,d>1e-8?ox/d:dx/length,d>1e-8?oz/d:dz/length,minimum-d+DOOR_SKIN,chain)){restore(before);return false;}
+  }
+  return true;
+ }
+ function shove(actor,nx,nz,depth,stack=new Set()){
+  const start=save();
+  for(const tangent of [0,.35,-.35,.75,-.75,1.5,-1.5,3,-3]){
+   restore(start);const norm=Math.hypot(1,tangent),ux=(nx-nz*tangent)/norm,uz=(nz+nx*tangent)/norm,distance=(depth+DOOR_SKIN)*norm;
+   if(!move(actor,ux*distance,uz*distance,stack))continue;
+   if(bounds.every(b=>!doorContact(b,probes.get(actor))))return true;
+  }
+  restore(start);return false;
+ }
+ const commit=()=>{for(const p of bodies){const q=probes.get(p);p.x=q.x;p.z=q.z;}};
+ for(const b of new Set(ignore||[])){disabled.push([b,b.enabled]);b.enabled=false;}
+ try{
+  const initial=save();let clear=true;
+  for(const actor of touching){const contact=bounds.map(b=>doorContact(b,probes.get(actor))).filter(Boolean).sort((a,b)=>b.depth-a.depth)[0];if(contact&&!shove(actor,contact.x,contact.z,contact.depth)){clear=false;break;}}
+  if(clear&&bodies.every(p=>bounds.every(b=>!doorContact(b,probes.get(p))))){commit();return true;}
+  restore(initial);
+  // If initially deeply overlapped or pinned, spend the same tiny motion budget
+  // moving the body out/along the existing leaf, then retry on the next tick.
+  for(const actor of touching){
+   const start=save(),p=probes.get(actor),hits=bounds.map(b=>({b,c:doorContact(b,p)})).filter(h=>h.c).sort((a,b)=>b.c.depth-a.c.depth);
+   if(!hits.length)continue;const {b,c}=hits[0],o=b.collisionOBB;
+   const side=o?((p.x-o.x)*o.ux+(p.z-o.z)*o.uz>=0?1:-1):1;
+   const directions=[[c.x,c.z],...(o?[[o.ux*side,o.uz*side],[-o.ux*side,-o.uz*side]]:[]),[-c.z,c.x],[c.z,-c.x]];
+   const oldDepth=hits.reduce((sum,h)=>sum+h.c.depth,0);
+   for(const [dx,dz]of directions){
+    restore(start);if(!move(actor,dx*limit,dz*limit,new Set()))continue;
+    const newDepth=bounds.reduce((sum,leaf)=>sum+(doorContact(leaf,probes.get(actor))?.depth||0),0);
+    if(newDepth<=oldDepth+1e-7){commit();return false;}
+   }
+   restore(start);
+  }
+  return false;
+ }finally{for(const[b,enabled]of disabled)b.enabled=enabled;}
+}
+class DoorInteractionCooldown{
+ constructor(seconds=1){this.seconds=Number.isFinite(seconds)&&seconds>0?seconds:1;this.until=new WeakMap();}
+ take(door,time){if(!door||typeof door!=='object'||!Number.isFinite(time))return false;const until=this.until.get(door);if(until!==undefined&&time<until-1e-7)return false;this.until.set(door,time+this.seconds);return true;}
+}
+window.MazeDoorPhysics=Object.freeze({contact:doorContact,overlaps:doorwayBodyOverlap,tryMotion:tryDoorMotion,isEnemy:isEnemyActor,InteractionCooldown:DoorInteractionCooldown,maxPushSpeed:DOOR_PUSH_SPEED,microstep:DOOR_MICROSTEP});
+
 function colliderSnapshot(colliders){return colliders.map(b=>({minX:b.minX,maxX:b.maxX,minZ:b.minZ,maxZ:b.maxZ,enabled:b.enabled!==false}));}
 function applyColliders(colliders,values){if(!Array.isArray(values))return;for(let i=0;i<Math.min(colliders.length,values.length);i++){const b=values[i];if(!b)continue;for(const field of ['minX','maxX','minZ','maxZ'])if(Number.isFinite(b[field]))colliders[i][field]=b[field];colliders[i].enabled=b.enabled!==false;}}
 
@@ -12866,7 +12947,7 @@ function closet(p,theme,level=null){
   const canUseLatch=actor=>d.lockable&&!d.doorBroken&&!isEnemyActor(actor)&&inRoom(actor)&&(actor.x-cell.x*4)*dx+(actor.z-cell.z*4)*dz<1.76&&Math.hypot(actor.x-doorPos.x,actor.z-doorPos.z)<2.65&&Math.abs((Number(actor.y)||0)-(p.floorY||0))<1.2,latchRay=d.lockable?new T.Raycaster():null;
   const apply=()=>{hinge.rotation.set(d.doorBroken?swing*Math.PI/2:0,d.doorBroken?0:swing*1.5*open,0);hinge.position.y=d.doorBroken?.08:0;hinge.updateMatrix();if(latchBolt){latchBolt.position.x=d.doorLocked?.085:-.135;latchBolt.updateMatrix();}Object.assign(leaf,doorBounds(wall,hinge,swing*1.5*open,1.52,.06),{enabled:!d.doorBroken});threshold.enabled=!d.doorBroken&&(d.doorLocked||open<.94);d.doorOpen=open;d.doorPassable=d.doorBroken||!d.doorLocked&&open>=.94;d.doorSwing=swing;api.breakRoots=d.breakable&&!d.doorBroken?[hinge]:[];g.userData.shadeRevision=(g.userData.shadeRevision||0)+1;refreshRoom();};
   const api={group:wall,p:d,room:p,hinge,duration:.85,interactionLabel:String(p.displayName||'closet').toLowerCase()+' door',interactionRoots:[hinge],interactionIgnore:[threshold,leaf],inPos,outPos,doorPos,colliders:localColliders,barriers:localColliders,faceYaw:Math.atan2(-dx,-dz),latchRoot,breakRoots:d.breakable&&!d.doorBroken?[hinge]:[],lockFailure:'',
-   setOpen(value,opener){const next=value?1:0;if(d.doorBroken||next&&(d.doorLocked||d.doorLockPending)||next===desired)return false;if(next&&open<.02){const along=opener?(opener.x-cell.x*4)*dx+(opener.z-cell.z*4)*dz:3;swing=along>=1.82?1:-1;}desired=next;d.doorBlocked=false;apply();return true;},
+   setOpen(value,opener){const next=value?1:0;if(d.doorBroken||next&&(d.doorLocked||d.doorLockPending))return false;if(next&&isEnemyActor(opener))api.enemyDoor=true;else if(next!==desired)api.enemyDoor=false;if(next===desired)return false;if(next&&open<.02){const along=opener?(opener.x-cell.x*4)*dx+(opener.z-cell.z*4)*dz:3;swing=along>=1.82?1:-1;}desired=next;d.doorBlocked=false;apply();return true;},
    canUseLatch,
    aimedLatch(actor,origin,direction){
     if(!canUseLatch(actor)||!origin||!direction||![origin.x,origin.y,origin.z,direction.x,direction.y,direction.z].every(Number.isFinite))return false;
@@ -12899,7 +12980,7 @@ function closet(p,theme,level=null){
     for(let n=0;n<64&&budget>1e-9;n++){
      const step=Math.min(Math.abs(desired-open),budget,DOOR_MICROSTEP);if(step<1e-9)break;
      const next=open+Math.sign(desired-open)*step,bounds=doorBounds(wall,hinge,swing*1.5*next,1.52,.06);
-     if(!tryDoorMotion(level,[bounds],actors,[leaf,threshold],step*.85,next<open&&!d.doorLockPending)){d.doorBlocked=true;break;}
+     if(!tryDoorMotion(level,[bounds],actors,[leaf,threshold],step*.85,next<open&&!d.doorLockPending,next>open&&api.enemyDoor)){d.doorBlocked=true;break;}
      open=next;budget-=step;changed=true;
     }
     if(Math.abs(open-desired)<1e-7&&open!==desired){open=desired;changed=true;}
@@ -12977,7 +13058,7 @@ function serviceDoor(p,theme='industrial',level=null){
   g.userData.shadeRevision=(g.userData.shadeRevision||0)+1;
  }
  const api={group:g,p,interactionLabel:passage.toLowerCase()+' door',interactionRoots:[fixed,...dynamic.map(v=>v.mesh)],interactionIgnore:colliders,colliders,barriers:colliders,doorPos,inPos,outPos,faceYaw:Math.atan2(-p.dx,-p.dz),duration,
-  setOpen(value){const next=value?1:0;if(next===desired)return false;desired=next;p.doorBlocked=false;return true;},toggle(){return api.setOpen(!desired);},
+  setOpen(value,opener){const next=value?1:0;if(next&&isEnemyActor(opener))api.enemyDoor=true;else if(next!==desired)api.enemyDoor=false;if(next===desired)return false;desired=next;p.doorBlocked=false;return true;},toggle(){return api.setOpen(!desired);},
   wantsOpen(){return desired===1;},isOpen(){return open>=.999;},openAmount(){return open;},isMoving(){return Math.abs(open-desired)>1e-6;},
   canInteract(player){if(!player||player.hidden||player.alive===false)return false;const dx=p.x-player.x,dz=p.z-player.z,d=Math.hypot(dx,dz),across=(player.x-p.x)*p.dz-(player.z-p.z)*p.dx;return d<2.65&&Math.abs(across)<1.28&&(d<.4||(-Math.sin(player.yaw)*dx-Math.cos(player.yaw)*dz)/(d||1)>.25);},
   interaction(player,camera){return api.canInteract(player,camera)?{kind:'service',door:api,label:(desired?'Close ':'Open ')+api.interactionLabel}:null;},
@@ -12988,7 +13069,7 @@ function serviceDoor(p,theme='industrial',level=null){
    for(let n=0;n<64&&budget>1e-9;n++){
     const step=Math.min(Math.abs(desired-open),budget,DOOR_MICROSTEP);if(step<1e-9)break;
     const next=open+Math.sign(desired-open)*step,bounds=leaves.map(leaf=>leafBounds(leaf.side,next));
-    if(!tryDoorMotion(level,bounds,actors,leaves,step*duration,next<open)){p.doorBlocked=true;break;}
+    if(!tryDoorMotion(level,bounds,actors,leaves,step*duration,next<open,next>open&&api.enemyDoor)){p.doorBlocked=true;break;}
     open=next;budget-=step;changed=true;
    }
    if(Math.abs(open-desired)<1e-7&&open!==desired){open=desired;changed=true;}
@@ -15876,7 +15957,7 @@ function separate(level,players,previous){
  for(let iteration=0;iteration<16;iteration++){
   worst=0;
   for(let i=0;i<players.length;i++)for(let j=i+1;j<players.length;j++){
-   const a=players[i],b=players[j];if(!overlapsHeight(a,b))continue;let dx=b.x-a.x,dz=b.z-a.z,distance=Math.hypot(dx,dz),depth=RADIUS*2-distance;if(depth<=.00001)continue;worst=Math.max(worst,depth);
+   const a=players[i],b=players[j];if(a.sleeping||b.sleeping||!overlapsHeight(a,b))continue;let dx=b.x-a.x,dz=b.z-a.z,distance=Math.hypot(dx,dz),depth=RADIUS*2-distance;if(depth<=.00001)continue;worst=Math.max(worst,depth);
    if(distance<1e-7){const pa=previous.get(a.id),pb=previous.get(b.id);dx=pb.x-pa.x;dz=pb.z-pa.z;distance=Math.hypot(dx,dz);if(distance<1e-7){dx=1;dz=0;distance=1;}}
    dx/=distance;dz/=distance;const amount=depth+.00002,movedA=pushClear(level,a,-dx*amount*.5,-dz*amount*.5),movedB=pushClear(level,b,dx*amount*.5,dz*amount*.5);let remaining=amount-movedA-movedB;
    if(remaining>.00001){remaining-=pushClear(level,a,-dx*remaining,-dz*remaining);if(remaining>.00001)pushClear(level,b,dx*remaining,dz*remaining);}
@@ -15886,7 +15967,9 @@ function separate(level,players,previous){
  return worst;
 }
 function solvePlayers(level,allPlayers,previousPositions,dt=1/60,context={}){
- const players=list(allPlayers).filter(alive),previous=previousPositions instanceof Map?previousPositions:new Map(players.map(p=>[p.id,previousPositions?.[p.id]||{x:p.x,y:p.y,z:p.z}])),motion=players.map(p=>{const from=previous.get(p.id)||{x:p.x,y:p.y,z:p.z};previous.set(p.id,from);return{p,from,to:{x:p.x,y:p.y,z:p.z},dx:p.x-from.x,dz:p.z-from.z};});
+ // Sleeping rigs are placed by sleepPose, not their saved standing position.
+ // Exclude them entirely: neither a body obstacle nor a movable separation proxy.
+ const players=list(allPlayers).filter(p=>alive(p)&&!p.sleeping),previous=previousPositions instanceof Map?previousPositions:new Map(players.map(p=>[p.id,previousPositions?.[p.id]||{x:p.x,y:p.y,z:p.z}])),motion=players.map(p=>{const from=previous.get(p.id)||{x:p.x,y:p.y,z:p.z};previous.set(p.id,from);return{p,from,to:{x:p.x,y:p.y,z:p.z},dx:p.x-from.x,dz:p.z-from.z};});
  // Re-run simultaneous motion in short swept slices; testing only final
  // circles allows fast players to trade places without ever touching.
  const slices=Math.max(1,Math.ceil(Math.max(0,...motion.map(m=>Math.hypot(m.dx,m.dz)))/.085));
@@ -20060,10 +20143,25 @@ function prepare(level,seed=level?.seed,theme=level?.theme){
   for(const s of room.sections||[])if(s.id===section.id){s.kind='bathroom';s.label=section.displayName;}
   if(theme==='forest'){room.bedCells=(room.bedCells||[]).filter(c=>!section.cells.some(q=>q.x===c.x&&q.z===c.z));room.bedCell=room.bedCells[0];}
   const cell=section.cells[0],bath={id:section.id,roomId:room.id,section,cell:{...cell},x:cell.x*4,z:cell.z*4,yaw:Math.atan2(-section.door.dx,-section.door.dz),theme,variant:hash('bath-variant:'+seed+':'+room.id)%2?'glass':'bathtub'};
+  if(theme==='forest')prepareForestPrivacy(room,bath,seed);
   room.bathrooms=[bath];level.bathrooms.push(bath);
  }
  if(level.bathrooms.length)delete level.survivalLayout;
  return level.bathrooms;
+}
+// Keep no more than one inherited exterior window, on the free right-hand
+// wall. The left wall supports the mirror/sink; the back supports plumbing.
+// Suppressed openings become actual opaque walls in the shared house builder.
+function prepareForestPrivacy(room,bath,seed){
+ const cells=new Set(bath.section.cells.map(c=>key(c.x,c.z))),inBath=w=>cells.has(key(w.cell.x,w.cell.z));
+ const c=Math.cos(bath.yaw),s=Math.sin(bath.yaw);
+ const candidates=(room.windows||[]).filter(w=>inBath(w)&&w.cell.x===bath.cell.x&&w.cell.z===bath.cell.z&&w.dx*c-w.dz*s>.99);
+ candidates.sort((a,b)=>hash('bathroom-window:'+seed+':'+a.id)-hash('bathroom-window:'+seed+':'+b.id));
+ const keep=candidates[0]||null;
+ room.windows=(room.windows||[]).filter(w=>!inBath(w)||w===keep);
+ for(const face of room.boundaries||[])if(inBath(face))face.bathroomWindow=!!keep&&face.cell.x===keep.cell.x&&face.cell.z===keep.cell.z&&face.dx===keep.dx&&face.dz===keep.dz;
+ if(keep)Object.assign(keep,{hasCurtain:true,curtainClosed:true,curtainId:keep.curtainId||keep.id+':curtain',bathroomPrivacy:true,bathroomId:bath.id});
+ bath.privacyWindowId=keep?.id||null;
 }
 function localPoint(b,x,z){const c=Math.cos(b.yaw),s=Math.sin(b.yaw);return{x:b.x+c*x+s*z,z:b.z-s*x+c*z};}
 function localBounds(b,x,z,w,d,h,id,extra={}){const p=localPoint(b,x,z),c=Math.abs(Math.cos(b.yaw)),s=Math.abs(Math.sin(b.yaw));return{minX:p.x-(c*w+s*d)/2,maxX:p.x+(c*w+s*d)/2,minZ:p.z-(s*w+c*d)/2,maxZ:p.z+(s*w+c*d)/2,minY:0,maxY:h,ownerKey:key(b.cell.x,b.cell.z),survival:true,survivalId:id,furniture:true,visionTransparent:true,lightTransparent:true,...extra};}
@@ -20977,6 +21075,7 @@ function create(room,level=null,doorSpec=room.door){
  const apply=()=>{hinge.rotation.set(p.doorBroken?swing*Math.PI/2:0,p.doorBroken?0:swing*Math.PI/2*open,0);hinge.position.y=p.doorBroken?.08:0;hinge.updateMatrix();if(latchBolt){latchBolt.position.x=p.doorLocked?.05:-.11;latchBolt.updateMatrix();}Object.assign(leaf,leafBounds(open),{enabled:!p.doorBroken,renderOpen:open});p.doorOpen=open;p.doorPassable=p.doorBroken||!p.doorLocked&&open>.92;p.doorSwing=swing;g.userData.shadeRevision=(g.userData.shadeRevision||0)+1;};
  const api={group:g,hinge,p,room,duration,interactionLabel:label+' door',interactionRoots:[hinge],interactionIgnore:colliders,colliders,barriers:colliders,latchRoot,breakRoots:breakable?[hinge]:[],lockFailure:'',doorPos:new T.Vector3(p.x,0,p.z),inPos:new T.Vector3(p.x-p.dx*.9,0,p.z-p.dz*.9),outPos:new T.Vector3(p.x+p.dx*.9,0,p.z+p.dz*.9),
   setOpen(value,opener){const next=value?1:0;if(p.doorBroken||next&&(p.doorLocked||p.doorLockPending))return false;
+   if(next&&global.MazeDoorPhysics.isEnemy(opener))api.enemyDoor=true;else if(next!==desired)api.enemyDoor=false;
    const along=opener&&Number.isFinite(opener.x)&&Number.isFinite(opener.z)?(opener.x-p.x)*p.dx+(opener.z-p.z)*p.dz:null;
    // A partly open leaf already has a physical swing side. Reopening retracts
    // along that arc, even after the opener crosses the portal plane. Choosing
@@ -21027,7 +21126,7 @@ function create(room,level=null,doorSpec=room.door){
    if(p.doorLockPending&&enemyInside(actors)){p.doorLockPending=false;api.lockFailure='Goku entered before the latch closed';changed=true;}
    const target=desired?targetSwing:0;
    for(let n=0;n<64&&budget>1e-9;n++){const current=open*swing,difference=target-current;if(Math.abs(difference)<1e-7)break;const step=Math.min(Math.abs(difference),budget,global.MazeDoorPhysics.microstep),next=current+Math.sign(difference)*step,direction=next<0?-1:next>0?1:swing;
-    const bounds=leafBounds(Math.abs(next),direction);if(!global.MazeDoorPhysics.tryMotion(level,[bounds],actors,[leaf],step*duration,Math.abs(next)<Math.abs(current)&&!p.doorLockPending)){p.doorBlocked=true;break;}open=Math.abs(next);swing=direction;budget-=step;changed=true;
+    const bounds=leafBounds(Math.abs(next),direction);if(!global.MazeDoorPhysics.tryMotion(level,[bounds],actors,[leaf],step*duration,Math.abs(next)<Math.abs(current)&&!p.doorLockPending,Math.abs(next)>Math.abs(current)&&api.enemyDoor)){p.doorBlocked=true;break;}open=Math.abs(next);swing=direction;budget-=step;changed=true;
    }
    if(p.doorLockPending&&open<1e-7){open=0;desired=0;p.doorLockPending=false;p.doorLocked=true;api.enemyDoor=false;changed=true;}
    if(changed)apply();}
@@ -23089,16 +23188,34 @@ root.MazeWetness={BODY_DRY_SECONDS,ITEM_DRY_SECONDS,init,wetOutfit,wet,ivy,bite,
 class GardenAudio{
  constructor(audio,assets){this.audio=audio;this.assets=assets;this.buffers=new Map();this.pending=new Map();this.loops=new Map();this.shots=new Set();}
  load(kind){const ctx=this.audio._ctx;if(!ctx)return null;if(this.buffers.has(kind))return Promise.resolve(this.buffers.get(kind));if(this.pending.has(kind))return this.pending.get(kind);const url=this.assets[kind];if(!url)return;const job=fetch(url).then(r=>r.arrayBuffer()).then(b=>ctx.decodeAudioData(b)).then(b=>this.buffers.set(kind,b)).catch(e=>console.warn('Garden sound unavailable:',kind,e.message)).finally(()=>this.pending.delete(kind));this.pending.set(kind,job);return job;}
- voice(kind,point,loop=false,ambient=false){const ctx=this.audio._ctx,buffer=this.buffers.get(kind);if(!ctx||ctx.state!=='running'||!buffer||!this.audio._mix)return null;const source=ctx.createBufferSource(),gain=ctx.createGain(),filter=ctx.createBiquadFilter(),pan=ambient?null:ctx.createPanner();source.buffer=buffer;source.loop=loop;filter.type='lowpass';filter.frequency.value=16000;source.connect(filter);if(pan){pan.panningModel='HRTF';pan.distanceModel='inverse';pan.refDistance=2;pan.rolloffFactor=.65;pan.maxDistance=80;filter.connect(pan);pan.connect(gain);}else filter.connect(gain);gain.connect(this.audio._mix);const v={source,gain,pan,filter};this.position(v,point);source.start();return v;}
+ voice(kind,point,loop=false,ambient=false,volume=1,cutoff=16000){
+  const ctx=this.audio._ctx,buffer=this.buffers.get(kind);if(!ctx||ctx.state!=='running'||!buffer||!this.audio._mix)return null;
+  const source=ctx.createBufferSource(),gain=ctx.createGain(),filter=ctx.createBiquadFilter(),pan=ambient?null:ctx.createPanner();
+  volume=Number.isFinite(volume)?Math.max(0,Math.min(1,volume)):0;cutoff=Number.isFinite(cutoff)?Math.max(20,Math.min(20000,cutoff)):16000;
+  // Configure the mix BEFORE starting playback. A new GainNode defaults to 1;
+  // fading down from that value made every restarted rain loop burst loudly.
+  source.buffer=buffer;source.loop=loop;gain.gain.value=loop?0:volume;filter.type='lowpass';filter.frequency.value=cutoff;
+  source.connect(filter);if(pan){pan.panningModel='HRTF';pan.distanceModel='inverse';pan.refDistance=2;pan.rolloffFactor=.65;pan.maxDistance=80;filter.connect(pan);pan.connect(gain);}else filter.connect(gain);gain.connect(this.audio._mix);
+  const v={source,gain,pan,filter,volume,cutoff};this.position(v,point);
+  if(loop)gain.gain.setTargetAtTime(volume,ctx.currentTime,.18);
+  try{source.start();}catch{this.stopVoice(v);return null;}return v;
+ }
+ mixVoice(v,volume,cutoff){
+  // An unchanged loop needs no new automation events. Doorway/shelter changes
+  // smoothly retarget the existing source, rather than restarting the sample.
+  const now=this.audio._ctx.currentTime;
+  if(v.volume!==volume){v.volume=volume;v.gain.gain.cancelScheduledValues(now);v.gain.gain.setTargetAtTime(volume,now,.18);}
+  if(v.cutoff!==cutoff){v.cutoff=cutoff;v.filter.frequency.cancelScheduledValues(now);v.filter.frequency.setTargetAtTime(cutoff,now,.25);}
+ }
  position(v,p){const n=v.pan;if(!n)return;n.positionX.value=Number.isFinite(p?.x)?p.x:0;n.positionY.value=Number.isFinite(p?.y)?p.y:1;n.positionZ.value=Number.isFinite(p?.z)?p.z:0;}
  stopVoice(v){v.source.onended=null;try{v.gain.gain.cancelScheduledValues(this.audio._ctx.currentTime);v.gain.gain.setValueAtTime(0,this.audio._ctx.currentTime);v.source.stop(0);}catch{}for(const n of [v.source,v.gain,v.pan,v.filter])try{n.disconnect();}catch{}}
- shot(kind,point,volume=.65){if(!this.buffers.has(kind)){const pending=this.load(kind);pending?.then(()=>{if(this.buffers.has(kind)&&this.audio._canPlayEffect?.())this.shot(kind,point,volume);});return;}if(!this.audio._canPlayEffect?.())return;const v=this.voice(kind,point);if(!v)return;v.gain.gain.value=volume;this.shots.add(v);v.source.onended=()=>{this.shots.delete(v);this.stopVoice(v);};}
+ shot(kind,point,volume=.65){if(!this.buffers.has(kind)){const pending=this.load(kind);pending?.then(()=>{if(this.buffers.has(kind)&&this.audio._canPlayEffect?.())this.shot(kind,point,volume);});return;}if(!this.audio._canPlayEffect?.())return;const v=this.voice(kind,point,false,false,volume);if(!v)return;this.shots.add(v);v.source.onended=()=>{this.shots.delete(v);this.stopVoice(v);};}
  update(fixtures,listener,rain,exposed,active,rustlers=[]){
-  if(!active||!this.audio._canPlayEffect?.()){this.stop();return;}const live=new Set(),ctx=this.audio._ctx;for(const kind of ['rainloop2','showerloop','runningwater','toilet_flush','rattlesnake_sound','bushwalk'])this.load(kind);
+  if(!active||!listener||!this.audio._canPlayEffect?.()){this.stop();return;}const live=new Set();for(const kind of ['rainloop2','showerloop','runningwater','toilet_flush','rattlesnake_sound','bushwalk'])this.load(kind);
   const entries=(fixtures||[]).filter(f=>f.on&&['sink','shower'].includes(f.kind)).map(f=>({id:f.id,kind:f.kind==='shower'?'showerloop':'runningwater',point:f.soundPosition||f,volume:.65,filter:15000}));
   for(const p of rustlers)entries.push({id:'ivy-rustle:'+String(p.id||'local'),kind:'bushwalk',point:{x:p.x,y:(p.y||0)+.45,z:p.z},volume:.38,filter:15000});
   if(rain){const openness=Math.max(0,Math.min(1,Number(exposed)||0));entries.push({id:'weather:rain',kind:'rainloop2',ambient:true,point:listener,volume:.12+.43*openness,filter:1000+14000*openness});}
-  for(const e of entries){if(Math.hypot(e.point.x-listener.x,e.point.z-listener.z)>50)continue;live.add(e.id);this.load(e.kind);let v=this.loops.get(e.id);if(!v){v=this.voice(e.kind,e.point,true,e.ambient);if(v)this.loops.set(e.id,v);}if(!v)continue;this.position(v,e.point);v.gain.gain.setTargetAtTime(e.volume,ctx.currentTime,.18);v.filter.frequency.setTargetAtTime(e.filter,ctx.currentTime,.25);}
+  for(const e of entries){if(Math.hypot(e.point.x-listener.x,e.point.z-listener.z)>50)continue;live.add(e.id);this.load(e.kind);let v=this.loops.get(e.id);if(!v){v=this.voice(e.kind,e.point,true,e.ambient,e.volume,e.filter);if(v)this.loops.set(e.id,v);}if(!v)continue;this.position(v,e.point);this.mixVoice(v,e.volume,e.filter);}
   for(const [id,v] of this.loops)if(!live.has(id)){this.stopVoice(v);this.loops.delete(id);}
  }
  stop(){for(const v of this.loops.values())this.stopVoice(v);this.loops.clear();for(const v of this.shots)this.stopVoice(v);this.shots.clear();}
@@ -24042,7 +24159,7 @@ function frame(now){
  // Loading/resume can reset the clock after a RAF was already queued. That
  // older callback must not rewind time and make the next frame simulate a hitch.
  now=Math.max(now,lastFrame||now);
- requestAnimationFrame(frame);inputFrame(now);phoneFrame();berryPerception();if(!active()){gardenSound.stop();gardenPresentation?.update(state.player,state.time,false);}if(!renderer||state.mode==='error')return;if(state.mode==='loading'||state.mode==='mp-waiting'||mp?.loading){lastFrame=now;return;}if(state.mode==='survival-dead'){const elapsed=Math.max(0,(now-(lastFrame||now))/1000);lastFrame=now;survivalDeathFrame(elapsed,Math.min(.05,elapsed));return;}if(mp?.running){if(document.hidden){lastFrame=now;return;}const elapsed=Math.max(0,(now-(lastFrame||now))/1000),dt=Math.min(.05,elapsed);lastFrame=now;coopFrame(now,elapsed,dt);return;}if(document.hidden){lastFrame=now;return;}
+ requestAnimationFrame(frame);inputFrame(now);phoneFrame();berryPerception();if(!gardenAudioActive())gardenSound.stop();if(!active())gardenPresentation?.update(state.player,state.time,false);if(!renderer||state.mode==='error')return;if(state.mode==='loading'||state.mode==='mp-waiting'||mp?.loading){lastFrame=now;return;}if(state.mode==='survival-dead'){const elapsed=Math.max(0,(now-(lastFrame||now))/1000);lastFrame=now;survivalDeathFrame(elapsed,Math.min(.05,elapsed));return;}if(mp?.running){if(document.hidden){lastFrame=now;return;}const elapsed=Math.max(0,(now-(lastFrame||now))/1000),dt=Math.min(.05,elapsed);lastFrame=now;coopFrame(now,elapsed,dt);return;}if(document.hidden){lastFrame=now;return;}
  if(state.mode==='menu'&&now<state.menuRenderAt)return;
  const elapsed=Math.max(0,(now-(lastFrame||now))/1000),dt=Math.min(.05,elapsed);lastFrame=now;
  if(active()){
@@ -25914,6 +26031,18 @@ function interactionPickupReachable(p,item,action=null){
  const hit=interactionRay.intersectObject(item.group,true)[0];if(hit&&interactionVisible(view.origin,hit.point,ignore))return true;
  return interactionVisible(view.origin,point,ignore)&&view.direction.dot(point.sub(view.origin).normalize())>.9;
 }
+// Two ledgers avoid consuming a host's queued click twice. Authority is per
+// physical door (shared by handle/latch and every player); local throttling also
+// avoids sending redundant packets or repeatedly restarting predicted hinges.
+const doorInteractionAuthority=new MazeDoorPhysics.InteractionCooldown(1),doorInteractionRequests=new MazeDoorPhysics.InteractionCooldown(1);
+function interactionDoorKey(selected){
+ if(!selected?.ref)return null;
+ if(['safe','closet','service','house-latch','wardrobe','pantry'].includes(selected.kind)||selected.kind==='bathroom'&&selected.ref.kind==='shower-door')return selected.ref.p||selected.ref;
+ return null;
+}
+function interactionDoorAllowed(selected,queued=false){
+ const key=interactionDoorKey(selected);return !key||(queued?doorInteractionRequests:doorInteractionAuthority).take(key,performance.now()/1000);
+}
 function interactionPerform(forcedTarget=null){
  if(state.player.sleeping||survivalLootId)return;
  if(!mp?.inHostAction&&(inventoryIsOpen()||mp?.dead)||!['playing','planning'].includes(state.mode)||state.tabletFocus||mp?.ending)return;
@@ -25925,7 +26054,8 @@ function interactionPerform(forcedTarget=null){
  if(selected.kind==='corpse'){survivalOpenLoot(selected.ref);return;}
  if(selected.kind==='drop'){inventoryRequest({op:'pickup',pickupId:selected.id});return;}
  if(selected.kind==='loot'){weaponRequest({op:'pickup',pickupId:selected.id});return;}
- if(mp&&!mp.inHostAction){if(!coopLive()||mp.localPaused)return;const target={kind:selected.kind,id:selected.id},{view,aim}=interactionEncodeView(p);if(mp.net.isHost)mp.actions.push({id:mp.net.id,target,view,aim});else{if(selected.kind==='service'&&selected.ref.p.roomKind&&mp.world?.predictDoor(selected.ref,p)){state.visibilityTick=0;state.shadowDirty=true;interactionCache=null;}coopFlushInputs(true);mp.net.sendAction({kind:'interact',target,view,aim,epoch:mp.epoch,seq:mp.prediction.seq});}return;}
+ if(mp&&!mp.inHostAction){if(!coopLive()||mp.localPaused||!interactionDoorAllowed(selected,true))return;const target={kind:selected.kind,id:selected.id},{view,aim}=interactionEncodeView(p);if(mp.net.isHost)mp.actions.push({id:mp.net.id,target,view,aim});else{if(selected.kind==='service'&&selected.ref.p.roomKind&&mp.world?.predictDoor(selected.ref,p)){state.visibilityTick=0;state.shadowDirty=true;interactionCache=null;}coopFlushInputs(true);mp.net.sendAction({kind:'interact',target,view,aim,epoch:mp.epoch,seq:mp.prediction.seq});}return;}
+ if(!interactionDoorAllowed(selected))return;
  if(selected.kind==='lift'){const action=selected.action;if(state.exit.activate(action.kind)){if(action.kind==='call'){coopCallElevatorSound();C.alertElevator(state.level,state.enemy,state.time);announce('Elevator called — arriving in 30 seconds.',5);}else{announce('Gates closing.',3);}state.visibilityTick=0;state.shadowDirty=true;}return;}
  if(['closing','latching','rising','complete'].includes(state.exit.phase))return;
  if(selected.kind==='bathroom'){const result=MazeBathrooms.interact(selected.ref,state.time);if(result?.changed){survivalDirty=true;state.shadowDirty=true;interactionCache=null;if(result.kind==='toilet')gardenWaterNoise(result,12);}return;}
@@ -26852,6 +26982,16 @@ document.addEventListener('contextmenu',e=>{if(state.player?.phoneEquipped){e.pr
 // Integrated into the owning runtime: all gameplay changes are host authoritative.
 const gardenSound=new MazeGardenAudio(audio,assets),gardenDrying=MazeWetness.createDrying();
 let gardenPresentation=null,gardenNoiseAt=0;
+// Local UI input is not the world's audio state. Multiplayer inventory/pause
+// blocks movement while the world keeps running. Both teardown and playback
+// must use this same predicate, or they stop/start the rain every single frame.
+function gardenAudioActive(){
+ if(!['playing','planning'].includes(state.mode)||document.hidden)return false;
+ // Spectators (including an occupied orb) hear the same live environment.
+ // Keep multiplayer UI pause independent of weather; solo death stays silent.
+ return mp?!!mp.running&&!mp.loading&&!mp.ending:!!state.player&&!state.player.dead&&state.player.alive!==false;
+}
+function gardenListener(){return mp?.dead?camera.position:state.player;}
 function gardenRaining(){return !!(state.level?.gardenWeather?.raining||state.level?.gardenWeather?.rain);}
 function gardenFixtures(){return [...(state.survivalWorld?.waterSources||[]),...(state.survivalWorld?.bathroomFixtures||[])];}
 function gardenClean(){gardenSound.stop();gardenDrying.reset();gardenPresentation?.dispose();gardenPresentation=null;if(state.gardenVisuals){scene.remove(state.gardenVisuals.group);state.gardenVisuals.dispose?.();state.gardenVisuals=null;}}
@@ -26910,11 +27050,11 @@ function gardenRender(dt){
  // This list is rebuilt from actual movement and current tile occupancy.
  // No timer or delayed decode callback can keep a rustle alive after leaving.
  const rustlers=playing?survivalPlayers().filter(p=>!p.dead&&p.alive!==false&&p.connected!==false&&!p.loading&&!p.sleeping&&p.speed>.01&&MazeGardenUpdate.ivyAt(state.level,p.x,p.z)):[];
- state.gardenVisuals?.tick(dt,state.time,state.player);MazeBathrooms.tick(state.survivalWorld,dt,state.time,state.enemy,false);
+ state.gardenVisuals?.tick(dt,state.time,gardenListener());MazeBathrooms.tick(state.survivalWorld,dt,state.time,state.enemy,false);
  gardenPresentation?.update(state.player,state.time,playing&&!inventoryIsOpen()&&!inputMenuRoot());
  for(const p of survivalPlayers()){const rig=mp?.visuals?.getActor(p.id)||(p===state.player?actor:null);if(rig)MazeAppearance.apply(rig,p);}if(inventoryIsOpen())inventoryPreview?.updatePlayer(state.player);
- const listener=mp?.dead?camera.position:state.player;audio._gardenRain=gardenRaining();
- gardenSound.update(gardenFixtures(),listener,gardenRaining(),MazeGardenUpdate.rainAudibility(state.level,listener.x,listener.z),playing,rustlers);
+ const listener=gardenListener();audio._gardenRain=gardenRaining();
+ gardenSound.update(gardenFixtures(),listener,gardenRaining(),MazeGardenUpdate.rainAudibility(state.level,listener.x,listener.z),gardenAudioActive(),rustlers);
  for(const f of state.survivalWorld?.bathroomFixtures||[])if(f.kind==='toilet'&&(f.flushSerial||0)!==(f._heardSerial||0)){f._heardSerial=f.flushSerial;gardenSound.shot('toilet_flush',f,.9);}
 }
 function gardenTowel(p,a){const item=MI.read(p,a.from);if(item?.id!==a.itemId||p.inventory?.revision!==a.revision||!MazeWetness.towel(p,item))return false;inventoryStateChanged(p);survivalDirty=true;berryNotice(p,'Skin dried. Wet outfits still need five minutes on the floor.');return true;}
