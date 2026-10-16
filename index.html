@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-build="v7.38-safe-closet-motion-interior-traps-pickup-prompts"><head>
+<html lang="en" data-build="v7.39-suburb-redundant-work-culling"><head>
 <script>
 /* Foggy Hollow Pines rebuilt: independent street, parcel, house and furniture generators.
    No forest/urban house assets or layout functions are used by this module. */
@@ -210,22 +210,83 @@ function compactLandscape(T,k,parent){
   const mesh=new T.InstancedMesh(lod?def.far:def.geometry,def.material,def.rows.length);mesh.name=def.material.name+(lod?' / compact distant':' / compact nearby');Object.assign(mesh.userData,{suburbCompact:true,suburbCompactId:def.id,suburbCompactLOD:lod});mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);mesh.frustumCulled=false;mesh.castShadow=!def.material.transparent;mesh.receiveShadow=true;mesh.matrixAutoUpdate=false;mesh.count=0;
   if(def.tinted){mesh.instanceColor=new T.InstancedBufferAttribute(new Float32Array(def.rows.length*3),3);mesh.instanceColor.setUsage(T.DynamicDrawUsage);}parent.add(mesh);
  }
+ // Every definition's rows retain the original object-first draw order. A
+ // changed tree no longer causes every unrelated house/ground buffer to upload.
+ for(const def of definitions)def.renderRows=[];
+ for(const object of objects){const ids=new Set();for(const id of object.rows){const row=rows[id];row.packed=new Float32Array(row.matrix.elements);row.packedColor=row.color?new Float32Array([row.color.r,row.color.g,row.color.b]):null;definitions[row.def].renderRows.push(row);ids.add(row.def);}object.definitions=Array.from(ids);object.tree=object.key.startsWith('tree:');}
  function selector(view){
-  const meshes=definitions.map(()=>[]),marks=new Uint32Array(objects.length),lodState=new Uint8Array(objects.length);view.traverse(o=>{if(o.userData.suburbCompact)meshes[o.userData.suburbCompactId][o.userData.suburbCompactLOD]=o;});let serial=0,lastMap,signature='',visible=0,draws=0,triangles=0,uploads=0,treeCount=0,lastCameraSignature='';const frustum=new T.Frustum(),projection=new T.Matrix4(),eye=new T.Vector3();let viewFrustum=null,shadowRadius=0;
-  function select(map,force=false){if(!force&&map===lastMap)return;lastMap=map;const p=map?.suburbView,chosen=[];serial++;if(serial>=4294967295){marks.fill(0);serial=1;}
-   const add=id=>{if(marks[id]===serial)return;marks[id]=serial;const o=objects[id],b=o.box,dx=p?Math.max(b.min.x-p.x,0,p.x-b.max.x):0,dz=p?Math.max(b.min.z-p.z,0,p.z-b.max.z):0,dist=Math.hypot(dx,dz);if(p&&dist>p.range+(p.guard||0))return;if(viewFrustum&&!viewFrustum.intersectsBox(b)){const sx=Math.max(b.min.x-eye.x,0,eye.x-b.max.x),sz=Math.max(b.min.z-eye.z,0,eye.z-b.max.z);if(!shadowRadius||sx*sx+sz*sz>shadowRadius*shadowRadius)return;}let far=lodState[id];if(p){if(dist>20)far=1;else if(dist<18)far=0;}else far=0;lodState[id]=far;chosen.push(id);};
-   if(p){const r=p.range+(p.guard||0);for(let z=Math.floor((p.z-r)/8);z<=Math.floor((p.z+r)/8);z++)for(let x=Math.floor((p.x-r)/8);x<=Math.floor((p.x+r)/8);x++)for(const id of grid.get(K(x,z))||[])add(id);}else for(const o of objects)add(o.id);
-   chosen.sort((a,b)=>a-b);const next=chosen.map(id=>id+':'+lodState[id]).join(',');if(signature===next)return;signature=next;uploads++;
-   for(const levels of meshes)for(const mesh of levels)mesh.count=0;visible=treeCount=0;
-   for(const id of chosen){const o=objects[id];if(o.key.startsWith('tree:'))treeCount++;for(const rowId of o.rows){const row=rows[rowId],def=definitions[row.def],mesh=meshes[row.def][def.far&&lodState[id]?1:0],i=mesh.count++;mesh.setMatrixAt(i,row.matrix);if(row.color)mesh.setColorAt(i,row.color);visible++;}}
-   draws=triangles=0;for(const levels of meshes)for(const mesh of levels){mesh.visible=mesh.count>0;if(!mesh.count)continue;mesh.instanceMatrix.clearUpdateRanges();mesh.instanceMatrix.addUpdateRange(0,mesh.count*16);mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor){mesh.instanceColor.clearUpdateRanges();mesh.instanceColor.addUpdateRange(0,mesh.count*3);mesh.instanceColor.needsUpdate=true;}draws++;triangles+=mesh.count*(mesh.geometry.index?.count||mesh.geometry.attributes.position.count)/3;}
+  const meshes=definitions.map(()=>[]),allMeshes=[],expected=new Map();
+  view.traverse(o=>{if(o.userData.suburbCompact){meshes[o.userData.suburbCompactId][o.userData.suburbCompactLOD]=o;allMeshes.push(o);expected.set(o,0);}});
+  let current=new Uint8Array(objects.length),next=new Uint8Array(objects.length);
+  const lodState=new Uint8Array(objects.length),dirty=new Uint8Array(definitions.length),marks=new Uint32Array(objects.length),candidates=[];
+  const cameraMatrix=new T.Matrix4(),cameraProjection=new T.Matrix4(),viewMatrix=new T.Matrix4(),projection=new T.Matrix4(),inverseView=new T.Matrix4(),eye=new T.Vector3(),localEye=new T.Vector3(),frustum=new T.Frustum();
+  let initialized=false,pending=true,prepared=false,hasRange=false,mapX=0,mapZ=0,range=0,guard=0,lastMap;
+  let serial=0,gridX0=NaN,gridX1=NaN,gridZ0=NaN,gridZ1=NaN,gridAll=false;
+  let preserveShadows=false,visible=0,draws=0,triangles=0,treeCount=0,uploads=0,bufferUpdates=0,uploadedFloats=0,passes=0,candidateBuilds=0,restores=0;
+  let lastEyeX=NaN,lastEyeY=NaN,lastEyeZ=NaN;
+  const restore=()=>{for(const mesh of allMeshes){const count=expected.get(mesh);if(mesh.count!==count||mesh.visible!==(count>0))restores++;mesh.count=count;mesh.visible=count>0;}};
+  function collect(x,z,r){
+   const all=!hasRange,x0=all?0:Math.floor((x-r)/8),x1=all?0:Math.floor((x+r)/8),z0=all?0:Math.floor((z-r)/8),z1=all?0:Math.floor((z+r)/8);
+   if(gridAll===all&&x0===gridX0&&x1===gridX1&&z0===gridZ0&&z1===gridZ1)return;
+   gridAll=all;gridX0=x0;gridX1=x1;gridZ0=z0;gridZ1=z1;candidates.length=0;candidateBuilds++;
+   if(all){for(let id=0;id<objects.length;id++)candidates.push(id);return;}
+   if(++serial>=4294967295){marks.fill(0);serial=1;}
+   for(let iz=z0;iz<=z1;iz++)for(let ix=x0;ix<=x1;ix++)for(const id of grid.get(K(ix,iz))||[]){if(marks[id]===serial)continue;marks[id]=serial;candidates.push(id);}
   }
-  return{select,prepare(camera,preserveSunShadows=false){camera.getWorldPosition(eye);const next=camera.matrixWorld.elements.join(',')+'|'+camera.projectionMatrix.elements.join(',')+'|'+preserveSunShadows;if(next===lastCameraSignature)return;lastCameraSignature=next;projection.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);frustum.setFromProjectionMatrix(projection);viewFrustum=frustum;shadowRadius=preserveSunShadows?Infinity:0;select(lastMap,true);},stats:()=>({visibleInstances:visible,submittedInstances:visible,capacity:rows.length,visibleDrawCalls:draws,submittedTriangles:triangles,wholeTrees:treeCount,bufferUploads:uploads})};
+  function commit(){
+   passes++;next.fill(0);dirty.fill(initialized?0:1);
+   // The actual rendered eye owns range culling. A 100 ms old tile-light map
+   // must not hide foliage after a camera turn, lean, teleport or spectator pan.
+   const cx=prepared?localEye.x:mapX,cz=prepared?localEye.z:mapZ,r=hasRange?range+guard:Infinity,r2=r*r;
+   collect(cx,cz,r);
+   for(const id of candidates){
+    const o=objects[id],b=o.box,dx=hasRange?Math.max(b.min.x-cx,0,cx-b.max.x):0,dz=hasRange?Math.max(b.min.z-cz,0,cz-b.max.z):0;
+    if(hasRange&&dx*dx+dz*dz>r2)continue;
+    if(prepared&&!preserveShadows&&!frustum.intersectsBox(b))continue;
+    let far=lodState[id];if(hasRange){const x=Math.max(b.min.x-mapX,0,mapX-b.max.x),z=Math.max(b.min.z-mapZ,0,mapZ-b.max.z),d=x*x+z*z;if(d>400)far=1;else if(d<324)far=0;}else far=0;
+    lodState[id]=far;next[id]=far?2:1;
+   }
+   let changed=!initialized;treeCount=0;
+   for(let id=0;id<objects.length;id++){if(next[id]&&objects[id].tree)treeCount++;if(next[id]===current[id])continue;changed=true;for(const def of objects[id].definitions)dirty[def]=1;}
+   if(changed){
+    uploads++;
+    for(const def of definitions){if(!dirty[def.id])continue;const levels=meshes[def.id];for(const mesh of levels)expected.set(mesh,0);
+     for(const row of def.renderRows){const state=next[row.object];if(!state)continue;const mesh=levels[def.far&&state===2?1:0],i=expected.get(mesh);expected.set(mesh,i+1);mesh.instanceMatrix.array.set(row.packed,i*16);if(row.packedColor)mesh.instanceColor.array.set(row.packedColor,i*3);}
+     for(const mesh of levels){const count=expected.get(mesh);if(!count)continue;mesh.instanceMatrix.clearUpdateRanges();mesh.instanceMatrix.addUpdateRange(0,count*16);mesh.instanceMatrix.needsUpdate=true;bufferUpdates++;uploadedFloats+=count*16;if(mesh.instanceColor){mesh.instanceColor.clearUpdateRanges();mesh.instanceColor.addUpdateRange(0,count*3);mesh.instanceColor.needsUpdate=true;uploadedFloats+=count*3;}}
+    }
+    const previous=current;current=next;next=previous;
+    visible=draws=triangles=0;for(const mesh of allMeshes){const count=expected.get(mesh);if(!count)continue;visible+=count;draws++;triangles+=count*(mesh.geometry.index?.count||mesh.geometry.attributes.position.count)/3;}
+   }
+   initialized=true;pending=false;restore();
+  }
+  function select(map){
+   const p=map?.suburbView,has=!!p;
+   if(!initialized||hasRange!==has||has&&(mapX!==p.x||mapZ!==p.z||range!==p.range||guard!==(p.guard||0)))pending=true;
+   lastMap=map;hasRange=has;if(p){mapX=p.x;mapZ=p.z;range=p.range;guard=p.guard||0;}
+   // Initialize once for cloning/preparation. Thereafter commit immediately
+   // before the draw, with THIS camera, rather than uploading for stale frusta.
+   if(!initialized)commit();
+  }
+  function prepare(camera,preserveSunShadows=false){
+   camera.updateWorldMatrix(true,false);view.updateWorldMatrix(true,false);eye.setFromMatrixPosition(camera.matrixWorld);
+   const sameView=viewMatrix.equals(view.matrixWorld),sameEye=eye.x===lastEyeX&&eye.y===lastEyeY&&eye.z===lastEyeZ;
+   const sameCamera=prepared&&preserveShadows===!!preserveSunShadows&&sameView&&sameEye&&(preserveSunShadows||cameraMatrix.equals(camera.matrixWorld)&&cameraProjection.equals(camera.projectionMatrix));
+   if(!pending&&sameCamera){restore();return;}
+   cameraMatrix.copy(camera.matrixWorld);cameraProjection.copy(camera.projectionMatrix);viewMatrix.copy(view.matrixWorld);inverseView.copy(viewMatrix).invert();localEye.copy(eye).applyMatrix4(inverseView);
+   lastEyeX=eye.x;lastEyeY=eye.y;lastEyeZ=eye.z;preserveShadows=!!preserveSunShadows;prepared=true;
+   projection.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse).multiply(view.matrixWorld);frustum.setFromProjectionMatrix(projection);
+   // A conservative half-metre guard avoids grazing-plane flicker. Whole-tree
+   // bounds already include every trunk, branch and canopy; LOD detail is unchanged.
+   for(const plane of frustum.planes)plane.constant+=.5;
+   commit();
+  }
+  return{select,prepare,stats:()=>({visibleInstances:visible,submittedInstances:visible,capacity:rows.length,visibleDrawCalls:draws,submittedTriangles:triangles,wholeTrees:treeCount,bufferUploads:uploads,instanceBufferUpdates:bufferUpdates,uploadedFloats,selectionPasses:passes,candidateBuilds,selectionRestores:restores})};
  }
+
  return{selector,definitions:definitions.length,capacity:rows.length,objects,dispose(){for(const source of sources)source.dispose();}};
 }
 
-function sumSuburbStats(a,b){return{visibleInstances:a.visibleInstances+b.visibleInstances,submittedInstances:a.submittedInstances+b.submittedInstances,capacity:a.capacity+b.capacity,visibleDrawCalls:a.visibleDrawCalls+b.visibleDrawCalls,compactedLandscapeTriangles:b.submittedTriangles,wholeTrees:b.wholeTrees,bufferUploads:b.bufferUploads};}
+function sumSuburbStats(a,b){return{visibleInstances:a.visibleInstances+b.visibleInstances,submittedInstances:a.submittedInstances+b.submittedInstances,capacity:a.capacity+b.capacity,visibleDrawCalls:a.visibleDrawCalls+b.visibleDrawCalls,compactedLandscapeTriangles:b.submittedTriangles,wholeTrees:b.wholeTrees,bufferUploads:b.bufferUploads,instanceBufferUpdates:b.instanceBufferUpdates,uploadedFloats:b.uploadedFloats,selectionPasses:b.selectionPasses,candidateBuilds:b.candidateBuilds,selectionRestores:b.selectionRestores};}
 
 function layout(level,seed=level.seed,theme='suburb',players=1){
  const furniture=[],beds=[],colliders=[],loot=[],lights=[],lightSwitches=[],pantries=[],r=R('suburban-interiors-v5:'+seed),rooms=level.survivalRooms;
@@ -264,10 +325,16 @@ function layout(level,seed=level.seed,theme='suburb',players=1){
  for(const p of level.suburb.picnicSites||[]){const source={id:p.id,yaw:0};pickup(source,'water',{x:p.x*4+.3,z:p.z*4},.82,'picnic-table');pickup(source,'food',{x:p.x*4-.4,z:p.z*4},.82,'picnic-table');}
  return{version:2,sourceSeed:seed,seed:H(seed).toString(36),theme:'suburb',rooms,interiorRooms:rooms.flatMap(q=>q.interiorRooms),beds,furniture,colliders,loot,lights,lightSwitches,wardrobes:[],pantries,supplyLedges:[],supplyPlayers:players,supplyTargets:{food:rooms.length+2,water:rooms.length+3,battery:rooms.length}};
 }
+// Surface images are deterministic and never edited after generation. Keep a
+// bounded CPU-side cache; each builder still owns/disposes its own GPU textures.
+const suburbSurfaceImages=new Map(),SUBURB_IMAGE_CACHE_LIMIT=64;
 function kit(T,label){
  const resources={geometries:new Set(),materials:new Set(),textures:new Set()},own=(s,v)=>(s.add(v),v),geos={box:own(resources.geometries,new T.BoxGeometry(1,1,1)),cylinder:own(resources.geometries,new T.CylinderGeometry(1,1,1,12)),sphere:own(resources.geometries,new T.SphereGeometry(1,12,8)),cone:own(resources.geometries,new T.ConeGeometry(1,1,10)),torus:own(resources.geometries,new T.TorusGeometry(1,.12,6,20)),plane:own(resources.geometries,new T.PlaneGeometry(1,1))};
  const sh=new T.Shape();sh.moveTo(-.42,-.5);sh.lineTo(.42,-.5);sh.quadraticCurveTo(.5,-.5,.5,-.42);sh.lineTo(.5,.42);sh.quadraticCurveTo(.5,.5,.42,.5);sh.lineTo(-.42,.5);sh.quadraticCurveTo(-.5,.5,-.5,.42);sh.lineTo(-.5,-.42);sh.quadraticCurveTo(-.5,-.5,-.42,-.5);const bevel=own(resources.geometries,new T.ExtrudeGeometry(sh,{depth:.92,bevelEnabled:true,bevelThickness:.04,bevelSize:.035,bevelSegments:2,steps:1,curveSegments:3}));bevel.translate(0,0,-.46);geos.bevel=bevel;
- function texture(kind,color){const size=256,pix=new Uint8Array(size*size*4),r=R('suburb-surface:'+kind+':'+color),base=new T.Color(color),rgb=[base.r,base.g,base.b].map(v=>Math.round(Math.pow(v,1/2.2)*255));for(let y=0;y<size;y++)for(let x=0;x<size;x++){const i=(y*size+x)*4;let v=(r()-.5)*.14;
+ function texture(kind,color){
+  const imageKey=kind+':'+color+':'+(root.document?.createElement?'canvas':'data'),cached=suburbSurfaceImages.get(imageKey);
+  if(cached){const map=cached.canvas?new T.CanvasTexture(cached.image):new T.DataTexture(cached.image.data,cached.image.width,cached.image.height,T.RGBAFormat);map.wrapS=map.wrapT=T.RepeatWrapping;map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;map.needsUpdate=true;return own(resources.textures,map);}
+  const size=256,pix=new Uint8Array(size*size*4),r=R('suburb-surface:'+kind+':'+color),base=new T.Color(color),rgb=[base.r,base.g,base.b].map(v=>Math.round(Math.pow(v,1/2.2)*255));for(let y=0;y<size;y++)for(let x=0;x<size;x++){const i=(y*size+x)*4;let v=(r()-.5)*.14;
    if(kind==='brick'){const row=Math.floor(y/32),u=(x+(row%2)*64)%128,vy=y%32;v+=(u<3||vy<3)?.30:Math.sin(row*1.7+Math.floor((x+(row%2)*64)/128)*4)*.15+(r()<.035?-.20:0);}
    if(kind==='clapboard'){const yb=y%32;v+=yb<2?-.43:yb<5?.12:-(yb/32)*.045+Math.sin(x*.05+y*.7)*.018;}
    if(kind==='shingle'){const row=Math.floor(y/32),u=(x+(row%2)*21)%64;v+=(y%32<3||u<2)?-.45:Math.sin(row*23+Math.floor((x+(row%2)*21)/64)*31)*.13;}
@@ -283,7 +350,9 @@ function kit(T,label){
    if(kind==='floral'){const dx=(x%64)-32,dy=(y%64)-32,r=Math.hypot(dx,dy);v+=(Math.abs(r-13-4*Math.sin(Math.atan2(dy,dx)*5))<2?-.26:0);}
    for(let c=0;c<3;c++)pix[i+c]=Math.max(0,Math.min(255,Math.round(rgb[c]*(1+v))));pix[i+3]=255;
   }
-  let map;if(root.document?.createElement){const canvas=root.document.createElement('canvas');canvas.width=canvas.height=size;const ctx=canvas.getContext('2d'),im=ctx.createImageData(size,size);im.data.set(pix);ctx.putImageData(im,0,0);if(kind==='grass'){for(let n=0;n<3800;n++){const x=r()*size,y=r()*size,l=2+r()*8;ctx.strokeStyle=n%3?'rgba(24,48,20,.25)':'rgba(175,185,101,.27)';ctx.lineWidth=.45+r()*.65;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+(r()-.5)*5,y-l*.55,x+(r()-.5)*7,y-l);ctx.stroke();}}map=new T.CanvasTexture(canvas);}else map=new T.DataTexture(pix,size,size,T.RGBAFormat);map.wrapS=map.wrapT=T.RepeatWrapping;map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;map.needsUpdate=true;return own(resources.textures,map);
+  let map;if(root.document?.createElement){const canvas=root.document.createElement('canvas');canvas.width=canvas.height=size;const ctx=canvas.getContext('2d'),im=ctx.createImageData(size,size);im.data.set(pix);ctx.putImageData(im,0,0);if(kind==='grass'){for(let n=0;n<3800;n++){const x=r()*size,y=r()*size,l=2+r()*8;ctx.strokeStyle=n%3?'rgba(24,48,20,.25)':'rgba(175,185,101,.27)';ctx.lineWidth=.45+r()*.65;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+(r()-.5)*5,y-l*.55,x+(r()-.5)*7,y-l);ctx.stroke();}}map=new T.CanvasTexture(canvas);}else map=new T.DataTexture(pix,size,size,T.RGBAFormat);map.wrapS=map.wrapT=T.RepeatWrapping;map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;map.needsUpdate=true;
+  if(suburbSurfaceImages.size>=SUBURB_IMAGE_CACHE_LIMIT)suburbSurfaceImages.delete(suburbSurfaceImages.keys().next().value);
+  suburbSurfaceImages.set(imageKey,{image:map.image,canvas:!!root.document?.createElement});return own(resources.textures,map);
  }
  const mats={},mat=(name,color,kind=null,extra={})=>{const m=own(resources.materials,new T.MeshStandardMaterial({color:kind?0xffffff:color,roughness:.86,...(kind?{map:texture(kind,color)}:{}),...extra}));m.name=label+' / '+name;if(kind){m.onBeforeCompile=s=>{s.vertexShader='varying vec3 vSubWorld; varying vec3 vSubNormal;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <worldpos_vertex>',`#include <worldpos_vertex>
 vec4 subP=vec4(transformed,1.0);vec3 subN=normal;
@@ -704,6 +773,9 @@ function suburbanFixtureKit(T,k){
  return{addFixture,addSwitch};
 }
 
+function freezeSuburbLocalTransforms(group){
+ group.traverse(o=>{if(o.userData.dynamicTransform||o.isSkinnedMesh||o.isBone)return;o.updateMatrix();o.matrixAutoUpdate=false;});
+}
 function buildHouses(T,data){
  const k=kit(T,'Suburban interiors'),group=new T.Group(),roomGroups=[],beds=[],flashlightFurniture=[],footstepSurfaces=[],pantries=[],waterSources=[],curtains=[],curtainBarriers=[],lightSwitches=[],fixtureKit=suburbanFixtureKit(T,k);group.name='Furnished suburban interiors';
  const sectionAt=(room,c)=>room.sections.find(s=>s.cells.some(p=>p.x===c.x&&p.z===c.z));
@@ -743,6 +815,9 @@ function buildHouses(T,data){
     roomGroups.push({id:s.id,roomId:room.id,kind:'house-section',cells:s.cells,group:sg});
    }
  }
+ // Only LOCAL transforms are cached. Parent/world transforms, LOD visibility,
+ // moving doors, blinds, drawers, water and rocker animations remain live.
+ freezeSuburbLocalTransforms(group);
  let disposed=false;return{group,roomGroups,beds,wardrobes:[],curtains,curtainBarriers,pantries,waterSources,lightSwitches,flashlightFurniture,footstepSurfaces,colliders:data.colliders,lights:data.lights,layout:data,dispose(){if(disposed)return;disposed=true;group.removeFromParent();group.traverse(o=>{if(o.isInstancedMesh)o.dispose();});group.clear();k.dispose();}};
 }
 
@@ -948,7 +1023,7 @@ root.MazeSuburbCollision=Object.freeze({index,outsideHeight});
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze — Hollow Pines · Safe Closet Doors &amp; Pickup Prompts</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze — Hollow Pines · Performance &amp; Foliage Fix</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
 <style id="maze-boot-style">html,body{margin:0;min-height:100%;background:#070d0e}
 #maze-boot{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:28px;color:#dce9e2;background:radial-gradient(ellipse at 48% 40%,#18333780,transparent 66%),repeating-linear-gradient(0deg,#91c5bc04 0 1px,transparent 1px 4px),#070d0e;font:14px/1.5 Arial,Helvetica,sans-serif;box-sizing:border-box;color-scheme:dark}
 #maze-boot *{box-sizing:border-box}#maze-boot-panel{width:min(430px,100%);border-top:1px solid #729b9670;padding-top:25px}#maze-boot-brand{margin:0 0 34px;color:#c9dcc2;letter-spacing:.19em;font-size:13px;font-weight:700}#maze-boot-brand b{float:right;color:#6f9792;font-size:11px;font-weight:400;letter-spacing:.08em}#maze-boot h1{margin:0 0 7px;font-size:24px;font-weight:400;letter-spacing:-.02em}#maze-boot-meta{min-height:22px;margin:0;color:#91b2ac;font-size:12px}#maze-boot-track{height:11px;margin:25px 0 11px;border:1px solid #4f716b;background:#050b0c;padding:2px;box-shadow:inset 0 1px 3px #0009}#maze-boot-fill{height:5px;width:0;background:#b7d9a1;box-shadow:0 0 10px #a9d49735}#maze-boot-bottom{display:flex;justify-content:space-between;gap:16px;color:#75928d;font-size:12px;font-variant-numeric:tabular-nums}#maze-boot-percent{color:#c3d9b9}#maze-boot-retry{margin-top:22px;padding:9px 18px;border:1px solid #7caaa2;background:#18332e;color:#daebdf;font:inherit;cursor:pointer}#maze-boot-retry[hidden]{display:none}#maze-boot-note{margin:25px 0 0;color:#5e7a76;font-size:11px}#maze-boot[data-error] #maze-boot-fill{background:#d4967f}</style><style id="maze-voice-style">
@@ -7689,11 +7764,13 @@ const NAV_DIRECTIONS=[...DIRS,[1,1],[1,-1],[-1,1],[-1,-1]];
 // Exact segment/box distance keeps thin doors and rounded wall corners solid;
 // point-ray visibility alone is not enough clearance for a body.
 function capsuleHitsBox(a,b,r,box){
+ // Reject in world-space FIRST, including rotated doors. Far-away articulated
+ // leaves previously allocated and transformed two endpoints on every query.
+ if(Math.max(a.x,b.x)+r<=box.minX||Math.min(a.x,b.x)-r>=box.maxX||Math.max(a.z,b.z)+r<=box.minZ||Math.min(a.z,b.z)-r>=box.maxZ)return false;
  // Curved bath walls share an oriented face with collision and sight. Rotate
  // the swept capsule into that face, leaving ordinary axis-aligned boxes fast.
  if(box.collisionOBB){const o=box.collisionOBB,local=p=>{const x=p.x-o.x,z=p.z-o.z;return{x:x*o.ux+z*o.uz,z:-x*o.uz+z*o.ux};};return capsuleHitsBox(local(a),local(b),r,{minX:-o.halfWidth,maxX:o.halfWidth,minZ:-o.halfDepth,maxZ:o.halfDepth});}
  const dx=b.x-a.x,dz=b.z-a.z;
- if(Math.max(a.x,b.x)+r<=box.minX||Math.min(a.x,b.x)-r>=box.maxX||Math.max(a.z,b.z)+r<=box.minZ||Math.min(a.z,b.z)-r>=box.maxZ)return false;
  if(circleAABB(a.x,a.z,r,box)||circleAABB(b.x,b.z,r,box))return true;
  let near=0,far=1;
  for(const [origin,direction,min,max]of[[a.x,dx,box.minX,box.maxX],[a.z,dz,box.minZ,box.maxZ]]){
@@ -7741,7 +7818,7 @@ function enemyCapsuleClear(level,a,b,colliders=level.roomColliders||level.safeCo
  return true;
 }
 const navigationPortalLists=new WeakMap();
-function navigationPortals(level){let cached=navigationPortalLists.get(level);if(!cached||cached.rooms!==level.survivalRooms||cached.layout!==level.survivalLayout){cached={rooms:level.survivalRooms,layout:level.survivalLayout,doors:(level.survivalRooms||[]).flatMap(room=>survivalDoors(room,true))};navigationPortalLists.set(level,cached);}return cached.doors;}
+function navigationPortals(level){let cached=navigationPortalLists.get(level);if(!cached||cached.rooms!==level.survivalRooms||cached.layout!==level.survivalLayout){cached={rooms:level.survivalRooms,layout:level.survivalLayout,doors:[...new Set((level.survivalRooms||[]).flatMap(room=>survivalDoors(room,true)))]};navigationPortalLists.set(level,cached);}return cached.doors;}
 
 function enemyNavigationClear(level,a,b,colliders=level.roomColliders||level.safeColliders||[]){
  if(!a||!b)return false;
@@ -8147,6 +8224,7 @@ function rayClear(level, x1, z1, x2, z2, { targetSolid = false, allowSafe = fals
 
 function wallTransmission(level,a,b){const dx=b.x-a.x,dz=b.z-a.z,n=Math.ceil(Math.hypot(dx,dz)/.6),seen=new Set();let walls=0;for(let i=1;i<n;i++){const x=tileAt(a.x+dx*i/n),z=tileAt(a.z+dz*i/n),k=key(x,z);if(seen.has(k))continue;seen.add(k);if(blocksSight(level,x,z))walls++;}return Math.min(1,walls*.28);}
 function circleAABB(x,z,r,b){
+ if(x+r<b.minX||x-r>b.maxX||z+r<b.minZ||z-r>b.maxZ)return false;
  if(b.collisionPolygon){
   if(x+r<b.minX||x-r>b.maxX||z+r<b.minZ||z-r>b.maxZ)return false;
   let positive=false,negative=false,nearest=Infinity;const p=b.collisionPolygon;
@@ -8576,7 +8654,21 @@ function enemyReplan(level,e,target){
  const{start:anchor,route}=step.result;return Math.hypot(e.x-anchor.x,e.z-anchor.z)>.001?[{x:anchor.x,z:anchor.z,...(anchor.serviceDoorId?{serviceDoorId:anchor.serviceDoorId}:{})},...route]:route;
 }
 
+const suburbNavigationStamps=new WeakMap();let suburbNavigationStampSerial=0;
+function suburbNavigationStamp(level){
+ const portals=navigationPortals(level),closets=level.houseSecurity?.closets,source=level.roomColliders;
+ let cache=suburbNavigationStamps.get(level);
+ if(!cache||cache.portals!==portals||cache.closets!==closets||cache.closetCount!==(closets?.length||0)||cache.source!==source||cache.count!==(source?.length||0)){
+  const doors=[...new Set([level.safe,...(level.closets||[]).flatMap(c=>c.doors||[c]),...portals,...(level.featureRooms||[]).map(r=>r.door),...(level.maintenance?.doors||[]),...(level.forest?.wardrobes||[]),...(closets||[]).map(c=>c.p)].filter(Boolean))];
+  cache={portals,closets,closetCount:closets?.length||0,source,count:source?.length||0,doors,flags:new Int16Array(doors.length).fill(-1),swings:new Array(doors.length),token:0};suburbNavigationStamps.set(level,cache);
+ }
+ const exit=level.exit?.passable===false?0:1,garden=level.garden?.revision||0;let changed=cache.exit!==exit||cache.garden!==garden;
+ cache.exit=exit;cache.garden=garden;
+ for(let i=0;i<cache.doors.length;i++){const d=cache.doors[i],flags=(d.doorPassable?1:0)|(d.securityLocked?2:0)|(d.doorLocked?4:0)|(d.doorLockPending?8:0)|(d.doorBroken?16:0),swing=d.doorSwing||1;if(cache.flags[i]!==flags||cache.swings[i]!==swing){cache.flags[i]=flags;cache.swings[i]=swing;changed=true;}}
+ if(changed||!cache.token)cache.token=++suburbNavigationStampSerial;return cache.token;
+}
 function enemyNavigationStamp(level){
+ if(level.suburb)return suburbNavigationStamp(level);
  const parts=[level.exit?.passable===false?0:1,level.garden?.revision||0];
  const add=d=>{if(d)parts.push(d.id||'',d.doorPassable?1:0,d.securityLocked?1:0,d.doorLocked?1:0,d.doorLockPending?1:0,d.doorBroken?1:0,d.doorSwing||1);};
  add(level.safe);for(const c of level.closets||[])for(const d of c.doors||[c])add(d);for(const room of level.survivalRooms||[])for(const d of survivalDoors(room,true))add(d);for(const room of level.featureRooms||[])add(room.door);for(const d of level.maintenance?.doors||[])add(d);for(const d of level.forest?.wardrobes||[])add(d);for(const c of level.houseSecurity?.closets||[])add(c.p);
@@ -9114,7 +9206,9 @@ function backroomsGridRayClear(grid,x1,z1,x2,z2){
 // No camera-angle, LOS, fading-memory or expiry feedback can toggle a stationary
 // floor/corner. Native frustum culling handles screen edges, inside opaque fog.
 function suburbTileVisibility(level,player,time,memory,options={}){
- const index=visibilityIndex(level),result=new Map(),range=Math.min(40,Number.isFinite(options.range)?Math.max(8,options.range):40),guard=1;
+ const index=visibilityIndex(level),range=Math.min(40,Number.isFinite(options.range)?Math.max(8,options.range):40),guard=1,cache=index.suburbLastVisibility;
+ if(cache&&cache.tiles===level.tiles&&cache.tileCount===level.tiles.length&&cache.x===player.x&&cache.z===player.z&&cache.range===range&&cache.result.size===cache.size){memory?.clear();if(options.stats)Object.assign(options.stats,cache.stats,{reused:true});return cache.result;}
+ const result=new Map();
  result.suburbView={x:player.x,z:player.z,range,guard};
  if(!index.suburbRenderRows){index.suburbRenderRows=new Map();for(const t of level.tiles){let row=index.suburbRenderRows.get(t.z);if(!row){row=[];index.suburbRenderRows.set(t.z,row);}row.push({key:key(t.x,t.z),x:t.x*CELL,z:t.z*CELL});}}
  let candidates=0;
@@ -9125,7 +9219,9 @@ function suburbTileVisibility(level,player,time,memory,options={}){
  // The one-metre guard covers movement between 100 ms updates. Fully-hidden
  // objects are rejected by their own bounds and the actual camera far plane.
  memory?.clear();
- if(options.stats)Object.assign(options.stats,{candidates,rays:0,direct:result.size,active:result.size,remembered:0,range,algorithm:'foggy-pines-stable-radius'});
+ const stats={candidates,rays:0,direct:result.size,active:result.size,remembered:0,range,algorithm:'foggy-pines-stable-radius',reused:false};
+ index.suburbLastVisibility={tiles:level.tiles,tileCount:level.tiles.length,x:player.x,z:player.z,range,result,size:result.size,stats};
+ if(options.stats)Object.assign(options.stats,stats);
  return result;
 }
 
@@ -22903,8 +22999,9 @@ class MazeFlashlightOcclusion {
  }
  _syncDoors(state){
   let changed=this.doorLevel!==state.level;if(changed)this._buildDoors(state);
-  const bounds=this.boundsScratch,matrix=this.matrixScratch;
-  for(const row of this.doorRows){row.source.updateWorldMatrix(true,false);const active=row.source.visible!==false,version=row.instanced?row.source.instanceMatrix.version:0;if(active===row.active&&row.matrix.equals(row.source.matrixWorld)&&version===row.version)continue;
+  const bounds=this.boundsScratch,matrix=this.matrixScratch,synced=this.doorMatrixSynced||(this.doorMatrixSynced=new Set());synced.clear();
+  const sync=o=>{if(!o||synced.has(o))return;sync(o.parent);o.updateWorldMatrix(false,false);synced.add(o);};
+  for(const row of this.doorRows){sync(row.source);const active=row.source.visible!==false,version=row.instanced?row.source.instanceMatrix.version:0;if(active===row.active&&row.matrix.equals(row.source.matrixWorld)&&version===row.version)continue;
    row.active=active;row.version=version;row.matrix.copy(row.source.matrixWorld);row.mesh.matrix.copy(row.matrix);
    if(row.instanced){row.mesh.count=row.source.count;row.bounds.makeEmpty();for(let i=0;i<row.source.count;i++){row.source.getMatrixAt(i,matrix);matrix.premultiply(row.matrix);bounds.copy(row.source.geometry.boundingBox).applyMatrix4(matrix);row.bounds.union(bounds);}}
    else row.bounds.copy(row.mesh.geometry.boundingBox).applyMatrix4(row.matrix);changed=true;
@@ -24637,7 +24734,18 @@ function weatherLighting(T,level,resources){
   };
   m.customProgramCacheKey=function(){return(cacheKey?.call(this)||'')+'|weather-world-light-v1';};m.needsUpdate=true;return m;
  }
+ const suburbPixels=level.suburb?new Map():null,suburbActive=[],suburbNext=[],suburbMarks=level.suburb?new Uint32Array(width*height):null;
+ if(suburbPixels)for(let z=0;z<height;z++)for(let x=0;x<width;x++)suburbPixels.set(key(x+minX,z+minZ),z*width+x);
+ let suburbInitialized=false,suburbSerial=0,suburbMap,suburbMapSize=-1;
  function setTileVisibility(lightMap){
+  if(suburbPixels){
+   if(suburbInitialized&&lightMap===suburbMap&&(lightMap?.size||0)===suburbMapSize)return;
+   let changed=false;if(!suburbInitialized){for(let i=0;i<pixels.length;i+=4)pixels[i]=pixels[i+1]=pixels[i+2]=0;suburbInitialized=true;changed=true;}
+   suburbMap=lightMap;suburbMapSize=lightMap?.size||0;if(++suburbSerial>=4294967295){suburbMarks.fill(0);suburbSerial=1;}suburbNext.length=0;
+   for(const [k,value]of lightMap||[]){const cell=suburbPixels.get(k);if(cell===undefined||!(value>0))continue;const v=Math.round(Math.max(.025,Math.min(1,Math.round(value*40)/40))*255),i=cell*4;suburbMarks[cell]=suburbSerial;suburbNext.push(cell);if(pixels[i]!==v){pixels[i]=pixels[i+1]=pixels[i+2]=v;changed=true;}}
+   for(const cell of suburbActive)if(suburbMarks[cell]!==suburbSerial){const i=cell*4;if(pixels[i]){pixels[i]=pixels[i+1]=pixels[i+2]=0;changed=true;}}
+   suburbActive.length=0;for(const cell of suburbNext)suburbActive.push(cell);if(changed)texture.needsUpdate=true;return;
+  }
   // One small reusable texture per storm; no per-drop lights or raycasts.
   let changed=false;for(let z=0;z<height;z++)for(let x=0;x<width;x++){
    const value=lightMap?.get(key(x+minX,z+minZ))||0,v=value>0?Math.round(Math.max(.025,Math.min(1,Math.round(value*40)/40))*255):0,i=(z*width+x)*4;
@@ -25390,9 +25498,9 @@ function hardware(T,records,doorById,parent){
   }
   mergeFixedTree(rg);
  }
- let disposed=false;return{group,render(time,listener){for(const rec of records){const v=rec.visual;if(!v)continue;v.group.visible=!listener||rec.room.cells.some(c=>Math.hypot(listener.x-c.x*4,listener.z-c.z*4)<48);if(!v.group.visible)continue;const sounding=rec.status===STATUS.QUEUED||rec.status===STATUS.SEARCHING;v.lensMat.color.setHex(sounding?0xdd291d:rec.locked?0xa45b24:rec.status===STATUS.CLEAR?0x599374:0x704c30);v.lensMat.emissive.setHex(sounding?0xd8160d:rec.locked?0x803300:0x192e20);v.lensMat.emissiveIntensity=sounding?.35+.65*(.5+.5*Math.sin(time*5.5)):.10;
-   for(const b of v.bolts)b.mesh.position.x=b.door.securityLocked&&!b.door.doorBroken?-.13:-.035;
-   for(const t of v.triggers){const spent=!!(rec.spentMask&(1<<t.index));if(t.cable)t.cable.visible=!spent;for(const led of t.leds||[])led.visible=!spent;}
+ let disposed=false;return{group,render(time,listener){for(const rec of records){const v=rec.visual;if(!v)continue;v.group.visible=!listener||rec.room.cells.some(c=>Math.hypot(listener.x-c.x*4,listener.z-c.z*4)<48);if(!v.group.visible)continue;const sounding=rec.status===STATUS.QUEUED||rec.status===STATUS.SEARCHING;if(v.status!==rec.status||v.locked!==rec.locked){v.status=rec.status;v.locked=rec.locked;v.lensMat.color.setHex(sounding?0xdd291d:rec.locked?0xa45b24:rec.status===STATUS.CLEAR?0x599374:0x704c30);v.lensMat.emissive.setHex(sounding?0xd8160d:rec.locked?0x803300:0x192e20);}v.lensMat.emissiveIntensity=sounding?.35+.65*(.5+.5*Math.sin(time*5.5)):.10;
+   for(const b of v.bolts){const x=b.door.securityLocked&&!b.door.doorBroken?-.13:-.035;if(b.mesh.position.x!==x)b.mesh.position.x=x;}
+   if(v.spentMask!==rec.spentMask){v.spentMask=rec.spentMask;for(const t of v.triggers){const spent=!!(rec.spentMask&(1<<t.index));if(t.cable)t.cable.visible=!spent;for(const led of t.leds||[])led.visible=!spent;}}
   }},dispose(){if(disposed)return;disposed=true;for(const g of movingContacts)g.removeFromParent();group.removeFromParent();group.clear();for(const g of geometries)g.dispose();for(const m of materials)m.dispose();}};
 }
 class AlarmAudio{
@@ -25545,10 +25653,19 @@ class HouseSecurity{
   return false;
  }
  _move(e,p,speed,dt,time){e.state='investigating';e.chasing=false;e.lastTarget={x:p.x,z:p.z};e.investigateUntil=time+4;e.houseSearchId=this.active?.room.id||null;C().moveEnemyToward(this.level,e,p,speed,dt);}
- _section(room,p){const s=room.sections.find(s=>inSection(s,p));return s?.kind==='hiding-closet'?room.sections.find(q=>q.id===s.parentBedroomId):s;}
- _sectionRoute(room,start,end){if(start===end)return[];const graph=new Map(room.sections.map(s=>[s.id,[]]));for(const q of room.interiorRooms){const d=q.door,[a,b]=d.sectionIds||[];if(graph.has(a)&&graph.has(b)){graph.get(a).push({next:b,door:d});graph.get(b).push({next:a,door:d});}}
+ _topology(room){
+  this.topology??=new WeakMap();let entry=this.topology.get(room);
+  if(entry&&entry.sections===room.sections&&entry.interiors===room.interiorRooms&&entry.sectionCount===room.sections.length&&entry.interiorCount===room.interiorRooms.length)return entry;
+  const byId=new Map(room.sections.map(s=>[s.id,s])),cells=new Map(),graph=new Map(room.sections.map(s=>[s.id,[]]));
+  for(const s of room.sections)for(const c of s.cells){const k=K(c.x,c.z);if(!cells.has(k))cells.set(k,s.kind==='hiding-closet'?byId.get(s.parentBedroomId):s);}
+  for(const q of room.interiorRooms){const d=q.door,[a,b]=d.sectionIds||[];if(graph.has(a)&&graph.has(b)){graph.get(a).push({next:b,door:d});graph.get(b).push({next:a,door:d});}}
+  entry={sections:room.sections,interiors:room.interiorRooms,sectionCount:room.sections.length,interiorCount:room.interiorRooms.length,cells,graph,routes:new Map()};this.topology.set(room,entry);return entry;
+ }
+ _section(room,p){return this._topology(room).cells.get(K(Math.floor(p.x/4+.5),Math.floor(p.z/4+.5)));}
+ _sectionRoute(room,start,end){if(start===end)return[];const topology=this._topology(room),graph=topology.graph,key=start+'|'+end;
+  if(topology.routes.has(key)){const route=topology.routes.get(key);return route?route.map(e=>({...e})):null;}
   const queue=[start],prev=new Map([[start,null]]);for(let n=0;n<queue.length;n++){const id=queue[n];if(id===end)break;for(const edge of graph.get(id)||[])if(!prev.has(edge.next)){prev.set(edge.next,{from:id,door:edge.door});queue.push(edge.next);}}
-  if(!prev.has(end))return null;const route=[];for(let id=end;id!==start;){const e=prev.get(id);route.push({doorId:e.door.id,from:e.from,to:id});id=e.from;}return route.reverse();
+  if(!prev.has(end)){topology.routes.set(key,null);return null;}const route=[];for(let id=end;id!==start;){const e=prev.get(id);route.push({doorId:e.door.id,from:e.from,to:id});id=e.from;}route.reverse();topology.routes.set(key,route);return route.map(e=>({...e}));
  }
  _doorTask(p,fromPoint){const sign=(fromPoint.x-p.x)*p.dx+(fromPoint.z-p.z)*p.dz>=0?1:-1;return{kind:'door',doorId:p.id,approach:{x:p.x+p.dx*sign*.98,z:p.z+p.dz*sign*.98},cross:{x:p.x-p.dx*sign*.98,z:p.z-p.dz*sign*.98},stage:'approach',breachAt:null,lastAt:0};}
  _portalPoint(p,base,e){
@@ -28947,6 +29064,13 @@ function updateHidingClosetDoors(dt,players=survivalPlayers()){
   }
  }
 }
+const suburbanRoomLightValues=new WeakMap();
+function suburbanRoomVisibility(group,cells,map){
+ let cached=suburbanRoomLightValues.get(group);
+ if(!cached||cached.cells!==cells||cached.count!==cells.length){cached={cells,count:cells.length,keys:cells.map(c=>C.key(c.x,c.z)),map:null,size:-1,value:1};suburbanRoomLightValues.set(group,cached);}
+ if(cached.map!==map||cached.size!==map.size){cached.map=map;cached.size=map.size;let value=cells.length?0:1;for(const key of cached.keys)value=Math.max(value,map.get(key)||0);cached.value=value;}
+ return cached.value;
+}
 function survivalRender(dt){
  for(const curtain of state.survivalWorld?.curtains||[])if(curtain.update(dt)){state.shadowDirty=true;interactionCache=null;}
  for(const pantry of state.survivalWorld?.pantries||[]){if(pantry.authoritativeMotion&&(!mp||mp.net.isHost))continue;if(pantry.update(dt,[],state.level,false)){state.shadowDirty=true;interactionCache=null;}}
@@ -28965,7 +29089,7 @@ function survivalRender(dt){
  if(wasSleeping&&!sleeping&&!p.dead&&!mp?.dead&&state.mode==='playing'){resetMovementInput();requestLock();}
  if(survivalLootId){const data=survivalCorpseState(survivalLootId);if(!data||!survivalCorpseReachable(p,data.corpse)||mp?.dead)survivalCloseLoot(false);else survivalUI?.updateCorpse(data);}
  const world=state.survivalWorld;
- for(const room of world?.roomGroups||[]){const group=room.group||room,cells=room.cells||room.userData?.cells||[];shadeGroup(group,cells.length?Math.max(0,...cells.map(c=>state.lights.get(C.key(c.x,c.z))||0)):1);}
+ for(const room of world?.roomGroups||[]){const group=room.group||room,cells=room.cells||room.userData?.cells||[];shadeGroup(group,state.level?.suburb?suburbanRoomVisibility(group,cells,state.lights):(cells.length?Math.max(0,...cells.map(c=>state.lights.get(C.key(c.x,c.z))||0)):1));}
  for(const living of mp?[...mp.players.values()]:[p])if(!living.dead&&living.alive!==false)survivalPoseActor(living,mp?.visuals?.getActor(living.id)||(living===p?actor:null),dt);
  for(const corpse of state.survivalCorpses||[]){
   const owner=mp?mp.players.get(corpse.ownerId):p,rig=mp?.visuals?.getActor(corpse.ownerId)||(!mp?actor:null);if(!rig||!owner)continue;
@@ -29202,9 +29326,10 @@ async function warmLevelGraphics(){
  }
  const batchSize=48,batchMilliseconds=[],passMilliseconds=[],compileMilliseconds=[];
  function withTarget(destination,selected,operation){
-  const saved=[],target=renderer.getRenderTarget(),face=renderer.getActiveCubeFace(),mip=renderer.getActiveMipmapLevel(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest(),auto=renderer.shadowMap.autoUpdate,dirty=renderer.shadowMap.needsUpdate;
+  const saved=[],beforeRender=scene.onBeforeRender,target=renderer.getRenderTarget(),face=renderer.getActiveCubeFace(),mip=renderer.getActiveMipmapLevel(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest(),auto=renderer.shadowMap.autoUpdate,dirty=renderer.shadowMap.needsUpdate;
   const targetViewport=destination?.viewport.clone(),targetScissor=destination?.scissor.clone(),targetScissorTest=destination?.scissorTest;
   try{
+   if(state.level?.suburb)scene.onBeforeRender=()=>{};
    for(const o of nodes){if(o.isLight)continue;const drawable=o.isMesh||o.isLine||o.isPoints||o.isSprite;saved.push({o,visible:o.visible,frustum:o.frustumCulled,count:o.isInstancedMesh?o.count:null});o.visible=!drawable||selected.has(o);o.frustumCulled=false;if(o.isInstancedMesh)o.count=Math.min(1,o.instanceMatrix.count);}
    // Drawable parents (e.g. clothing) can contain other warmed props.
    for(const o of selected)for(let parent=o.parent;parent&&parent!==scene;parent=parent.parent)parent.visible=true;
@@ -29215,6 +29340,7 @@ async function warmLevelGraphics(){
    renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=destination===null&&renderer.shadowMap.enabled;
    return operation();
   }finally{
+   scene.onBeforeRender=beforeRender;
    for(const entry of saved){entry.o.visible=entry.visible;entry.o.frustumCulled=entry.frustum;if(entry.count!==null)entry.o.count=entry.count;}
    if(destination){destination.viewport.copy(targetViewport);destination.scissor.copy(targetScissor);destination.scissorTest=targetScissorTest;}
    renderer.setRenderTarget(target,face,mip);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);renderer.shadowMap.autoUpdate=auto;renderer.shadowMap.needsUpdate=dirty;
