@@ -1053,7 +1053,7 @@ root.MazeSuburbCollision=Object.freeze({index,outsideHeight});
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze — School Overhaul v7.41.5</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze — School Overhaul v7.41.6</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
 <style id="maze-boot-style">html,body{margin:0;min-height:100%;background:#070d0e}
 #maze-boot{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:28px;color:#dce9e2;background:radial-gradient(ellipse at 48% 40%,#18333780,transparent 66%),repeating-linear-gradient(0deg,#91c5bc04 0 1px,transparent 1px 4px),#070d0e;font:14px/1.5 Arial,Helvetica,sans-serif;box-sizing:border-box;color-scheme:dark}
 #maze-boot *{box-sizing:border-box}#maze-boot-panel{width:min(430px,100%);border-top:1px solid #729b9670;padding-top:25px}#maze-boot-brand{margin:0 0 34px;color:#c9dcc2;letter-spacing:.19em;font-size:13px;font-weight:700}#maze-boot-brand b{float:right;color:#6f9792;font-size:11px;font-weight:400;letter-spacing:.08em}#maze-boot h1{margin:0 0 7px;font-size:24px;font-weight:400;letter-spacing:-.02em}#maze-boot-meta{min-height:22px;margin:0;color:#91b2ac;font-size:12px}#maze-boot-track{height:11px;margin:25px 0 11px;border:1px solid #4f716b;background:#050b0c;padding:2px;box-shadow:inset 0 1px 3px #0009}#maze-boot-fill{height:5px;width:0;background:#b7d9a1;box-shadow:0 0 10px #a9d49735}#maze-boot-bottom{display:flex;justify-content:space-between;gap:16px;color:#75928d;font-size:12px;font-variant-numeric:tabular-nums}#maze-boot-percent{color:#c3d9b9}#maze-boot-retry{margin-top:22px;padding:9px 18px;border:1px solid #7caaa2;background:#18332e;color:#daebdf;font:inherit;cursor:pointer}#maze-boot-retry[hidden]{display:none}#maze-boot-note{margin:25px 0 0;color:#5e7a76;font-size:11px}#maze-boot[data-error] #maze-boot-fill{background:#d4967f}</style><style id="maze-voice-style">
@@ -1279,11 +1279,11 @@ applied afterward. No procedural sinusoidal walk or view bob is used.
 <canvas id="world" aria-label="First-person 3D maze"></canvas><div id="vignette" aria-hidden="true"></div><div id="grain" aria-hidden="true"></div>
 <div id="loading" class="loading"><span class="load-mark"></span><p id="loadingText">Building the maze…</p></div>
 <main id="menu" class="screen menu hidden">
-<header class="brandline"><span class="brandmark" aria-hidden="true">▥</span><span>MAZE GAME <b>3D</b></span><span class="edition">SCHOOL OVERHAUL · V7.41.5</span></header>
+<header class="brandline"><span class="brandmark" aria-hidden="true">▥</span><span>MAZE GAME <b>3D</b></span><span class="edition">SCHOOL OVERHAUL · V7.41.6</span></header>
 <section class="menu-content"><p class="eyebrow">FIFTEEN SECONDS TO REMEMBER.</p><h1>Know the way.<br><em>Find your way out.</em></h1><p class="intro">Fifteen seconds of battery. A floor to survive.<br>Find the lift. Use its travel button to escape.</p>
 <aside id="photosensitivityWarning" class="photosensitivity-warning" role="note" aria-labelledby="photosensitivityTitle"><strong id="photosensitivityTitle">PHOTOSENSITIVITY / EPILEPSY WARNING</strong><span>Flashing lights, strong color effects and screen distortion may trigger seizures or discomfort in photosensitive players.</span></aside><div class="world-picker"><label for="themeSelect">NEXT ENVIRONMENT</label><select id="themeSelect"><option value="random">Random · a different place every maze</option><option value="garden">01 · Overgrown / open sky</option><option value="poolrooms">02 · Poolrooms / flooded tile</option><option value="school">03 · After Hours / school</option><option value="catacombs">04 · Below Ground / catacombs</option><option value="industrial">05 · Service Level / industrial</option><option value="hotel">06 · Last Guest / hotel</option><option value="forest">07 · Forest / misty trails</option><option value="backrooms">08 · Backrooms / yellow labyrinth</option><option value="suburb">09 · Hollow Pines / suburb</option></select></div>
 <button id="startButton" class="primary">Singleplayer <span>↵</span></button><div class="menu-actions"><button id="settingsButton" class="text-button">Settings & controls</button><button id="disclaimersButton" class="text-button">Disclaimers &amp; help</button><span id="menuBest">BEST · 0 CLEARED</span></div><p class="headphone-note"><span aria-hidden="true">◖◗</span> Headphones recommended · spatial audio</p></section>
-<footer class="menu-footer"><span id="themeCaption">OVERGROWN</span><span>1–4 players · School Overhaul · v7.41.5</span><span id="assetStatus"></span></footer></main>
+<footer class="menu-footer"><span id="themeCaption">OVERGROWN</span><span>1–4 players · School Overhaul · v7.41.6</span><span id="assetStatus"></span></footer></main>
 <div id="hud" class="hidden"><div class="hud-top"><span id="levelLabel">FLOOR 01</span><span id="themeLabel">OVERGROWN</span><button id="tabletButton" class="tablet-button hidden" title="Toggle tablet (V)">Focus tablet <kbd>Tab</kbd></button><button id="pauseButton" title="Pause (Esc)" aria-label="Pause">Ⅱ</button></div><div id="crosshair" aria-hidden="true"></div><div id="contextPrompt" class="context-prompt"></div><div id="statusLine" class="status-line"></div><div class="hud-bottom"><span id="objective">Find the exit</span><span id="controlHint">WASD · MOVE &nbsp; R · DOOR &nbsp; Q / E · LEAN &nbsp; F · LIGHT</span></div><div id="notice" role="status"></div></div>
 <section id="tabletFocus" class="tablet-focus hidden" aria-label="Tablet map focus view">
 <header class="tablet-focus-header"><div><p>ROUTE MEMORY</p><span>PORTABLE / LOCAL MAP</span></div><div class="tablet-power"><strong id="focusBattery">100%</strong><span id="focusTime">15 seconds</span><div class="tablet-power-track"><i id="focusCharge"></i></div></div><button id="closeTablet" class="tablet-close">Stow tablet <kbd>Tab</kbd></button></header>
@@ -8025,13 +8025,14 @@ function navigationGraph(level){
  for(const d of level.maintenance?.doors||[]){const portal=put({key:'portal:'+d.id,x:d.x,z:d.z,serviceDoorId:d.id});connect(portal,nodes.get('service:'+d.cellKey));connect(portal,nodes.get('tile:'+key(d.floorX,d.floorZ)));}
  // A swept-door spatial index holds LIVE collider references. Index their
  // possible swing, not just the closed AABB; moving panels never become stale.
- const leafGrid=new Map();
+ const leafGrid=new Map(),queryLeaves=[];
  for(const leaf of roomSource||[]){
   if(!(leaf.roomDoorLeaf||leaf.serviceLeaf||leaf.closetDoorLeaf||leaf.hidingClosetLeaf))continue;
+  if(!leaf.enemyPassThrough)queryLeaves.push(leaf);
   const d=doors.get(leaf.roomDoorId||leaf.serviceDoorId),cx=d?.x??(leaf.minX+leaf.maxX)/2,cz=d?.z??(leaf.minZ+leaf.maxZ)/2,pad=d?.garage?4.5:2.8;
   for(let z=tileAt(cz-pad);z<=tileAt(cz+pad);z++)for(let x=tileAt(cx-pad);x<=tileAt(cx+pad);x++){const k=key(x,z);if(!leafGrid.has(k))leafGrid.set(k,[]);leafGrid.get(k).push(leaf);}
  }
- graph={nodes,atWorld,roomNodes,outdoorNodes,roomColliders,routeColliders,doors,leafGrid,furniture,roomSource,roomCount,ivyRevision:level.garden?.revision||0};navigationCaches.set(level,graph);return graph;
+ graph={nodes,atWorld,roomNodes,outdoorNodes,roomColliders,routeColliders,doors,leafGrid,queryLeaves,furniture,roomSource,roomCount,ivyRevision:level.garden?.revision||0};navigationCaches.set(level,graph);return graph;
 }
 // Build the same immutable route graph while the loading cover is present.
 // Door states are read when routing; preparation never opens or moves a door.
@@ -8108,6 +8109,90 @@ function pathfind(level,from,to){
  if(!start||!end||precise&&!precise.anchors.size)return[];
  const sources=enemyRouteSources(level,from,graph,start),result=navigationRoute(level,sources,end,graph);
  if(!result)return[];return Math.hypot(result.start.x-from.x,result.start.z-from.z)>.001?[{x:result.start.x,z:result.start.z},...result.route]:result.route;
+}
+// Sight/noise can ask about several nested locks at once. A separate complete
+// pathfind for each lock exhausts the whole neighborhood for an inaccessible
+// inner door before considering the reachable exterior. Share one multi-goal
+// search, and yield during endpoint attachment and individual edge checks too.
+// Hosts prepare the immutable graph while loading; this job only reads it.
+// Nonnegative endpoint costs preserve the caller's destination preferences;
+// returned route length remains the physical distance actually walked.
+function createEnemyRouteQuery(level,from,targets,options={}){
+ const origin={x:Number(from?.x),z:Number(from?.z)},input=Array.isArray(targets)?targets:[],points=input.map(p=>Number.isFinite(p?.x)&&Number.isFinite(p?.z)?{x:p.x,z:p.z}:null),results=points.map(()=>null),terminalCosts=points.map((_,i)=>Number.isFinite(options.terminalCosts?.[i])?Math.max(0,options.terminalCosts[i]):0);
+ const requested=options.nearest?1:Number.isFinite(options.limit)?Math.max(1,Math.floor(options.limit)):points.length;
+ let graph=null,stamp=null,leafState=null,done=!Number.isFinite(origin.x)||!Number.isFinite(origin.z)||!points.some(Boolean),stale=false,phase='init',sources=[],sourceCandidates=[],sourceIndex=0,targetIndex=0,targetWork=null,settled=0,totalExpanded=0,totalChecks=0,order=0,current=null;
+ const heap=[],scores=new Map(),previous=new Map(),anchorGoals=new Map(),heuristics=new Map(),goals=points.map((p,i)=>p?{...p,key:'route-query-goal:'+i,links:[],goalIndex:i,anchors:new Set()}:null);
+ const less=(a,b)=>a.f<b.f||a.f===b.f&&(a.h<b.h||a.h===b.h&&a.order<b.order);
+ const h=node=>{let v=heuristics.get(node.key);if(v===undefined){v=Infinity;for(let i=0;i<points.length;i++){const p=points[i];if(p)v=Math.min(v,Math.hypot(node.x-p.x,node.z-p.z)+terminalCosts[i]);}heuristics.set(node.key,v);}return v;};
+ const push=(node,g)=>{const bound=node.goalIndex!==undefined?0:h(node),entry={node,g,h:bound,f:g+bound,order:order++};let at=heap.length;heap.push(entry);while(at){const parent=(at-1)>>1;if(!less(entry,heap[parent]))break;heap[at]=heap[parent];at=parent;}heap[at]=entry;};
+ const pop=()=>{const first=heap[0],tail=heap.pop();if(heap.length){let at=0;while(at*2+1<heap.length){let child=at*2+1;if(child+1<heap.length&&less(heap[child+1],heap[child]))child++;if(!less(heap[child],tail))break;heap[at]=heap[child];at=child;}heap[at]=tail;}return first;};
+ const leafValues=b=>{const o=b.collisionOBB;return[b.enabled===false?0:1,b.minX,b.maxX,b.minZ,b.maxZ,b.minY??-Infinity,b.maxY??Infinity,o?.x??0,o?.z??0,o?.ux??0,o?.uz??0,o?.halfWidth??0,o?.halfDepth??0];};
+ const leafMatches=(b,v)=>{const o=b.collisionOBB;return v[0]===(b.enabled===false?0:1)&&v[1]===b.minX&&v[2]===b.maxX&&v[3]===b.minZ&&v[4]===b.maxZ&&v[5]===(b.minY??-Infinity)&&v[6]===(b.maxY??Infinity)&&v[7]===(o?.x??0)&&v[8]===(o?.z??0)&&v[9]===(o?.ux??0)&&v[10]===(o?.uz??0)&&v[11]===(o?.halfWidth??0)&&v[12]===(o?.halfDepth??0);};
+ const valid=()=>{
+  if(!graph)return true;
+  if(graph.roomSource!==level.roomColliders||graph.roomCount!==(level.roomColliders?.length||0)||graph.furniture!==level.survivalLayout?.colliders||graph.ivyRevision!==(level.garden?.revision||0)||navigationCaches.get(level)!==graph||stamp!==enemyNavigationStamp(level))return false;
+  // Fractional swings matter to physical clearance even before passable flips.
+  for(let i=0;i<graph.queryLeaves.length;i++)if(!leafMatches(graph.queryLeaves[i],leafState[i]))return false;return true;
+ };
+ const nearby=(p,source)=>{
+  const room=survivalRoomAt(level,tileAt(p.x),tileAt(p.z));
+  if(room)return(graph.roomNodes.get(room.id)||[]).filter(n=>Math.hypot(n.x-p.x,n.z-p.z)<=3.3).sort((a,b)=>(a.x-p.x)**2+(a.z-p.z)**2-(b.x-p.x)**2-(b.z-p.z)**2).slice(0,source?32:48);
+  if(level.suburb&&level.get(tileAt(p.x),tileAt(p.z))===FLOOR)return nearbyOutdoorNodes(graph,p,source?6:7).slice(0,source?32:64);
+  const node=navigationNode(level,p);return node?(source?[node,...node.links]:[node]):[];
+ };
+ const complete=entry=>{
+  const end=entry.node,index=end.goalIndex,route=[];let node=end;
+  if(end.direct)route.push({...points[index]});
+  else{
+   for(;previous.has(node.key);node=previous.get(node.key))route.push({x:node.x,z:node.z,...(node.serviceDoorId?{serviceDoorId:node.serviceDoorId}:{})});
+   if(Math.hypot(node.x-origin.x,node.z-origin.z)>.001)route.push({x:node.x,z:node.z,...(node.serviceDoorId?{serviceDoorId:node.serviceDoorId}:{})});route.reverse();
+  }
+  results[index]={index,target:{...points[index]},route,length:entry.g-terminalCosts[index],cost:entry.g};settled++;
+ };
+ const status=expanded=>({done,stale,results,expanded});
+ return{from:{...origin},targetCount:points.length,get done(){return done;},get stale(){return stale;},get expanded(){return totalExpanded;},get checks(){return totalChecks;},get phase(){return phase;},
+  advance(maxExpanded=96,maxMs=1.5){
+   if(!valid()){stale=true;done=true;return status(0);}if(done||maxExpanded<=0||maxMs<=0)return status(0);
+   const budget=Number.isFinite(maxExpanded)?Math.max(1,Math.floor(maxExpanded)):Infinity,milliseconds=Number.isFinite(maxMs)?Math.max(.05,maxMs):Infinity,started=performance.now();let expanded=0,work=0;
+   while(!done&&(work===0||expanded<budget&&work<budget*64&&performance.now()-started<milliseconds)){
+    work++;
+    if(phase==='init'){
+     graph=navigationGraph(level);stamp=enemyNavigationStamp(level);leafState=graph.queryLeaves.map(leafValues);sourceCandidates=nearby(origin,true);phase='sources';continue;
+    }
+    if(phase==='sources'){
+     if(sourceIndex>=sourceCandidates.length){phase='targets';continue;}
+     const node=sourceCandidates[sourceIndex++];totalChecks++;
+     if(node&&(!node.serviceDoorId||Math.hypot(origin.x-node.x,origin.z-node.z)<.01)&&enemyNavigationClear(level,origin,node))sources.push({node,g:Math.hypot(origin.x-node.x,origin.z-node.z)});continue;
+    }
+    if(phase==='targets'){
+     if(targetIndex>=goals.length){for(const source of sources)if(source.g<(scores.get(source.node.key)??Infinity)){scores.set(source.node.key,source.g);push(source.node,source.g);}phase='search';continue;}
+     const goal=goals[targetIndex];if(!goal){targetIndex++;continue;}
+     if(!targetWork){
+      totalChecks++;
+      if(enemyNavigationClear(level,origin,goal)){goal.direct=true;const distance=Math.hypot(goal.x-origin.x,goal.z-origin.z)+terminalCosts[targetIndex];scores.set(goal.key,distance);push(goal,distance);targetIndex++;continue;}
+      targetWork={nodes:nearby(goal,false),index:0};continue;
+     }
+     if(targetWork.index>=targetWork.nodes.length){targetWork=null;targetIndex++;continue;}
+     const node=targetWork.nodes[targetWork.index++];if(!node?.links.length)continue;totalChecks++;
+     if(!enemyNavigationClear(level,node,goal))continue;
+     goal.anchors.add(node.key);if(!anchorGoals.has(node.key))anchorGoals.set(node.key,[]);anchorGoals.get(node.key).push(goal);continue;
+    }
+    if(current){
+     const extra=anchorGoals.get(current.node.key)||[],count=current.node.links.length+extra.length;
+     if(current.index>=count){current=null;continue;}
+     const index=current.index++,node=index<current.node.links.length?current.node.links[index]:extra[index-current.node.links.length];totalChecks++;
+     if(!navigationLinkAllowed(level,current.node,node,graph))continue;
+     const g=current.g+Math.hypot(node.x-current.node.x,node.z-current.node.z)+(node.goalIndex!==undefined?terminalCosts[node.goalIndex]:0);if(g>=(scores.get(node.key)??Infinity)-1e-9)continue;
+     scores.set(node.key,g);previous.set(node.key,current.node);push(node,g);continue;
+    }
+    if(!heap.length){done=true;break;}
+    const entry=pop();if(entry.g!==scores.get(entry.node.key))continue;expanded++;totalExpanded++;
+    if(entry.node.goalIndex!==undefined){if(!results[entry.node.goalIndex])complete(entry);if(settled>=requested)done=true;continue;}
+    current={node:entry.node,g:entry.g,index:0};
+   }
+   return status(expanded);
+  }
+ };
 }
 function enemyHouseEntryRoutes(level,from,room,speed=ENEMY_TUNING.investigateSpeed){
  if(!from||room?.kind!=='house'||![from.x,from.z,speed].every(Number.isFinite)||speed<=0)return[];
@@ -9623,7 +9708,7 @@ function updateEnemyTeam(level,e,players,dt,time){
  const caught=eligible.filter(p=>enemyCanContact(level,e,p));if(caught.length)level.houseSecurity?.sawPlayer(e,caught[0],time);return caught.map(p=>p.id);
 }
 
-const api={recoverDoorObstacle,finishEnemySearch,propSightTransparent,clearEnemyNoiseNavigation,chooseEnemyPatrol,moveEnemyToward,queueClosetSearch,updateClosetSearch,enemyProtectedHouse,CELL,VOID,WALL,FLOOR,EXIT,CLOSET,SAFE,MAINT,SERVICE_CELL,createSurvivalRooms,survivalDoors,closetCells,closetContains,closetDoorAt,closetDoorAvailable,closetSealed,enemyProtectedCloset,enemyClosetTargetBlocked,enemyClosetEntry,annexPatterns:ANNEX_PATTERNS,createMaintenance,maintenanceAt,DIRS,PREFABS,key,tileAt,clamp,rng,hashSeed,generate,prepareNavigation,pathfind,enemyHouseEntryRoutes,enemyNavigationClear,enemyContactRayClear,rayClear,wallTransmission,indexRoomColliders,circleAABB,collision,move,PLAYER_JUMP_SPEED,PLAYER_GRAVITY,backroomsPitAt,schoolPitAt,playerPitAt,playerSupportHeight,playerCeiling,preparePlayerSupport,advancePlayerVertical,settlePlayerSupport,ENEMY_TUNING,makeEnemy,safeEnemyTeleportDestination,instantTransmission,dodgeShotgunBehindShooter,escapeSchoolBlast,setEnemyInvestigation,beginEnemySearch,alertElevator,alertAlarmClock,notifyClosetEntry,notifyClosetExit,notifyClosetDoor,routineClosetChance,enemyExposure,updateEnemyAwareness,updateEnemy,updateEnemyTeam,tileVisibility,renderDistance};
+const api={recoverDoorObstacle,finishEnemySearch,propSightTransparent,clearEnemyNoiseNavigation,chooseEnemyPatrol,moveEnemyToward,queueClosetSearch,updateClosetSearch,enemyProtectedHouse,CELL,VOID,WALL,FLOOR,EXIT,CLOSET,SAFE,MAINT,SERVICE_CELL,createSurvivalRooms,survivalDoors,closetCells,closetContains,closetDoorAt,closetDoorAvailable,closetSealed,enemyProtectedCloset,enemyClosetTargetBlocked,enemyClosetEntry,annexPatterns:ANNEX_PATTERNS,createMaintenance,maintenanceAt,DIRS,PREFABS,key,tileAt,clamp,rng,hashSeed,generate,prepareNavigation,pathfind,createEnemyRouteQuery,enemyHouseEntryRoutes,enemyNavigationClear,enemyContactRayClear,rayClear,wallTransmission,indexRoomColliders,circleAABB,collision,move,PLAYER_JUMP_SPEED,PLAYER_GRAVITY,backroomsPitAt,schoolPitAt,playerPitAt,playerSupportHeight,playerCeiling,preparePlayerSupport,advancePlayerVertical,settlePlayerSupport,ENEMY_TUNING,makeEnemy,safeEnemyTeleportDestination,instantTransmission,dodgeShotgunBehindShooter,escapeSchoolBlast,setEnemyInvestigation,beginEnemySearch,alertElevator,alertAlarmClock,notifyClosetEntry,notifyClosetExit,notifyClosetDoor,routineClosetChance,enemyExposure,updateEnemyAwareness,updateEnemy,updateEnemyTeam,tileVisibility,renderDistance};
 root.MazeCore=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
 
@@ -18592,7 +18677,7 @@ function staticHash(level){
  rows.push([0x44504859,1]);if(level.theme==='suburb')rows.push([0x48414c4d,1]); // Swept door contact protocol; do not mix with snap-ejection clients.
  // Transmission changes every theme's enemy protocol; school also adds
  // destructible floor support. Reject mixed builds before either can desync.
- rows.push([0x53495456,...Array.from('school-overhaul-v7.41.5|garden-snake-death-v1|dropped-flashlights-v1|kitchen-door-sweep-v1|finished-floor-drops-v1|school-bathroom-circuits-v1|survival-fixtures-v1|world-coalesce-v1|elevator-rejoin-v1',c=>c.charCodeAt(0))]);
+ rows.push([0x53495456,...Array.from('school-overhaul-v7.41.6|garden-snake-death-v1|dropped-flashlights-v1|kitchen-door-sweep-v1|finished-floor-drops-v1|school-bathroom-circuits-v1|survival-fixtures-v1|world-coalesce-v1|elevator-rejoin-v1|bounded-ai-route-query-v1|backrooms-bed-clearance-v1',c=>c.charCodeAt(0))]);
  if(level.theme==='school'){
   rows.push([0x53434f4c,1]);
   const mines=[...(level.schoolHazards?.mines||[])].sort((a,b)=>String(a.id)<String(b.id)?-1:String(a.id)>String(b.id)?1:0);
@@ -23624,9 +23709,19 @@ function backroomsLayout(level,seed,players){
   const chairCell=room.cells.find(c=>Math.hypot(c.x*4-room.door.x,c.z*4-room.door.z)>3&&Math.hypot(c.x*4-p.x,c.z*4-p.z)>2.5);if(chairCell)addChair(room.id+':chair',chairCell,chairCell.x*4,chairCell.z*4,yaw,room.id);
  }
  const candidates=shuffle((level.backrooms?.clearCells||[]).filter(c=>!roomKeys.has(key(c.x,c.z))),rng),used=new Set();
- function site(){for(const cell of candidates){const k=key(cell.x,cell.z);if(used.has(k)||level.get(cell.x,cell.z)!==2)continue;const x=cell.x*4,z=cell.z*4,b={minX:x-1.9,maxX:x+1.9,minZ:z-1.9,maxZ:z+1.9};if(pits.some(p=>intersects(b,p,.6))||doors.some(d=>Math.hypot(x-d.x,z-d.z)<5)||[level.safe,level.exit,level.spawn,level.enemySpawn].filter(Boolean).some(p=>Math.hypot(x-p.x*4,z-p.z*4)<7)||reserved.some(p=>Math.hypot(x-p.x,z-p.z)<9))continue;used.add(k);reserved.push({x,z});return cell;}return null;}
+ // A nominally open tile can sit against a 2 m passage: its narrowing walls
+ // are separate colliders, not wall tiles. Keep a walkable apron around the
+ // entire bed, including the headboard, so passing never requires a jump.
+ // This runs only during seeded placement; no new per-frame collision work.
+ const bedObstacles=[...(level.backrooms?.colliders||[]),...(level.maintenance?.colliders||[]),...colliders].filter(b=>b.enabled!==false&&!b.movementTransparent&&(b.maxY??3)>0);
+ function bedSiteClear(cell,x,z){
+  const apron={minX:x-2.2,maxX:x+2.2,minZ:z-2.2,maxZ:z+2.2};
+  for(let dz=-1;dz<=1;dz++)for(let dx=-1;dx<=1;dx++)if(level.get(cell.x+dx,cell.z+dz)!==2)return false;
+  return !bedObstacles.some(b=>intersects(apron,b));
+ }
+ function site(bed=false){for(const cell of candidates){const k=key(cell.x,cell.z);if(used.has(k)||level.get(cell.x,cell.z)!==2)continue;const x=cell.x*4,z=cell.z*4,b={minX:x-1.9,maxX:x+1.9,minZ:z-1.9,maxZ:z+1.9};if(pits.some(p=>intersects(b,p,.6))||doors.some(d=>Math.hypot(x-d.x,z-d.z)<5)||[level.safe,level.exit,level.spawn,level.enemySpawn].filter(Boolean).some(p=>Math.hypot(x-p.x*4,z-p.z*4)<7)||reserved.some(p=>Math.hypot(x-p.x,z-p.z)<9)||bed&&!bedSiteClear(cell,x,z))continue;used.add(k);reserved.push({x,z});return cell;}return null;}
  for(let i=0;i<2;i++)if(rng()<(i?.28:.68)){
-  const cell=site();if(!cell)break;const wall=DIRS[Math.floor(rng()*4)],yaw=Math.atan2(wall[0],wall[1]),x=cell.x*4,z=cell.z*4,id='backrooms-bed:'+stamp+':'+beds.length,collider=bounds(id,cell,x,z,yaw,1.72,2.20,.573,{footstepSurface:'carpet'}),head=pose(x,z,yaw,0,1.095),approach=pose(x,z,yaw,-1.48,0),sleep=pose(x,z,yaw,-.40,0);
+  const cell=site(true);if(!cell)break;const wall=DIRS[Math.floor(rng()*4)],yaw=Math.atan2(wall[0],wall[1]),x=cell.x*4,z=cell.z*4,id='backrooms-bed:'+stamp+':'+beds.length,collider=bounds(id,cell,x,z,yaw,1.72,2.20,.573,{footstepSurface:'carpet'}),head=pose(x,z,yaw,0,1.095),approach=pose(x,z,yaw,-1.48,0),sleep=pose(x,z,yaw,-.40,0);
   beds.push({id,roomId:null,public:true,cell:{...cell},wall:wall.slice(),x,y:.565,z,yaw,width:1.72,length:2.27,mattressWidth:1.65,mattressLength:2.15,singleOccupant:false,approach,sleep:{...sleep,y:.565,yaw},collider});colliders.push(collider,bounds(id+':headboard',cell,head.x,head.z,yaw,1.72,.083,1.095));
  }
  const chairs=Math.min(7,3+Math.floor((level.floors?.length||0)/100));for(let i=0;i<chairs;i++){const cell=site();if(!cell)break;const yaw=Math.floor(rng()*4)*Math.PI/2;addChair('backrooms-chair:'+stamp+':'+i,cell,cell.x*4,cell.z*4,yaw);}
@@ -24413,10 +24508,11 @@ class MazeSurvivalUI {
   try{const result=this.callbacks.takeCorpse?.(request);if(result?.catch)result.catch(e=>{if(this.isCorpseOpen)this.lootMessage.textContent=e?.message||'That item could not be taken.';});}catch(e){this.lootMessage.textContent=e?.message||'That item could not be taken.';}
  }
  closeCorpse(){this.isCorpseOpen=false;this.corpse=null;this.lootRoot.classList.add('hidden');if(this.previousLootFocus?.isConnected&&!this.isSleeping)this.previousLootFocus.focus({preventScroll:true});}
- showDeath(record={}){this.closeCorpse();this.setSleeping(false);this.deathOpen=true;this.hud.classList.add('hidden');this.deathReason.textContent=reasonText(record.reason||record.deathReason);const cleared=Number.isFinite(record.score)?record.score:Number.isFinite(record.floor)?record.floor:0;this.deathScore.textContent=cleared+' '+(cleared===1?'floor':'floors')+' cleared';this.deathRoot.classList.remove('hidden');this.retryButton.focus();}
+ showDeath(record={}){this.closeCorpse();this.setSleeping(false);this.deathOpen=true;this.hud.classList.add('hidden');this.deathReason.textContent=reasonText(record.reason||record.deathReason);const cleared=Number.isFinite(record.score)?record.score:Number.isFinite(record.floor)?record.floor:0;this.deathScore.textContent=cleared+' '+(cleared===1?'floor':'floors')+' cleared';this.deathRoot.classList.remove('hidden');const settings=document.getElementById('settingsScreen');if(!settings||settings.classList.contains('hidden'))this.retryButton.focus();}
  hideDeath(){this.deathOpen=false;this.deathRoot.classList.add('hidden');}
  cancelSleep(){if(this.isSleeping&&!this.state.cancelPending)this.callbacks.cancelSleep?.();}
  onKey(e){
+  const settings=document.getElementById('settingsScreen');if(settings&&!settings.classList.contains('hidden'))return;
   if(root.MazeInput&&e.code!=='Tab')return;
   if((e.ctrlKey||e.metaKey)&&['Equal','Minus','Digit0','NumpadAdd','NumpadSubtract','Numpad0'].includes(e.code))return;
   if(this.isSleeping){e.stopImmediatePropagation();e.preventDefault();if(e.type==='keydown'&&!e.repeat&&(['KeyR','Escape'].includes(e.code)||['Enter','Space'].includes(e.code)&&document.activeElement===this.sleepCancel))this.cancelSleep();return;}
@@ -25910,8 +26006,8 @@ const SILENCE=8,SIGHT_MEMORY=12,STALL=2.6,bands=rms=>rms<.008?0:rms<.025?1:rms<.
 const maxVoiceRange=()=>bands(1),isShout=event=>event.kind==='voice'&&event.radius>=maxVoiceRange();
 const priority=(event,now)=>event.kind==='sighting'?4:isShout(event)||(event.loudUntil||0)>now?3:event.breach&&['phone-ring','water-fixture'].includes(event.kind)?2:1;
 class MazeHearing{
- constructor(options){this.o=options;this.focus=null;this.voices=new Map();this.feet=new Map();this.voicePulse=new Map();this.ignored=new Map();this.tick=-Infinity;this.now=0;this.events=0;this.elevatorUntil=-Infinity;}
- reset(){this.focus=null;this.voices.clear();this.feet.clear();this.voicePulse.clear();this.ignored.clear();this.tick=-Infinity;this.elevatorUntil=-Infinity;}
+ constructor(options){this.o=options;this.focus=null;this.pendingAway=null;this.voices=new Map();this.feet=new Map();this.voicePulse=new Map();this.ignored=new Map();this.tick=-Infinity;this.now=0;this.events=0;this.elevatorUntil=-Infinity;}
+ reset(){this.focus=null;this.pendingAway=null;this.voices.clear();this.feet.clear();this.voicePulse.clear();this.ignored.clear();this.tick=-Infinity;this.elevatorUntil=-Infinity;}
  voice(id,rms){if(typeof id==='string'&&Number.isFinite(rms))this.voices.set(id,{rms:Math.max(0,Math.min(1,rms)),at:this.o.time()});}
  hear(event){
   const e=this.o.enemy(),level=this.o.level(),now=this.o.time();
@@ -25919,6 +26015,7 @@ class MazeHearing{
   const C=root.MazeCore,sameTile=C.tileAt(e.x)===C.tileAt(event.x)&&C.tileAt(e.z)===C.tileAt(event.z),d=Math.hypot(e.x-event.x,e.z-event.z);
   const person=['voice','run','walk','crouch'].includes(event.kind),rainScale=person&&level.gardenWeather?.raining?.5:1;if(person&&root.MazeGardenUpdate?.ignoresPlayer(e,event))return false;if(d>event.radius*C.CELL*rainScale)return false;
   this.events++;const f=this.focus;if(f&&f.source!==event.source&&now-f.last<(f.kind==='sighting'?SIGHT_MEMORY:SILENCE)&&priority(event,now)<=priority(f,now))return false;
+  this.pendingAway=null;
   if(!f||f.source!==event.source){
    if(f)this.end(e,false);
    this.focus={...event,x:event.x,z:event.z,first:now,last:now,angry:e.chasing||now-e.lastSeen<5,waypoint:null,at:now,points:null,ringUntil:0,loudUntil:0,loudPoint:null,progress:{x:e.x,z:e.z,at:now},stalls:0,failed:new Map()};
@@ -25933,8 +26030,9 @@ class MazeHearing{
  // Called only after MazeCore confirms recognition with its physical sight rays.
  sawPlayer(p,time){
   const e=this.o.enemy();if(!e||time<this.elevatorUntil)return false;
+  this.pendingAway=null;
   const C=root.MazeCore,source='sighting:'+String(p.id||'local'),cell=C.key(C.tileAt(p.x),C.tileAt(p.z)),old=this.focus;
-  const cached=old?.source===source&&old.lockCell===cell&&time<old.lockNext&&!old.locked?.door?.p?.doorBroken;
+  const cached=old?.source===source&&old.lockCell===cell&&time<old.lockNext&&!old.locked?.pending&&!old.locked?.door?.p?.doorBroken;
   const locked=cached?old.locked:this.o.locked(p,e);
   if(!locked){if(old?.source===source){this.focus=null;this._releaseNavigation(e);}return false;}
   if(old?.source!==source){this._releaseNavigation(e);this.focus={source,kind:'sighting',first:time,angry:true,points:null,waypoint:null,at:time,progress:{x:e.x,z:e.z,at:time},stalls:0,failed:new Map()};}
@@ -25956,6 +26054,7 @@ class MazeHearing{
  _releaseNavigation(e){root.MazeCore.clearEnemyNoiseNavigation(e);e.closetAction=null;e.queuedCloset=null;e.noiseFocus=false;}
  _away(e,clue){
   const C=root.MazeCore,level=this.o.level();if(!level||!clue)return;
+  if(level.suburb&&typeof this.o.away==='function'){this.pendingAway=clue;return;}
   // Choose a real reachable corridor away from the last *heard* point. This
   // never consults a protected occupant's current location.
   const points=(level.floors||[]).map(p=>({x:p.x*C.CELL,z:p.z*C.CELL})).filter(p=>Math.hypot(p.x-clue.x,p.z-clue.z)>=9&&Math.hypot(p.x-e.x,p.z-e.z)>4&&!C.collision(level,p.x,p.z,.4,level.roomColliders,false));
@@ -25964,7 +26063,7 @@ class MazeHearing{
   C.chooseEnemyPatrol(level,e,true);
  }
  end(e,away=true){
-  const clue=this.focus;this.focus=null;this._releaseNavigation(e);e.searchPlan=null;e.lastTarget=null;e.targetWasPlayer=false;e.targetPlayerId=null;e.lastObserved=null;e.lastDirection=null;e.lastSeen=-Infinity;e.investigateUntil=-Infinity;e.investigateArrived=null;e.pursuitActive=false;e.awareness=0;e.exposure=0;e.state='wandering';e.chasing=false;e.patrol=null;e.nextRoutineCheck=Math.max(e.nextRoutineCheck||0,this.o.time()+6);if(away)this._away(e,clue);
+  const clue=this.focus;this.focus=null;this.pendingAway=null;this._releaseNavigation(e);e.searchPlan=null;e.lastTarget=null;e.targetWasPlayer=false;e.targetPlayerId=null;e.lastObserved=null;e.lastDirection=null;e.lastSeen=-Infinity;e.investigateUntil=-Infinity;e.investigateArrived=null;e.pursuitActive=false;e.awareness=0;e.exposure=0;e.state='wandering';e.chasing=false;e.patrol=null;e.nextRoutineCheck=Math.max(e.nextRoutineCheck||0,this.o.time()+6);if(away)this._away(e,clue);
  }
  elevatorCalled(e,time){
   // Calling the elevator has priority over an old microphone/phone clue.
@@ -25980,18 +26079,40 @@ class MazeHearing{
   }
   f.waypoint=null;return null;
  }
+ _waitForRoute(e,f,time){
+  // The host may spread a house/fixture route search over several ticks.
+  // A pending answer is not evidence that the clue is unreachable or empty.
+  // Keep its ordinary expiry and break-in permissions, but do not wander,
+  // count stalled movement, or finish a visit while the route is being solved.
+  const progress=f.progress;progress.x=e.x;progress.z=e.z;progress.at=time;
+  f.arrived=null;f.breaching=null;e.noiseFocus=true;e.speed=0;e.moving=false;
+  e.chasing=f.kind==='sighting';e.pursuitActive=e.chasing;e.safeDoorWatch=null;
+  return true;
+ }
  beforeMove(e,time,dt){
-  const f=this.focus;if(!f)return false;const C=root.MazeCore,level=this.o.level(),phones=this.o.phones();
+  const f=this.focus;
+  if(!f){
+   const clue=this.pendingAway;if(!clue)return false;
+   if(e.state!=='wandering'||time<this.elevatorUntil){this.pendingAway=null;return false;}
+   const point=this.o.away?.(clue,e);
+   if(point?.pending){e.speed=0;e.moving=false;e.chasing=false;return true;}
+   this.pendingAway=null;
+   if(point&&Number.isFinite(point.x)&&Number.isFinite(point.z)){e.patrol={x:point.x,z:point.z};e.path=[];e.repath=0;}
+   else{const level=this.o.level();if(level)root.MazeCore.chooseEnemyPatrol(level,e,true);}
+   return false;
+  }
+  const C=root.MazeCore,level=this.o.level(),phones=this.o.phones();
   if(time<this.elevatorUntil){this.focus=null;this._releaseNavigation(e);return false;}
   if(f.kind!=='sighting'&&time-e.lastSeen<.45&&e.state==='hunting'){
    // Keep the confirmed sight target, but never its obsolete hearing maneuver.
    this.focus=null;this._releaseNavigation(e);return false;
   }
-  if(time-f.last>=(f.kind==='sighting'?SIGHT_MEMORY:SILENCE)||f.kind==='water-fixture'&&this.o.fixtureActive&&!this.o.fixtureActive(f)){this.end(e);return false;}
+  if(time-f.last>=(f.kind==='sighting'?SIGHT_MEMORY:SILENCE)||f.kind==='water-fixture'&&this.o.fixtureActive&&!this.o.fixtureActive(f)){this.end(e);return !!this.pendingAway;}
   const cell=C.key(C.tileAt(f.x),C.tileAt(f.z)),staleDoor=f.locked?.door?.p&&(f.locked.door.p.doorBroken||!f.locked.door.p.doorLocked&&!f.locked.door.p.doorLockPending&&!f.locked.door.p.securityLocked&&!f.locked.safe);
-  if(f.lockNext===undefined||time>=f.lockNext||f.lockCell!==cell||staleDoor){f.locked=this.o.locked(f,e);f.lockCell=cell;f.lockNext=time+.65;}
+  if(f.locked?.pending||f.lockNext===undefined||time>=f.lockNext||f.lockCell!==cell||staleDoor){f.locked=this.o.locked(f,e);f.lockCell=cell;f.lockNext=time+.65;}
   const locked=f.locked,sighting=f.kind==='sighting',ring=f.ringUntil>=time&&f.kind==='phone-ring'&&phones?.canBreach(f.phoneId),fixture=f.kind==='water-fixture'&&f.fixtureUntil>=time;
   const shout=f.loudUntil>=time&&f.loudPoint&&locked&&(locked.room.cells||[locked.room]).some(c=>c.x===C.tileAt(f.loudPoint.x)&&c.z===C.tileAt(f.loudPoint.z));
+  if(locked?.pending&&!locked.door)return this._waitForRoute(e,f,time);
   if(sighting&&!locked){this.focus=null;this._releaseNavigation(e);C.setEnemyInvestigation(e,{x:f.x,z:f.z},time,Math.max(1,SIGHT_MEMORY-(time-f.last)));e.pursuitActive=true;return false;}
   let target=level.houseSecurity?.noiseApproach(f,e)||{x:f.x,z:f.z},waiting=false;
   if(locked){
@@ -26004,18 +26125,18 @@ class MazeHearing{
     }else f.breaching=null;
    }else{
     f.breaching=null;
-    if(!f.points||f.lockId!==locked.id||time-(f.pointsAt??0)>5){f.points=this.o.patrol(f,e,locked)||[];f.lockId=locked.id;f.pointsAt=time;f.index=-1;f.waypoint=null;}
+    if(!f.points||f.lockId!==locked.id||time-(f.pointsAt??0)>5){const points=this.o.patrol(f,e,locked)||[];if(points.pending)return this._waitForRoute(e,f,time);f.points=points;f.lockId=locked.id;f.pointsAt=time;f.index=-1;f.waypoint=null;}
     if(!f.waypoint||Math.hypot(e.x-f.waypoint.x,e.z-f.waypoint.z)<.55||time-f.at>5)this._nextPoint(f,e,time);
     target=f.waypoint;
-    if(!target){this.ignored.set(f.source,time+12);this.end(e);return false;}
+    if(!target){this.ignored.set(f.source,time+12);this.end(e);return !!this.pendingAway;}
    }
   }else{
    f.breaching=null;f.points=null;f.waypoint=null;
    const closet=(level.closets||[]).find(r=>C.closetContains(r,C.tileAt(f.x),C.tileAt(f.z)));
    if(closet&&!C.closetContains(closet,C.tileAt(e.x),C.tileAt(e.z))&&C.closetDoorAvailable(closet.doors?.find(C.closetDoorAvailable)||closet))C.queueClosetSearch(level,e,closet,f.kind==='spirit-orb'?'spirit-orb':'heard-voice',time);
    if(f.phoneId){const loc=phones?.get(f.phoneId);if(loc?.kind==='drop'){const pos=phones.position(loc);if(pos&&Math.hypot(e.x-pos.x,e.z-pos.z)<1.05&&C.enemyContactRayClear(level,e,pos)&&phones.destroyDropped(f.phoneId,e)){this.end(e);return true;}}}
-   target=this.o.approach?.(f,e)||target;
-   if(Math.hypot(e.x-target.x,e.z-target.z)<.65){waiting=true;if(!f.arrived)f.arrived=time;if(time-f.last>1.2&&time-f.arrived>3){this.end(e);return false;}e.yaw+=(dt||.016)*1.4;}else f.arrived=null;
+   const approach=this.o.approach?.(f,e);if(approach?.pending)return this._waitForRoute(e,f,time);target=approach||target;
+   if(Math.hypot(e.x-target.x,e.z-target.z)<.65){waiting=true;if(!f.arrived)f.arrived=time;if(time-f.last>1.2&&time-f.arrived>3){this.end(e);return !!this.pendingAway;}e.yaw+=(dt||.016)*1.4;}else f.arrived=null;
   }
   // Waypoint refreshes cannot reset this progress clock. A stuck route is
   // discarded, then a different corridor tried; it cannot pin him forever.
@@ -26023,8 +26144,8 @@ class MazeHearing{
   if(waiting||Math.hypot(e.x-progress.x,e.z-progress.z)>.25){progress.x=e.x;progress.z=e.z;progress.at=time;}
   else if(time-progress.at>STALL){
    f.stalls++;if(target)f.failed.set(target.x+','+target.z,time+14);C.clearEnemyNoiseNavigation(e);progress.at=time;progress.x=e.x;progress.z=e.z;
-   if(f.stalls>=3||!locked){this.ignored.set(f.source,time+12);this.end(e);return false;}
-   target=this._nextPoint(f,e,time);if(!target){this.ignored.set(f.source,time+12);this.end(e);return false;}
+   if(f.stalls>=3||!locked){this.ignored.set(f.source,time+12);this.end(e);return !!this.pendingAway;}
+   target=this._nextPoint(f,e,time);if(!target){this.ignored.set(f.source,time+12);this.end(e);return !!this.pendingAway;}
   }
   C.setEnemyInvestigation(e,target,time,sighting?SIGHT_MEMORY:SILENCE);e.noiseFocus=true;e.chasing=sighting;e.pursuitActive=sighting;e.safeDoorWatch=null;
   if(e.closetAction)C.updateClosetSearch(level,e,{x:f.x,z:f.z},dt,time);else C.moveEnemyToward(level,e,target,sighting?C.ENEMY_TUNING.chaseSpeed:f.angry?5.2:ring||shout?4.8:3.6,dt);
@@ -28829,7 +28950,8 @@ function inputBack(){
  if(mp?.voiceListOpen||inputVisible(coopUI?.playerList)){coopUI.hidePlayerList(true);return;}
  if(inputVisible($('settingsScreen'))){$('closeSettings').click();return;}
  if(mapViewOpen()){state.skipUnlockPause=state.locked;tabletStowFocused();return;}
- if(mp?.dead&&coopLive()&&!mp.localPaused&&!mp.ending){if(document.pointerLockElement===$('world'))exitLock();return;} // Escape releases spectator cursor; use the pause button for menus.
+ if(!mp&&['dead','survival-dead'].includes(state.mode)){openSettings();return;}
+ if(mp?.dead&&coopLive()&&!mp.localPaused&&!mp.ending&&document.pointerLockElement===$('world')){exitLock();return;} // First Escape releases the spectator cursor; the next opens the menu.
  if(active()){pause();return;}
  if(state.mode==='paused'||mp?.localPaused&&coopLive()){resume();return;}
  if(coopUI?.mode&&inputVisible(coopUI.overlay))coopUI._close?.();
@@ -29386,9 +29508,9 @@ function escapeMaze(){
  },650);
 }
 function die(){if(!['playing','planning'].includes(state.mode))return;if(!mp)coopVoice?.stop();forestHideHUD();state.player.sleeping=false;survivalSilence(false);survivalUI?.updateState({active:false,sleeping:false,dead:true});inventoryClose(false);show('transition',false);$('transition').style.opacity='1';setTabletFocus(false);state.mode='dead';state.player.speed=0;resetMovementInput();exitLock();audio.stop();actor.hide();goku.visible=false;tablet.group.visible=false;show('hud',false);show('touchControls',false);show('deathScreen');show('deathResult',false);show('skipDeath',false);$('deathScore').textContent=`${state.score} ${state.score===1?'maze':'mazes'} cleared`;$('deathBest').textContent=`Best run · ${best} cleared`;const v=$('deathVideo');v.currentTime=0;v.style.display='block';v.volume=settings.volume/100;v.muted=darkPoolroomsAudio();
- const play=v.play();if(play?.catch)play.catch(()=>showDeathResult());state.deathTimer=setTimeout(()=>{if(state.mode==='dead'){show('skipDeath');if(MazeInput.lastDevice()==='gamepad')$('skipDeath').focus({preventScroll:true});}},7000);
+ const play=v.play();if(play?.catch)play.catch(()=>showDeathResult());state.deathTimer=setTimeout(()=>{if(state.mode==='dead'){show('skipDeath');if(MazeInput.lastDevice()==='gamepad'&&!inputVisible($('settingsScreen')))$('skipDeath').focus({preventScroll:true});}},7000);
 }
-function showDeathResult(){if(state.mode!=='dead')return;clearTimeout(state.deathTimer);$('deathVideo').pause();$('deathVideo').style.display='none';show('skipDeath',false);show('deathResult');if(MazeInput.lastDevice()==='gamepad')$('retryButton').focus({preventScroll:true});}
+function showDeathResult(){if(state.mode!=='dead')return;clearTimeout(state.deathTimer);$('deathVideo').pause();$('deathVideo').style.display='none';show('skipDeath',false);show('deathResult');if(MazeInput.lastDevice()==='gamepad'&&!inputVisible($('settingsScreen')))$('retryButton').focus({preventScroll:true});}
 function resolveAimTarget(eye,direction,out){
  // Crosshair ray against the collision grid, floor, ceiling and live doors.
  // A held flashlight aims through clear window glass. The pane still blocks
@@ -29568,12 +29690,12 @@ function bindDisclaimers(){
 }
 
 let settingsFrom='menu';const joystick={x:0,y:0};let touchRun=false,touchLean=0;
-function openSettings(){if(state.player.sleeping)return;survivalCloseLoot(false);inventoryClose(false);resetMovementInput();exitLock();if(mp?.ending)return;if(mp&&coopLive()){mp.localPaused=true;settingsFrom='mp';show('pauseScreen',false);show('settingsScreen');$('settingsScreen').querySelector('.menu-panel-content').scrollTop=0;$('closeSettings').focus({preventScroll:true});return;}settingsFrom=state.mode==='paused'?'paused':'menu';state.mode='settings';show('pauseScreen',false);show('settingsScreen');$('settingsScreen').querySelector('.menu-panel-content').scrollTop=0;$('closeSettings').focus({preventScroll:true});}
+function openSettings(){if(state.player.sleeping)return;survivalCloseLoot(false);inventoryClose(false);resetMovementInput();exitLock();if(mp?.ending)return;const soloDead=!mp&&['dead','survival-dead'].includes(state.mode);$('settingsScreen').style.zIndex=soloDead?'120':'';if(mp&&coopLive()){mp.localPaused=true;settingsFrom='mp';show('pauseScreen',false);show('settingsScreen');$('settingsScreen').querySelector('.menu-panel-content').scrollTop=0;$('closeSettings').focus({preventScroll:true});return;}settingsFrom=soloDead?state.mode:state.mode==='paused'?'paused':'menu';if(!soloDead)state.mode='settings';show('pauseScreen',false);show('settingsScreen');$('settingsScreen').querySelector('.menu-panel-content').scrollTop=0;$('closeSettings').focus({preventScroll:true});}
 function bindUI(){
  bindDisclaimers();
  if(!$('sfwCharacterTextures'))$('quality').closest('.setting').after(MazeAppearance.createSfwSetting({value:settings.sfwCharacterTextures,onChange:value=>{settings.sfwCharacterTextures=value;MazeAppearance.setSfwTextures(value);saveSettings();}}));
  if(!$('blackBarNudityCensoring'))$('sfwCharacterTextures').closest('.setting').after(MazeAppearance.createBlackBarSetting({value:settings.blackBarNudityCensoring,size:settings.blackBarSize,onChange:value=>{settings.blackBarNudityCensoring=value;MazeAppearance.setBlackBarCensoring(value);saveSettings();},onSizeChange:value=>{MazeAppearance.setBlackBarSize(value);settings.blackBarSize=MazeAppearance.getBlackBarSize();saveSettings();}}));
- $('startButton').onclick=startRun;$('retryButton').onclick=startRun;$('deathMenu').onclick=menu;$('quitButton').onclick=menu;$('resumeButton').onclick=resume;$('pauseButton').onclick=pause;$('settingsButton').onclick=openSettings;$('pauseSettings').onclick=openSettings;$('closeSettings').onclick=()=>{MazeInput.cancelCapture();if(settingsFrom==='mp'){show('settingsScreen',false);show('pauseScreen');return;}state.mode=settingsFrom;show('settingsScreen',false);if(settingsFrom==='paused')show('pauseScreen');};$('reloadButton').onclick=()=>location.reload();$('skipDeath').onclick=showDeathResult;$('deathVideo').addEventListener('ended',showDeathResult);$('deathVideo').addEventListener('error',()=>{if(state.mode==='dead')showDeathResult();});
+ $('startButton').onclick=startRun;$('retryButton').onclick=startRun;$('deathMenu').onclick=menu;$('quitButton').onclick=menu;$('resumeButton').onclick=resume;$('pauseButton').onclick=pause;$('settingsButton').onclick=openSettings;$('pauseSettings').onclick=openSettings;$('closeSettings').onclick=()=>{MazeInput.cancelCapture();$('settingsScreen').style.zIndex='';if(settingsFrom==='mp'){show('settingsScreen',false);show('pauseScreen');return;}state.mode=settingsFrom;show('settingsScreen',false);if(settingsFrom==='paused')show('pauseScreen');else if(!mp&&['dead','survival-dead'].includes(settingsFrom)){const target=survivalUI?.deathOpen?survivalUI.retryButton:inputVisible($('deathResult'))?$('retryButton'):inputVisible($('skipDeath'))?$('skipDeath'):$('world');target?.focus({preventScroll:true});}};$('reloadButton').onclick=()=>location.reload();$('skipDeath').onclick=showDeathResult;$('deathVideo').addEventListener('ended',showDeathResult);$('deathVideo').addEventListener('error',()=>{if(state.mode==='dead')showDeathResult();});
  for(const name of ['volume','sensitivity','quality']){const el=$(name);el.value=settings[name];el.oninput=()=>updateSetting(name,el);if(name==='sensitivity')el.onchange=el.oninput;}$('volumeOut').value=settings.volume+'%';$('sensitivityOut').value=(settings.sensitivity/50).toFixed(2)+'×';
  $('themeSelect').onchange=()=>{if(state.mode!=='menu')return;try{const theme=$('themeSelect').value==='random'?'garden':$('themeSelect').value;buildLevel(theme,C.hashSeed('maze3d-title'));}catch(e){fatal(e);}};
  addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();resizeRender();resizeTabletView();state.visibilityTick=0;state.shadowTick=0;state.shadowDirty=true;});
@@ -29621,7 +29743,7 @@ function bindUI(){
  for(const event of ['pointerup','pointercancel'])mapCanvas.addEventListener(event,()=>mapDrag=null);
  const context=document.modelContext;if(context?.registerTool){try{Promise.resolve(context.registerTool({name:'get_maze_status',title:'Read maze status',description:'Read the current maze, cleared count, phase, and tablet battery.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(input){if(!input||Object.keys(input).length)throw new Error('This tool takes no arguments.');return{phase:state.mode,maze:state.score+1,cleared:state.score,theme:state.env.theme.name,tabletSeconds:Math.ceil(tabletCharge()),hidden:state.player.hidden};}})).catch(()=>{});}catch(e){}}
  // Read-only performance / geometry diagnostics; player-free mode is a separate startup path.
- window.MazeDiagnostics={getStatus:()=>({build:'V7.41.5 · Suburbs network / rejoin and elevator recovery / local censor controls',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable,captureError:inputLockError||null,capturePending:!!inputLockAttempt,touchMode:touch,pointerLockAPI:typeof $('world').requestPointerLock==='function'},performance:{...clientFrames.status(),loading:loadingJob?{percent:Math.floor(loadingJob.percent),stage:loadingJob.label}:null,graphicsPreparation:state.graphicsWarmup?{milliseconds:state.graphicsWarmup.milliseconds,programs:state.graphicsWarmup.programs,maxBlockingMilliseconds:state.graphicsWarmup.maxBlockingMilliseconds,parallelShaders:state.graphicsWarmup.parallelShaders}:null,enemyNavigation:state.level?.enemyNavigationStats?{...state.level.enemyNavigationStats}:null,simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),safeRoomViews:{passes:safeRoomViews.passes,skipped:safeRoomViews.skipped,lastCostMs:safeRoomViews.lastCost},spectatorMap:!!state.spectatorMap,flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getSchoolStatus:schoolStatus,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
+ window.MazeDiagnostics={getStatus:()=>({build:'V7.41.6 · Suburbs chase / Backrooms bed passages / Settings while dead',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable,captureError:inputLockError||null,capturePending:!!inputLockAttempt,touchMode:touch,pointerLockAPI:typeof $('world').requestPointerLock==='function'},performance:{...clientFrames.status(),loading:loadingJob?{percent:Math.floor(loadingJob.percent),stage:loadingJob.label}:null,graphicsPreparation:state.graphicsWarmup?{milliseconds:state.graphicsWarmup.milliseconds,programs:state.graphicsWarmup.programs,maxBlockingMilliseconds:state.graphicsWarmup.maxBlockingMilliseconds,parallelShaders:state.graphicsWarmup.parallelShaders}:null,enemyNavigation:state.level?.enemyNavigationStats?{...state.level.enemyNavigationStats}:null,simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),safeRoomViews:{passes:safeRoomViews.passes,skipped:safeRoomViews.skipped,lastCostMs:safeRoomViews.lastCost},spectatorMap:!!state.spectatorMap,flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getSchoolStatus:schoolStatus,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
 }
 function look(dx,dy){if(phoneUI.isOpen||state.spectatorMap)return;if(!Number.isFinite(dx)||!Number.isFinite(dy)||inventoryIsOpen()||survivalBlocked())return;const s=mouseLookScale();if(mp?.dead){if(coopLive()&&!mp.ending&&!mp.localPaused&&mp.spectatorView==='orbit'){mp.spectatorYaw=(Number.isFinite(mp.spectatorYaw)?mp.spectatorYaw:0)-dx*s;mp.spectatorPitch=C.clamp((Number.isFinite(mp.spectatorPitch)?mp.spectatorPitch:.12)-dy*s,-Math.PI/2,Math.PI/2);}return;}const p=state.player,inversion=MazeBerryGameplay.mouseMultiplier(p,state.time);p.yaw-=dx*s*inversion;p.pitch=C.clamp(p.pitch-dy*s*inversion,-1.43,1.25);}
 // Service passages occupy real half-cells; presentation and interaction use
@@ -30523,7 +30645,7 @@ function coopControl(event){
  else if(event.type==='house-door-break')coopHouseDoorBreak(event);
  else if(event.type==='world-state'&&event.epoch===mp.epoch)coopReceiveWorld(event);
  else if(event.type==='repair-map'&&event.epoch===mp.epoch){coopCancelLevelLoad();mp.epoch=null;coopStartClientLevel(event.spec,false);}
- else if(event.type==='map-error')coopMapError('Map verification failed. Everyone must load the same V7.41.5 school-overhaul build.');
+ else if(event.type==='map-error')coopMapError('Map verification failed. Everyone must load the same V7.41.6 school-overhaul build.');
  else if(event.type==='inventory-ack'&&event.epoch===mp.epoch&&!mp.net.isHost){mp.inventoryPending.delete(event.nonce);inventoryMessage=event.accepted?'':'That item changed, is out of reach, or there is no room.';inventoryUI?.refresh();}
  else if(event.type==='survival-ack'&&event.epoch===mp.epoch&&!mp.net.isHost){const pending=mp.survivalPending.get(event.nonce);mp.survivalPending.delete(event.nonce);if(!event.accepted){if(pending?.previous){Object.assign(state.player,pending.previous);state.flashlight=!!state.player.flashlight;}announce('That action is not available.',2);}inventoryUI?.refresh();}
  else if(event.type==='weapon-ack'&&event.epoch===mp.epoch&&!mp.net.isHost){const sample=MazeStateCodec.readWeapon(event.weapon);if(sample)sample.inventoryRevision=event.inventoryRevision;if(sample)coopReconcileWeapon(state.player,sample,mp.clock.age(event.time,performance.now()/1000),null,!event.accepted);}
@@ -32725,6 +32847,57 @@ const phoneSystem=new MazePhones({time:phoneTime,players:phonePeople,drops:()=>s
  recharged:p=>{if(p===state.player)announce('Phone charged: 5 minutes held / 20 minutes stowed.',3);}
 });
 function phoneDoorInfo(door){const p=door.p,point=door.doorPos||p;if(!point||![point.x,point.z].every(Number.isFinite))return null;const dx=p.dx??p.doorDx,dz=p.dz??p.doorDz;if(!Number.isFinite(dx)||!Number.isFinite(dz))return null;return{door,point,dx,dz};}
+// A sighting can name a room behind several locks. Resolve its reachable
+// approaches together instead of finishing one whole-map search per door.
+// These jobs belong to this floor and the one authoritative enemy; presentation
+// clients never run them. Completed decisions may be reused within a room.
+const phoneRouteQueries=new Map();let phoneRouteBudgetTime=-Infinity,phoneRouteBudgetUntil=0;
+function phoneRouteAllowance(){const time=phoneTime();if(phoneRouteBudgetTime!==time){phoneRouteBudgetTime=time;phoneRouteBudgetUntil=performance.now()+1;}return Math.max(0,phoneRouteBudgetUntil-performance.now());}
+function phoneRouteQuery(key,enemy,points,{nearest=false,limit=0,terminalCosts=null,cacheSeconds=.65}={}){
+ const level=state.level,time=phoneTime(),signature=points.map((p,i)=>p.x+','+p.z+','+(terminalCosts?.[i]||0)).join(';'),options={nearest,limit:limit||undefined,terminalCosts:terminalCosts||undefined};
+ let record=phoneRouteQueries.get(key);
+ const matches=record&&record.level===level&&record.enemy===enemy&&record.signature===signature&&record.nearest===nearest&&record.limit===limit&&time>=record.at;
+ if(!matches||record.done&&time-record.completedAt>=cacheSeconds){
+  const previous=matches?record.result:null;
+  record={level,enemy,signature,nearest,limit,at:time,steppedAt:-Infinity,done:false,result:null,previous,job:C.createEnemyRouteQuery(level,enemy,points,options)};
+  phoneRouteQueries.delete(key);phoneRouteQueries.set(key,record);
+  while(phoneRouteQueries.size>12)phoneRouteQueries.delete(phoneRouteQueries.keys().next().value);
+ }
+ if(record.steppedAt!==time){
+  record.steppedAt=time;
+  const allowance=phoneRouteAllowance(),step=record.job.advance(record.done?0:64,record.done?0:allowance);
+  if(step.stale){
+   record.job=C.createEnemyRouteQuery(level,enemy,points,options);record.done=false;record.result=null;record.previous=null;record.at=time;
+  }else{
+   record.result=step.results;
+   if(step.done&&!record.done){record.done=true;record.completedAt=time;}
+  }
+ }
+ return record;
+}
+function phonePendingPoint(enemy){return{x:enemy.x,z:enemy.z,pending:true};}
+function phonePrepareFloorPlan(owner,field,enemy,id,options){
+ const level=state.level,time=phoneTime();let plan=owner[field];
+ if(!plan||plan.level!==level||plan.enemy!==enemy||plan.id!==id||time<plan.at||plan.completedAt!==undefined&&time-plan.completedAt>=options.cacheSeconds){
+  plan=owner[field]={level,enemy,id,at:time,from:{x:enemy.x,z:enemy.z},center:{x:options.center.x,z:options.center.z},options:{...options,center:null},index:0,candidates:[],sorted:false,points:[],ready:false};
+ }
+ const o=plan.options,floors=level.floors||[];
+ while(!plan.sorted&&plan.index<floors.length&&phoneRouteAllowance()>0){
+  const cell=floors[plan.index++],point={x:cell.x*4,z:cell.z*4},distance=Math.hypot(point.x-plan.center.x,point.z-plan.center.z),fromDistance=Math.hypot(point.x-plan.from.x,point.z-plan.from.z);
+  if(distance<(o.minDistance||0)||distance>=(o.maxDistance??Infinity)||fromDistance<=o.minEnemy)continue;
+  if(o.room&&(o.room.cells||[o.room]).some(c=>c.x===cell.x&&c.z===cell.z)||o.avoid&&Math.hypot(point.x-o.avoid.x,point.z-o.avoid.z)<=o.avoidRadius)continue;
+  plan.candidates.push({point,distance:fromDistance});
+ }
+ // Only the nearest eligible points are needed. Order the cheap candidates
+ // first, then stop physical checks as soon as that same shortlist is full.
+ if(!plan.sorted&&plan.index>=floors.length&&phoneRouteAllowance()>0){plan.candidates.sort((a,b)=>a.distance-b.distance);plan.index=0;plan.sorted=true;}
+ while(plan.sorted&&!plan.ready&&plan.index<plan.candidates.length&&plan.points.length<o.limit&&phoneRouteAllowance()>0){
+  const point=plan.candidates[plan.index++].point;
+  if(!C.collision(level,point.x,point.z,.4,level.roomColliders,false))plan.points.push(point);
+ }
+ if(plan.sorted&&!plan.ready&&(plan.index>=plan.candidates.length||plan.points.length>=o.limit)){plan.ready=true;plan.candidates=[];}
+ return plan;
+}
 function phoneLocked(event,enemy){
  const level=state.level,contains=(room,p)=>(room?.cells||[room]).some(c=>c&&c.x===C.tileAt(p.x)&&c.z===C.tileAt(p.z));
  const sealed=room=>{const doors=(room?.doors||[room?.door]).filter(Boolean);return doors.length>0&&doors.every(d=>(d.doorLocked||d.doorLockPending)&&!d.doorBroken);};
@@ -32742,22 +32915,49 @@ function phoneLocked(event,enemy){
    const p=door.p;if(!(ids.has(p.id)||room===closet&&p.closetId===closet.id||room===closet&&descriptors.some(d=>d.x===p.x&&d.z===p.z&&d.doorDx===p.doorDx&&d.doorDz===p.doorDz))||!(p.doorLocked||p.doorLockPending)||p.doorBroken)continue;
    const v=phoneDoorInfo(door);if(!v)continue;
    for(const sign of[1,-1]){const approach={x:v.point.x+v.dx*sign*1.12,z:v.point.z+v.dz*sign*1.12};if(contains(room,approach)||C.collision(level,approach.x,approach.z,.4,level.roomColliders,false))continue;
+    if(level.suburb){candidates.push({...v,id:room.id||C.key(room.x,room.z),room,approach});continue;}
     const direct=C.enemyNavigationClear(level,enemy,approach),route=direct?[approach]:C.pathfind(level,enemy,approach);if(!route.length&&!direct)continue;
     let length=0,previous=enemy;for(const q of route){length+=Math.hypot(q.x-previous.x,q.z-previous.z);previous=q;}length+=Math.hypot(approach.x-previous.x,approach.z-previous.z);candidates.push({...v,id:room.id||C.key(room.x,room.z),room,approach,length});
    }
   }
  }
- candidates.sort((a,b)=>a.length-b.length);
- const room=rooms[0];return candidates[0]||{id:room.id||C.key(room.x,room.z),room,door:null,point:{x:event.x,z:event.z},dx:1,dz:0,approach:{x:enemy.x,z:enemy.z}};
+ const room=rooms[0],fallback={id:room.id||C.key(room.x,room.z),room,door:null,point:{x:event.x,z:event.z},dx:1,dz:0,approach:{x:enemy.x,z:enemy.z}};
+ if(level.suburb&&candidates.length){
+  const key='lock:'+rooms.map(r=>r.id||C.key(r.x,r.z)).join('|')+':'+candidates.map(c=>c.door.p.id).join('|'),record=phoneRouteQuery(key,enemy,candidates.map(c=>c.approach),{nearest:true});
+  const result=record.result?.filter(Boolean).sort((a,b)=>a.length-b.length)[0];
+  if(result)return{...candidates[result.index],length:result.length};
+  if(!record.done){const previous=record.previous?.filter(Boolean).sort((a,b)=>a.length-b.length)[0];return previous?{...candidates[previous.index],length:previous.length,pending:true}:{...fallback,pending:true};}
+  return fallback;
+ }
+ candidates.sort((a,b)=>a.length-b.length);return candidates[0]||fallback;
 }
 function phonePatrol(event,e,locked){
  const level=state.level,inside=p=>(locked.room.cells||[locked.room]).some(c=>c.x===C.tileAt(p.x)&&c.z===C.tileAt(p.z));
+ if(level.suburb){
+  const plan=phonePrepareFloorPlan(event,'patrolRoutePlan',e,locked.id,{center:event,room:locked.room,maxDistance:18,minEnemy:1.2,avoid:locked.point,avoidRadius:2,limit:30,cacheSeconds:5});
+  if(!plan.ready){const pending=[];pending.pending=true;return pending;}
+  return phonePatrolResult(event,e,locked,plan.points);
+ }
  const candidates=(level.floors||[]).map(p=>({x:p.x*4,z:p.z*4})).filter(p=>!inside(p)&&Math.hypot(p.x-event.x,p.z-event.z)<18&&Math.hypot(p.x-e.x,p.z-e.z)>1.2&&Math.hypot(p.x-locked.point.x,p.z-locked.point.z)>2&&!C.collision(level,p.x,p.z,.4,level.roomColliders,false));
  candidates.sort((a,b)=>Math.hypot(a.x-e.x,a.z-e.z)-Math.hypot(b.x-e.x,b.z-e.z));
  const out=[];for(const point of candidates.slice(0,30)){if(out.some(p=>Math.hypot(p.x-point.x,p.z-point.z)<3))continue;if(C.enemyNavigationClear(level,e,point)||C.pathfind(level,e,point).length)out.push(point);if(out.length===8)break;}
  return out;
 }
+function phonePatrolResult(event,e,locked,points){
+ const record=phoneRouteQuery('patrol:'+locked.id,e,points,{limit:8,cacheSeconds:5});
+ if(!record.done){const pending=[];pending.pending=true;return pending;}
+ if(event.patrolRoutePlan&&event.patrolRoutePlan.completedAt===undefined)event.patrolRoutePlan.completedAt=phoneTime();
+ const out=[];for(let i=0;i<points.length;i++){const point=points[i];if(!record.result?.[i]||out.some(p=>Math.hypot(p.x-point.x,p.z-point.z)<3))continue;out.push(point);if(out.length===8)break;}return out;
+}
+function phoneAwayPoint(clue,e){
+ const plan=phonePrepareFloorPlan(clue,'awayRoutePlan',e,'away',{center:clue,minDistance:9,minEnemy:4,limit:24,cacheSeconds:5});
+ if(!plan.ready)return phonePendingPoint(e);
+ const record=phoneRouteQuery('away:'+plan.center.x+','+plan.center.z,e,plan.points,{nearest:true,cacheSeconds:5});
+ if(!record.done)return phonePendingPoint(e);
+ const result=record.result?.find(Boolean);return result?plan.points[result.index]:null;
+}
 const phoneHearing=new MazeHearing({time:phoneTime,level:()=>state.level,enemy:()=>state.enemy,players:()=>phonePeople().filter(p=>!mp||!mp.running||mp.readyPeers.has(p.id)),phones:()=>phoneSystem,locked:phoneLocked,patrol:phonePatrol,
+ away:phoneAwayPoint,
  approach:gardenFixtureApproach,fixtureActive:clue=>gardenFixtures().some(f=>'fixture:'+f.id===clue.source&&f.on),
  reachDoor(e,d){const ignore=d.door.colliders.filter(b=>b.serviceLeaf||b.roomDoorLeaf||b.closetDoorLeaf||b.closetDoorThreshold);return interactionVisible({x:e.x,y:(e.y||0)+1.3,z:e.z},{x:d.point.x,y:1.2,z:d.point.z},ignore);},breach:houseBreakDoor});
 const phoneAudio=new MazePhoneAudio(audio,{ring:assets.phoneRing,dial:assets.phoneDial,notification:assets.phoneNotification,vibrate:assets.phoneVibrate});
@@ -32766,7 +32966,7 @@ const phoneUI=new MazePhoneUI({time:phoneTime,system:()=>phoneSystem,current:()=
  opened(){resetMovementInput();state.player.speed=0;state.crouchToggle=!!state.player.crouched;setTabletFocus(false);exitLock();audio.unlock();},closed(resume){resetMovementInput();if(resume&&inputWorldReady())requestLock();}
 });
 window.MazePhoneRuntime={system:phoneSystem,time:phoneTime};
-function phoneInitLevel(){phoneHearing.reset();phoneSeen.clear();phoneNonce=0;phoneAudio.stop();phoneUI.close(false);phoneSystem.refresh();phoneSystem.initializePlayers();if(state.level)state.level.hearing=!mp||mp.net.isHost?phoneHearing:null;}
+function phoneInitLevel(){phoneHearing.reset();phoneRouteQueries.clear();phoneRouteBudgetTime=-Infinity;phoneRouteBudgetUntil=0;phoneSeen.clear();phoneNonce=0;phoneAudio.stop();phoneUI.close(false);phoneSystem.refresh();phoneSystem.initializePlayers();if(state.level)state.level.hearing=!mp||mp.net.isHost?phoneHearing:null;}
 function phoneResult(result){if(result?.reason){phoneUI.message(result.reason);if(!phoneUI.isOpen)announce(result.reason,3);}else phoneUI.message('');phoneUI.redraw();}
 function phoneRequest(a){if(!inputWorldReady()||mp?.dead||state.player?.dead||state.player?.sleeping)return false;phoneSystem.refresh();a={...a,phoneId:a.phoneId||state.player.phoneItemId};
  if(mp&&!mp.net.isHost){const sent=mp.net.sendAction({kind:'phone',epoch:mp.epoch,nonce:++phoneNonce,...a});if(!sent)phoneResult({reason:'Phone connection unavailable.'});return sent;}
@@ -32815,6 +33015,18 @@ function gardenFixtureApproach(clue,e){
  const f=gardenFixtures().find(f=>'fixture:'+f.id===clue.source);if(!f)return null;
  const now=phoneTime(),stamp=state.level.navigationRevision||0,cache=clue.fixtureApproach;
  if(cache&&now-cache.at<1&&cache.stamp===stamp)return cache.point;
+ if(state.level.suburb){
+  let plan=clue.fixtureRoutePlan;
+  if(!plan||plan.level!==state.level||plan.fixture!==f||plan.x!==f.x||plan.z!==f.z||now<plan.at){plan=clue.fixtureRoutePlan={level:state.level,fixture:f,x:f.x,z:f.z,at:now,index:0,points:[]};}
+  while(plan.index<36&&phoneRouteAllowance()>0){
+   const index=plan.index++,radius=[.85,1.25,1.65][Math.floor(index/12)],angle=(index%12)*Math.PI/6,point={x:f.x+Math.cos(angle)*radius,z:f.z+Math.sin(angle)*radius,approachPenalty:radius*.3};
+   if(!C.collision(state.level,point.x,point.z,.40,state.level.roomColliders||[],true)&&gardenFixtureReachable(f,point))plan.points.push(point);
+  }
+  if(plan.index<36)return phonePendingPoint(e);
+  const points=plan.points,record=phoneRouteQuery('fixture:'+f.id,e,points,{nearest:true,terminalCosts:points.map(p=>p.approachPenalty),cacheSeconds:1});
+  if(!record.done)return phonePendingPoint(e);
+  const result=record.result?.find(Boolean),point=result?points[result.index]:{x:f.x,z:f.z};clue.fixtureApproach={at:now,stamp,point};clue.fixtureRoutePlan=null;return point;
+ }
  const points=[];
  // Plumbing coordinates can sit inside the tub or against a solid wall.
  // Investigate a reachable standing point on the exposed side instead.
