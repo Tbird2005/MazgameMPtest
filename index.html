@@ -1277,11 +1277,11 @@ applied afterward. No procedural sinusoidal walk or view bob is used.
 <canvas id="world" aria-label="First-person 3D maze"></canvas><div id="vignette" aria-hidden="true"></div><div id="grain" aria-hidden="true"></div>
 <div id="loading" class="loading"><span class="load-mark"></span><p id="loadingText">Building the maze…</p></div>
 <main id="menu" class="screen menu hidden">
-<header class="brandline"><span class="brandmark" aria-hidden="true">▥</span><span>MAZE GAME <b>3D</b></span><span class="edition">SCHOOL OVERHAUL · V7.40.0</span></header>
+<header class="brandline"><span class="brandmark" aria-hidden="true">▥</span><span>MAZE GAME <b>3D</b></span><span class="edition">SCHOOL OVERHAUL · V7.41.0</span></header>
 <section class="menu-content"><p class="eyebrow">FIFTEEN SECONDS TO REMEMBER.</p><h1>Know the way.<br><em>Find your way out.</em></h1><p class="intro">Fifteen seconds of battery. A floor to survive.<br>Find the lift. Use its travel button to escape.</p>
 <aside id="photosensitivityWarning" class="photosensitivity-warning" role="note" aria-labelledby="photosensitivityTitle"><strong id="photosensitivityTitle">PHOTOSENSITIVITY / EPILEPSY WARNING</strong><span>Flashing lights, strong color effects and screen distortion may trigger seizures or discomfort in photosensitive players.</span></aside><div class="world-picker"><label for="themeSelect">NEXT ENVIRONMENT</label><select id="themeSelect"><option value="random">Random · a different place every maze</option><option value="garden">01 · Overgrown / open sky</option><option value="poolrooms">02 · Poolrooms / flooded tile</option><option value="school">03 · After Hours / school</option><option value="catacombs">04 · Below Ground / catacombs</option><option value="industrial">05 · Service Level / industrial</option><option value="hotel">06 · Last Guest / hotel</option><option value="forest">07 · Forest / misty trails</option><option value="backrooms">08 · Backrooms / yellow labyrinth</option><option value="suburb">09 · Hollow Pines / suburb</option></select></div>
 <button id="startButton" class="primary">Singleplayer <span>↵</span></button><div class="menu-actions"><button id="settingsButton" class="text-button">Settings & controls</button><button id="disclaimersButton" class="text-button">Disclaimers &amp; help</button><span id="menuBest">BEST · 0 CLEARED</span></div><p class="headphone-note"><span aria-hidden="true">◖◗</span> Headphones recommended · spatial audio</p></section>
-<footer class="menu-footer"><span id="themeCaption">OVERGROWN</span><span>1–4 players · School Overhaul · v7.40.0</span><span id="assetStatus"></span></footer></main>
+<footer class="menu-footer"><span id="themeCaption">OVERGROWN</span><span>1–4 players · School Overhaul · v7.41.0</span><span id="assetStatus"></span></footer></main>
 <div id="hud" class="hidden"><div class="hud-top"><span id="levelLabel">FLOOR 01</span><span id="themeLabel">OVERGROWN</span><button id="tabletButton" class="tablet-button hidden" title="Toggle tablet (V)">Focus tablet <kbd>Tab</kbd></button><button id="pauseButton" title="Pause (Esc)" aria-label="Pause">Ⅱ</button></div><div id="crosshair" aria-hidden="true"></div><div id="contextPrompt" class="context-prompt"></div><div id="statusLine" class="status-line"></div><div class="hud-bottom"><span id="objective">Find the exit</span><span id="controlHint">WASD · MOVE &nbsp; R · DOOR &nbsp; Q / E · LEAN &nbsp; F · LIGHT</span></div><div id="notice" role="status"></div></div>
 <section id="tabletFocus" class="tablet-focus hidden" aria-label="Tablet map focus view">
 <header class="tablet-focus-header"><div><p>ROUTE MEMORY</p><span>PORTABLE / LOCAL MAP</span></div><div class="tablet-power"><strong id="focusBattery">100%</strong><span id="focusTime">15 seconds</span><div class="tablet-power-track"><i id="focusCharge"></i></div></div><button id="closeTablet" class="tablet-close">Stow tablet <kbd>Tab</kbd></button></header>
@@ -18361,7 +18361,7 @@ function staticHash(level){
  rows.push([0x44504859,1]);if(level.theme==='suburb')rows.push([0x48414c4d,1]); // Swept door contact protocol; do not mix with snap-ejection clients.
  // Transmission changes every theme's enemy protocol; school also adds
  // destructible floor support. Reject mixed builds before either can desync.
- rows.push([0x53495456,...Array.from('school-overhaul-v7.40.0|garden-snake-death-v1|dropped-flashlights-v1|kitchen-door-sweep-v1',c=>c.charCodeAt(0))]);
+ rows.push([0x53495456,...Array.from('school-overhaul-v7.41.0|garden-snake-death-v1|dropped-flashlights-v1|kitchen-door-sweep-v1|finished-floor-drops-v1|school-bathroom-circuits-v1',c=>c.charCodeAt(0))]);
  if(level.theme==='school'){
   rows.push([0x53434f4c,1]);
   const mines=[...(level.schoolHazards?.mines||[])].sort((a,b)=>String(a.id)<String(b.id)?-1:String(a.id)>String(b.id)?1:0);
@@ -18644,12 +18644,13 @@ global.MazeBackpackVisuals=Object.freeze({colors,createModel,apply,dispose,inspe
 
 </script><script>MazeBoot.advance(8112);</script>
 <script>
-/* Inventory appearance changes materials and the two verified outfit meshes
-   only. Legendary outfits also finish the surviving gold costume trim.
-   Skeletons, geometry, hair and eye whites are untouched. Skin receives only its temporary wet finish. */
+/* Appearance changes never mutate the supplied body, skeleton or atlas.
+   Outfits retain their palette and wet/legendary finishes. Two independent
+   local preferences cover verified skin pixels or add one shared skinned
+   mosaic mesh outside the actor's gameplay model and hitboxes. */
 (function(global){
 'use strict';
-const T=global.THREE,records=new WeakMap(),textures=new Map();let legendaryEnvironment=null;
+const T=global.THREE,records=new WeakMap(),liveRecords=new Set(),textures=new Map(),sfwSources=new WeakMap();let legendaryEnvironment=null,sfwTexturesEnabled=false,mosaicEnabled=false,mosaicTexture=null,mosaicGeometryTemplate=null;
 const hex=rgb=>'#'+rgb.map(v=>v.toString(16).padStart(2,'0')).join('');
 const palettes=[
  {name:'Tangerine / teal',a:[246,137,47],b:[31,190,167]},
@@ -18674,10 +18675,9 @@ const OUTFIT=new Set(['traje','brazalete']);
 const paletteIndex=(n,fallback=4)=>Number.isInteger(n)&&n>=0&&n<palettes.length?n:fallback;
 const meshName=o=>o.userData?.name||o.name;
 const materialsChanged=actor=>{if(actor.group)actor.group.userData.shadeRevision=(actor.group.userData.shadeRevision||0)+1;};
-function recolorPixels(data,index,style=null){
- const p=legendaryStyles[styleName(style)]||palettes[paletteIndex(index)];let changed=0;
- if(index===4&&!styleName(style))return changed;
- for(let i=0;i<data.length;i+=4){
+function recolorRange(data,p,start,end){
+ let changed=0;
+ for(let i=start;i<end;i+=4){
   const r=data[i],g=data[i+1],b=data[i+2],max=Math.max(r,g,b),min=Math.min(r,g,b);
   // Both supplied atlases use these same red/blue pigments. This mask
   // excludes white sclera, black pupils/lashes, neutral trim and yellow gold.
@@ -18687,6 +18687,10 @@ function recolorPixels(data,index,style=null){
   changed++;
  }
  return changed;
+}
+function recolorPixels(data,index,style=null){
+ const named=styleName(style);if(index===4&&!named)return 0;
+ return recolorRange(data,legendaryStyles[named]||palettes[paletteIndex(index)],0,data.length);
 }
 function variant(record,source,index,kind,style=null){
  style=styleName(style);if(index===4&&!style||!source?.image)return source;
@@ -18718,16 +18722,156 @@ function finishMask(record,part,style){
 }
 function restoreFinish(part){const m=part.material,b=part.base;if(b.color)m.color.copy(b.color);m.roughness=b.roughness;m.metalness=b.metalness;m.roughnessMap=b.roughnessMap;m.metalnessMap=b.metalnessMap;m.envMap=b.envMap;m.envMapIntensity=b.envMapIntensity;}
 const materialKind=m=>/^(piel|skin|body|cuerpo|cabeza)$/i.test(m?.name||'')?'skin':m?.name==='oro'?'trim':m?.map&&m.name==='traje'?'cloth':m?.map&&m.name==='ojos'?'iris':null;
+// These rectangles enclose the supplied Piel atlas's nipple UV islands,
+// including their painted falloff and wrapped seam fragments. They were
+// checked against the body mesh's two breast-bone regions. The separate
+// face, lips and eye atlases never enter this path; other body marks remain.
+const SFW_BODY_REGIONS=Object.freeze([
+ [518,48,570,97],[619,50,636,83],[966,88,994,105],
+ [1015,210,1024,225],[1017,434,1024,444],[0,435,2,443],
+ [651,435,673,468],[1015,456,1024,471],
+ [1016,504,1024,517],[0,506,2,516],
+ [205,696,254,733],[474,963,509,1007]
+].map(Object.freeze));
+const originalSkinMap=source=>sfwSources.get(source)||source;
+function coveredSkin(record,source){
+ source=originalSkinMap(source);const image=source?.image;
+ if(!image||image.width!==1024||image.height!==1024)return source;
+ const key='sfw-body:verified-piel-v1';
+ if(!textures.has(key)){
+  try{
+   const canvas=document.createElement('canvas');canvas.width=canvas.height=1024;
+   const context=canvas.getContext('2d',{willReadFrequently:true});if(!context)return source;
+   context.drawImage(image,0,0);const pixels=context.getImageData(0,0,1024,1024),data=pixels.data,sample=(32*1024+32)*4,skin=[data[sample],data[sample+1],data[sample+2]];let changed=0;
+   for(const [left,top,right,bottom]of SFW_BODY_REGIONS)for(let y=top;y<bottom;y++)for(let x=left;x<right;x++){
+    const index=(y*1024+x)*4;if(!data[index+3])continue;
+    if(data[index]!==skin[0]||data[index+1]!==skin[1]||data[index+2]!==skin[2])changed++;
+    data[index]=skin[0];data[index+1]=skin[1];data[index+2]=skin[2];
+   }
+   context.putImageData(pixels,0,0);const texture=source.clone();texture.source=new T.Source(canvas);texture.name='Plain skin / verified body UV regions';texture.needsUpdate=true;
+   sfwSources.set(texture,source);textures.set(key,{texture,source,refs:0,changed,skin,keepWarm:true,sfw:true});
+  }catch{return source;}
+ }
+ const entry=textures.get(key);if(!record.keys.has(key)){record.keys.add(key);entry.refs++;}return entry.texture;
+}
+function applySkinCoverage(record){
+ for(const part of record.materials)if(part.bodyAtlas)part.material.map=sfwTexturesEnabled?coveredSkin(record,part.map):part.map;
+ record.sfw=sfwTexturesEnabled;
+ // Both choices use the same texture channel, format and shader inputs.
+ // Swapping an already-prepared map does not invalidate a material program.
+}
+function setSfwTextures(value){
+ const enabled=value===true;if(enabled===sfwTexturesEnabled)return false;sfwTexturesEnabled=enabled;
+ for(const record of liveRecords)applySkinCoverage(record);
+ return true;
+}
+function prewarmSfwTextures(actor,renderer=null){
+ if(!actor?.ready||!actor.model)return false;const record=records.get(actor)||createRecord(actor);let prepared=false;
+ for(const part of record.materials)if(part.bodyAtlas){const covered=coveredSkin(record,part.map);renderer?.initTexture?.(part.map);if(covered!==part.map)renderer?.initTexture?.(covered);prepared=prepared||covered!==part.map;}
+ return prepared;
+}
+function createSfwSetting({value=sfwTexturesEnabled,onChange}={}){
+ const row=document.createElement('div'),label=document.createElement('label'),input=document.createElement('input'),note=document.createElement('p');
+ row.className='setting mouse-options';input.id='sfwCharacterTextures';input.type='checkbox';input.checked=!!value;input.setAttribute('aria-describedby','sfwCharacterTexturesNote');label.htmlFor=input.id;label.append(input,document.createTextNode(' SFW character textures'));
+ note.id='sfwCharacterTexturesNote';note.className='setting-note';note.textContent='Covers character nipple textures with the surrounding skin tone. Applies only on your device.';row.append(label,note);
+ input.onchange=()=>{if(typeof onChange==='function')onChange(input.checked);else setSfwTextures(input.checked);};return row;
+}
+// The optional mosaic is a screen-facing cover, sized from the protected
+// vertices of this supplied body. It never adds boxes or changes anatomy.
+const MOSAIC_REGIONS=Object.freeze(['breast.L','breast.R','Ass L','Ass R','front-pelvis']);
+let mosaicSamplesTemplate=null;
+function pixelMosaicTexture(){
+ if(mosaicTexture)return mosaicTexture;
+ const canvas=document.createElement('canvas');canvas.width=canvas.height=8;const context=canvas.getContext('2d'),palette=['#e5c9bf','#bb9a8e','#f1d8cd','#d5b5a9','#9d7c70','#ead1c6','#c6a497','#ddbeb3'];
+ let seed=0x39b54a71;for(let y=0;y<8;y++)for(let x=0;x<8;x++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;context.fillStyle=palette[seed>>>29];context.fillRect(x,y,1,1);}
+ mosaicTexture=new T.CanvasTexture(canvas);mosaicTexture.name='Shared opaque 8 by 8 body mosaic';mosaicTexture.colorSpace=T.SRGBColorSpace;mosaicTexture.magFilter=mosaicTexture.minFilter=T.NearestFilter;mosaicTexture.generateMipmaps=false;mosaicTexture.flipY=false;return mosaicTexture;
+}
+function mosaicSamples(body){
+ const source=body.geometry,p=source?.attributes.position,j=source?.attributes.skinIndex,w=source?.attributes.skinWeight,skeleton=body.skeleton;if(!p||!j||!w||!skeleton)return null;
+ const names=skeleton.bones.map(meshName),bones=MOSAIC_REGIONS.slice(0,4).map(name=>names.indexOf(name));if(bones.some(index=>index<0))return null;
+ const signature=[p.count,source.index?.count||0,...bones].join(':');if(mosaicSamplesTemplate?.signature===signature)return mosaicSamplesTemplate.samples;
+ const samples=Array.from({length:5},()=>[]),seen=Array.from({length:5},()=>new Set());
+ for(let i=0;i<p.count;i++){
+  const x=p.getX(i),y=p.getY(i),z=p.getZ(i),scores=[0,0,0,0];for(let k=0;k<4;k++){const region=bones.indexOf(j.array[i*4+k]);if(region>=0)scores[region]+=w.array[i*4+k];}
+  const selected=[];for(let region=0;region<4;region++)if(region<2?scores[region]>.65&&y>1.17&&z<-.065:scores[region]>.45&&y>.79&&y<1.11&&z>.055)selected.push(region);
+  if(Math.abs(x)<.11&&y>.755&&y<1.045&&z<-.025)selected.push(4);if(!selected.length)continue;
+  const key=[x,y,z,...j.array.subarray(i*4,i*4+4),...w.array.subarray(i*4,i*4+4)].join(':');for(const region of selected)if(!seen[region].has(key)){seen[region].add(key);samples[region].push(i);}
+ }
+ if(samples.some(region=>!region.length))return null;if(!mosaicSamplesTemplate)mosaicSamplesTemplate={signature,samples};return samples;
+}
+function mosaicGeometry(body){
+ const samples=mosaicSamples(body);if(!samples)return null;
+ if(!mosaicGeometryTemplate){
+  const positions=[],normals=[],uvs=[],regions=[],indices=[];
+  for(let region=0;region<5;region++){const offset=positions.length/3;for(const [x,y]of [[-1,-1],[1,-1],[1,1],[-1,1]]){positions.push(x,y,0);normals.push(0,0,1);uvs.push(x*.5+.5,y*.5+.5);regions.push(region);}indices.push(offset,offset+1,offset+2,offset,offset+2,offset+3);}
+  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('normal',new T.Float32BufferAttribute(normals,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geometry.setAttribute('mazeMosaicRegion',new T.Float32BufferAttribute(regions,1));geometry.setIndex(indices);geometry.computeBoundingBox();geometry.computeBoundingSphere();geometry.name='Five shared flat mosaic quads';mosaicGeometryTemplate={geometry};
+ }
+ return{geometry:mosaicGeometryTemplate.geometry,samples,owned:false};
+}
+function projectMosaic(mosaic,object,renderer,camera){
+ const body=mosaic.part.mesh,uniforms=mosaic.uniforms,view=mosaic.bodyToView.multiplyMatrices(camera.matrixWorldInverse,body.matrixWorld),point=mosaic.point,viewport=renderer.getViewport(mosaic.viewport),orthographic=!!camera.isOrthographicCamera,near=Math.max(.001,camera.near||.01),px=Math.max(1,viewport.z),py=Math.max(1,viewport.w),projection=camera.projectionMatrix.elements;
+ uniforms.viewToLocal.value.copy(object.matrixWorld).invert().multiply(camera.matrixWorld);
+ for(let region=0;region<5;region++){
+  let left=Infinity,right=-Infinity,bottom=Infinity,top=-Infinity,nearest=Infinity;
+  for(const index of mosaic.resource.samples[region]){
+   body.getVertexPosition(index,point);point.applyMatrix4(view);const depth=-point.z;if(depth<=0)continue;
+   // Clamp only near-plane crossings. The quad still lies behind camera.near;
+   // no division by a negative or vanishing eye distance can fill the screen.
+   const d=Math.max(near,depth),x=orthographic?point.x:point.x/d,y=orthographic?point.y:point.y/d;
+   left=Math.min(left,x);right=Math.max(right,x);bottom=Math.min(bottom,y);top=Math.max(top,y);nearest=Math.min(nearest,depth);
+  }
+  const rect=uniforms.rects.value[region];if(!Number.isFinite(nearest)){rect.set(0,0,0,0);uniforms.depths.value[region]=-near*2;continue;}
+  const distance=Math.max(near*1.01,nearest-.002),scale=orthographic?1:distance,padX=Math.max(.0015,4*scale/(px*Math.max(.001,Math.abs(projection[0])))),padY=Math.max(.0015,4*scale/(py*Math.max(.001,Math.abs(projection[5]))));
+  rect.set(left*scale-padX,bottom*scale-padY,right*scale+padX,top*scale+padY);uniforms.depths.value[region]=-distance;
+ }
+}
+function mosaicMaterial(source,mosaic){
+ const material=global.MazeActorFog?.clone(source)||source.clone();material.name='Local flat mosaic censor';material.map=pixelMosaicTexture();material.roughness=.9;material.metalness=0;material.normalMap=null;material.roughnessMap=null;material.metalnessMap=null;material.envMap=null;material.transparent=false;material.opacity=1;material.alphaTest=0;material.depthWrite=true;material.depthTest=true;material.side=T.DoubleSide;material.vertexColors=false;
+ const before=material.onBeforeCompile,key=material.customProgramCacheKey;
+ material.onBeforeCompile=function(shader,renderer){
+  before.call(this,shader,renderer);shader.uniforms.mazeMosaicRects=mosaic.uniforms.rects;shader.uniforms.mazeMosaicDepths=mosaic.uniforms.depths;shader.uniforms.mazeMosaicViewToLocal=mosaic.uniforms.viewToLocal;
+  shader.vertexShader='attribute float mazeMosaicRegion;\nuniform vec4 mazeMosaicRects[5];\nuniform float mazeMosaicDepths[5];\nuniform mat4 mazeMosaicViewToLocal;\n'+shader.vertexShader;
+  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','int mazeRegion = int(mazeMosaicRegion + 0.5);\nvec4 mazeRect = mazeMosaicRects[mazeRegion];\nvec2 mazeXY = mix(mazeRect.xy, mazeRect.zw, position.xy * 0.5 + 0.5);\nvec3 transformed = (mazeMosaicViewToLocal * vec4(mazeXY, mazeMosaicDepths[mazeRegion], 1.0)).xyz;').replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\nobjectNormal = vec3(modelViewMatrix[0].z, modelViewMatrix[1].z, modelViewMatrix[2].z);');
+ };
+ material.customProgramCacheKey=function(){return key.call(this)+'|flat-body-mosaic-v1';};return material;
+}
+function bindMosaicProjection(mesh,mosaic){mesh.onBeforeRender=function(renderer,scene,camera){projectMosaic(mosaic,this,renderer,camera);};return mesh;}
+function ensureMosaic(record){
+ if(record.mosaic)return record.mosaic;const part=record.materials.find(part=>part.bodyAtlas&&part.mesh.isSkinnedMesh);if(!part)return null;const resource=mosaicGeometry(part.mesh);if(!resource)return null;
+ const mosaic={part,resource,point:new T.Vector3(),viewport:new T.Vector4(),bodyToView:new T.Matrix4(),uniforms:{rects:{value:Array.from({length:5},()=>new T.Vector4())},depths:{value:new Float32Array(5)},viewToLocal:{value:new T.Matrix4()}}};
+ const group=new T.Group();group.name='Local mosaic nudity censor';group.userData.mazeMosaicCensor=true;group.visible=false;const material=mosaicMaterial(part.material,mosaic),mesh=bindMosaicProjection(new T.Mesh(resource.geometry,material),mosaic);mesh.name='Flat breast, buttock and pelvis mosaic';mesh.userData.mazeMosaicCensor=true;mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=part.mesh.receiveShadow;mesh.layers.mask=part.mesh.layers.mask;group.add(mesh);
+ // Kept outside the model and mesh list used by gameplay, survival floor
+ // tests, body cloning, bone snapshots and hitboxes. Projection reads each
+ // committed pose for the camera about to draw it, including mirrors/CCTV.
+ record.actor.group.add(group);record.mosaic=Object.assign(mosaic,{group,mesh,material});return record.mosaic;
+}
+function syncMosaic(record){
+ const mosaic=record.mosaic;if(!mosaic)return;
+ mosaic.group.visible=mosaicEnabled&&!record.worn;mosaic.mesh.receiveShadow=mosaic.part.mesh.receiveShadow;mosaic.material.color.copy(mosaic.part.material.color);
+}
+function setMosaicCensoring(value){
+ const enabled=value===true;if(enabled===mosaicEnabled)return false;mosaicEnabled=enabled;for(const record of liveRecords)syncMosaic(record);return true;
+}
+function createMosaicSetting({value=mosaicEnabled,onChange}={}){
+ const row=document.createElement('div'),label=document.createElement('label'),input=document.createElement('input'),note=document.createElement('p');row.className='setting mouse-options';input.id='mosaicNudityCensoring';input.type='checkbox';input.checked=!!value;input.setAttribute('aria-describedby','mosaicNudityCensoringNote');label.htmlFor=input.id;label.append(input,document.createTextNode(' Mosaic nudity censoring'));note.id='mosaicNudityCensoringNote';note.className='setting-note';note.textContent='Adds pixelated coverage to exposed breasts, buttocks and front pelvis. Applies only on your device.';row.append(label,note);input.onchange=()=>{if(typeof onChange==='function')onChange(input.checked);else setMosaicCensoring(input.checked);};return row;
+}
+function prewarmMosaicRenderer(actor,renderer,scene,camera){
+ if(!actor?.ready||!renderer||!scene||!camera)return false;const record=records.get(actor)||createRecord(actor),mosaic=record.mosaic;if(!mosaic)return false;
+ renderer.initTexture?.(mosaic.material.map);const proxy=bindMosaicProjection(mosaic.mesh.clone(false),mosaic),group=new T.Group();proxy.visible=true;proxy.layers.enableAll();proxy.frustumCulled=false;group.add(proxy);
+ const children=scene.children.map(object=>({object,visible:object.visible})),target=renderer.getRenderTarget(),face=renderer.getActiveCubeFace(),mip=renderer.getActiveMipmapLevel(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest(),geometry=proxy.geometry,start=geometry.drawRange.start,count=geometry.drawRange.count;
+ try{for(const entry of children)if(!entry.object.isLight)entry.object.visible=false;scene.add(group);geometry.setDrawRange(start,Math.min(3,count));renderer.setRenderTarget(null);renderer.setViewport(0,0,8,8);renderer.setScissor(0,0,8,8);renderer.setScissorTest(true);renderer.compile(group,camera,scene);renderer.render(scene,camera);}
+ finally{geometry.setDrawRange(start,count);scene.remove(group);for(const entry of children)entry.object.visible=entry.visible;renderer.setRenderTarget(target,face,mip);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);group.clear();}return true;
+}
 function createRecord(actor){
- const record={actor,meshes:[],materials:[],keys:new Set(),signature:null,base:4,worn:true,outfitPalette:4,outfitStyle:null,environment:null,inventoryKnown:false,reflectionLight:0};
+ const record={actor,meshes:[],materials:[],keys:new Set(),signature:null,base:4,worn:true,outfitPalette:4,outfitStyle:null,environment:null,inventoryKnown:false,reflectionLight:0,sfw:sfwTexturesEnabled};
  for(const mesh of actor.meshes||[]){
   const original=mesh.material,list=Array.isArray(original)?original:[original],name=meshName(mesh),relevant=list.some(materialKind);
   record.meshes.push({mesh,name,visible:mesh.visible,outfit:OUTFIT.has(name),original,owned:null});
   if(!relevant)continue;
   const owned=list.map(m=>global.MazeActorFog?.clone(m)||m.clone());mesh.material=Array.isArray(original)?owned:owned[0];record.meshes[record.meshes.length-1].owned=owned;
-  for(let i=0;i<list.length;i++)if(materialKind(list[i]))record.materials.push({mesh,name,material:owned[i],map:list[i].map,kind:materialKind(list[i]),outfit:OUTFIT.has(name),base:{color:owned[i].color?.clone(),roughness:owned[i].roughness,metalness:owned[i].metalness,roughnessMap:owned[i].roughnessMap,metalnessMap:owned[i].metalnessMap,envMap:owned[i].envMap,envMapIntensity:owned[i].envMapIntensity}});
+  for(let i=0;i<list.length;i++)if(materialKind(list[i]))record.materials.push({mesh,name,material:owned[i],map:originalSkinMap(list[i].map),kind:materialKind(list[i]),bodyAtlas:name==='body'&&list[i].name==='piel',outfit:OUTFIT.has(name),base:{color:owned[i].color?.clone(),roughness:owned[i].roughness,metalness:owned[i].metalness,roughnessMap:owned[i].roughnessMap,metalnessMap:owned[i].metalnessMap,envMap:owned[i].envMap,envMapIntensity:owned[i].envMapIntensity}});
  }
- records.set(actor,record);materialsChanged(actor);return record;
+ records.set(actor,record);liveRecords.add(record);applySkinCoverage(record);ensureMosaic(record);syncMosaic(record);materialsChanged(actor);return record;
 }
 function apply(actor,p={}){
  if(!actor?.ready||!actor.model)return false;
@@ -18738,11 +18882,11 @@ function apply(actor,p={}){
   record.inventoryKnown=true;const item=p.inventory.outfit;worn=!!item&&item.type==='outfit';palette=worn?paletteIndex(item.palette,base):base;style=worn?styleName(item.style):null;
  }else if(!record.inventoryKnown){worn=true;palette=base;style=null;}
  const signature=base+':'+(worn?palette:'none')+':'+(style||'normal')+':'+(p.inventory?.outfit?.wet&&!style?'wet':'dry')+':'+(p.gardenStatus?.bodyWet>0?'skin-wet':'skin-dry');record.base=base;record.worn=worn;record.outfitPalette=palette;record.outfitStyle=style;
- if(record.signature===signature)return true;
+ if(record.signature===signature){syncMosaic(record);return true;}
  if(style&&!record.environment)record.environment=acquireLegendaryEnvironment();if(!style&&record.environment){record.environment.release();record.environment=null;}
  for(const part of record.meshes)if(part.outfit)part.mesh.visible=part.visible&&worn;
  for(const part of record.materials){
-  if(part.kind==='skin'){restoreFinish(part);if(p.gardenStatus?.bodyWet>0){part.material.color?.multiplyScalar(.86);part.material.roughness=.22;part.material.roughnessMap=null;}part.material.needsUpdate=true;continue;}
+  if(part.kind==='skin'){if(part.bodyAtlas)part.material.map=sfwTexturesEnabled?coveredSkin(record,part.map):part.map;restoreFinish(part);if(p.gardenStatus?.bodyWet>0){part.material.color?.multiplyScalar(.86);part.material.roughness=.22;part.material.roughnessMap=null;}part.material.needsUpdate=true;continue;}
   if(part.kind==='trim'){
    restoreFinish(part);
    // `oro` belongs only to the loaded costume accessories. The player loader
@@ -18757,14 +18901,15 @@ function apply(actor,p={}){
   if(!style&&p.inventory?.outfit?.wet&&part.outfit&&part.kind==='cloth'){part.material.color?.multiplyScalar(.63);part.material.roughness=.19;part.material.roughnessMap=null;}
   part.material.needsUpdate=true;
  }
- record.signature=signature;return true;
+ syncMosaic(record);record.signature=signature;return true;
 }
 function clear(actor){
  global.MazeBackpackVisuals?.dispose(actor);
  const record=records.get(actor);if(!record)return;record.environment?.release();
+ if(record.mosaic){record.mosaic.group.removeFromParent();record.mosaic.material.dispose();if(record.mosaic.resource.owned)record.mosaic.resource.geometry.dispose();record.mosaic.group.clear();record.mosaic=null;}
  for(const part of record.meshes){if(part.outfit)part.mesh.visible=part.visible;if(part.owned){part.mesh.material=part.original;for(const material of part.owned)material.dispose();}}
  for(const key of record.keys){const entry=textures.get(key);if(entry&&--entry.refs<=0&&!entry.legendary&&!entry.keepWarm){entry.texture.dispose();textures.delete(key);}}
- records.delete(actor);materialsChanged(actor);
+ liveRecords.delete(record);records.delete(actor);materialsChanged(actor);
 }
 // Reflection maps are indirect environment light, not glowing/emissive ink.
 // Scale only that indirect term; real flashlights and ceiling lights continue
@@ -18812,6 +18957,110 @@ function prewarmPalette(actor,index){
  for(const key of temporary.keys){const entry=textures.get(key);if(entry){entry.keepWarm=true;entry.refs=Math.max(0,entry.refs-1);}}
  return true;
 }
+// Loading-only counterparts keep pixel work cooperative. Each canvas remains
+// private until its last strip is complete; runtime apply() still has the same
+// synchronous API, cache keys and fully prepared texture objects.
+const preparingTextures=new Map();
+function textureJob(options={}){
+ const now=()=>global.performance?.now?.()??Date.now(),valid=typeof options.valid==='function'?options.valid:()=>true;
+ const yieldStep=typeof options.yieldStep==='function'?options.yieldStep:()=>new Promise(resolve=>setTimeout(resolve,0));
+ // Reserve part of the requested slice for the next small native canvas copy.
+ const budget=Math.max(.5,Math.min(6,Number(options.budgetMs)||6)-1);let started=now();
+ return{valid,due:()=>now()-started>=budget,async pause(){if(!valid())return false;await yieldStep();started=now();return valid();}};
+}
+function prewarmParts(actor){
+ const record=records.get(actor);if(record)return record.materials;
+ const parts=[];
+ // Prewarming an unloaded appearance record must not apply a saved SFW
+ // preference synchronously before its asynchronous cache work can begin.
+ for(const mesh of actor.meshes||[]){const name=meshName(mesh);for(const material of Array.isArray(mesh.material)?mesh.material:[mesh.material]){
+  const kind=materialKind(material);if(kind)parts.push({kind,map:originalSkinMap(material.map),bodyAtlas:name==='body'&&material.name==='piel',base:{roughness:material.roughness,metalness:material.metalness}});
+ }}return parts;
+}
+async function prepareTextureEntry(key,job,build){
+ if(!job.valid())return null;if(textures.has(key))return textures.get(key);
+ while(preparingTextures.has(key)){await preparingTextures.get(key);if(!job.valid())return null;if(textures.has(key))return textures.get(key);}
+ if(!job.valid())return null;
+ const task=Promise.resolve().then(async()=>{
+  if(!job.valid()||textures.has(key))return textures.get(key)||null;
+  const built=await build();if(!built||!job.valid())return null;
+  // A synchronous runtime consumer may have filled this key during a yield.
+  if(textures.has(key))return textures.get(key);
+  const {source,canvas,...details}=built,texture=source.clone();texture.source=new T.Source(canvas);
+  if(details.finish){texture.colorSpace=T.NoColorSpace;texture.name='Cloth-only '+details.finish+' finish mask';delete details.finish;}
+  if(details.sfw){texture.name='Plain skin / verified body UV regions';sfwSources.set(texture,source);}
+  texture.needsUpdate=true;const entry={texture,refs:0,...details};if(details.sfw)entry.source=source;textures.set(key,entry);return entry;
+ });
+ preparingTextures.set(key,task);try{return await task;}finally{if(preparingTextures.get(key)===task)preparingTextures.delete(key);}
+}
+async function prepareCanvas(source,w,h,job,{palette=null,finish=null,part=null,sfw=false}={}){
+ const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const context=canvas.getContext('2d',{willReadFrequently:true});if(!context)return null;
+ if(finish)context.drawImage(source.image,0,0,w,h);else context.drawImage(source.image,0,0);
+ if(!job.valid()||job.due()&&!await job.pause())return null;
+ const rows=Math.max(1,Math.min(16,Math.floor(16384/w))),sample=sfw?context.getImageData(32,32,1,1).data:null,skin=sample?[sample[0],sample[1],sample[2]]:null;
+ if(palette){
+  // The original mask samples every sixteenth pixel of the flattened atlas.
+  // Preserve its exact alignment even when an atlas width is not divisible by 16.
+  let red=0,blue=0;
+  for(let y=0;y<h&&(red<16||blue<16);y+=rows){
+   const data=context.getImageData(0,y,w,Math.min(rows,h-y)).data,offset=y*w*4;
+   for(let i=(64-offset%64)%64;i<data.length;i+=64){const r=data[i],g=data[i+1],b=data[i+2];if(r>g*1.5&&r>b*1.25)red++;if(b>g*1.5&&b>r*1.25)blue++;}
+   if(!job.valid()||job.due()&&!await job.pause())return null;
+  }
+  if(red<16||blue<16)return null;
+ }
+ let changed=0;
+ for(let y=0;y<h;y+=rows){
+  const height=Math.min(rows,h-y),pixels=context.getImageData(0,y,w,height),data=pixels.data;
+  if(!job.valid()||job.due()&&!await job.pause())return null;
+  if(sfw){
+   for(const [left,top,right,bottom]of SFW_BODY_REGIONS)for(let row=Math.max(y,top);row<Math.min(y+height,bottom);row++)for(let x=left;x<right;x++){
+    const i=((row-y)*w+x)*4;if(!data[i+3])continue;if(data[i]!==skin[0]||data[i+1]!==skin[1]||data[i+2]!==skin[2])changed++;data[i]=skin[0];data[i+1]=skin[1];data[i+2]=skin[2];
+   }
+  }else for(let start=0;start<data.length;start+=2048){
+   const end=Math.min(data.length,start+2048);
+   if(palette)changed+=recolorRange(data,palette,start,end);
+   else for(let i=start;i<end;i+=4){const r=data[i],g=data[i+1],b=data[i+2],affected=data[i+3]>0&&Math.max(r,g,b)-Math.min(r,g,b)>=35&&Math.max(r,b)>=g*1.25;data[i]=255;data[i+1]=Math.round(255*(affected?finish.roughness:part.base.roughness));data[i+2]=Math.round(255*(affected?finish.metalness:part.base.metalness));data[i+3]=255;}
+   if(!job.valid()||job.due()&&!await job.pause())return null;
+  }
+  context.putImageData(pixels,0,y);
+  if(!job.valid()||job.due()&&!await job.pause())return null;
+ }
+ return{source,canvas,changed,...(sfw?{skin,keepWarm:true,sfw:true}:{})};
+}
+async function prepareVariant(source,index,kind,style,job){
+ style=styleName(style);const image=source?.image;if(index===4&&!style||!image?.width||!image?.height)return null;
+ const w=image.width,h=image.height,key=kind+':'+w+'x'+h+':'+(style||index);
+ return prepareTextureEntry(key,job,async()=>{try{const built=await prepareCanvas(source,w,h,job,{palette:legendaryStyles[style]||palettes[paletteIndex(index)]});return built?{...built,legendary:!!style}:null;}catch{return null;}});
+}
+async function prepareFinish(part,style,job){
+ const source=part.map,w=Math.min(256,source?.image?.width||0),h=Math.min(256,source?.image?.height||0);if(!w||!h)return null;
+ const key='finish:'+source.image.width+'x'+source.image.height+':'+style+':'+part.base.roughness+':'+part.base.metalness;
+ return prepareTextureEntry(key,job,async()=>{const built=await prepareCanvas(source,w,h,job,{finish:legendaryStyles[style],part});if(!built)return null;delete built.changed;return{...built,finish:style,legendary:true};});
+}
+async function prewarmPaletteAsync(actor,index,options={}){
+ if(!actor?.ready||!Number.isInteger(index)||index<0||index>=palettes.length)return false;const job=textureJob(options);
+ for(const part of prewarmParts(actor))if(part.kind==='cloth'||part.kind==='iris'){
+  if(!job.valid())return false;const entry=await prepareVariant(part.map,index,part.kind,null,job);if(entry)entry.keepWarm=true;
+ }return job.valid();
+}
+async function prewarmAsync(actor,style,options={}){
+ style=styleName(style);if(!actor?.ready||!style)return false;const job=textureJob(options),base=records.get(actor)?.base??4;
+ for(const part of prewarmParts(actor)){
+  if(part.kind==='trim'||part.kind==='skin')continue;if(!job.valid())return false;await prepareVariant(part.map,base,part.kind,style,job);
+  if(part.kind==='cloth'&&job.valid())await prepareFinish(part,style,job);
+ }return job.valid();
+}
+async function prewarmSfwTexturesAsync(actor,renderer=null,options={}){
+ if(!actor?.ready||!actor.model)return false;const job=textureJob(options);let prepared=false;
+ for(const part of prewarmParts(actor))if(part.bodyAtlas){
+  const source=originalSkinMap(part.map);if(source?.image?.width!==1024||source?.image?.height!==1024)continue;
+  const entry=await prepareTextureEntry('sfw-body:verified-piel-v1',job,async()=>{try{return await prepareCanvas(source,1024,1024,job,{sfw:true});}catch{return null;}});
+  if(!job.valid())return false;if(entry){prepared=true;const record=records.get(actor);if(record&&!record.keys.has('sfw-body:verified-piel-v1')){record.keys.add('sfw-body:verified-piel-v1');entry.refs++;}}
+  renderer?.initTexture?.(source);if(entry)renderer?.initTexture?.(entry.texture);
+  if(job.due()&&!await job.pause())return false;
+ }return job.valid()&&prepared;
+}
 function createWarmup(actor,player={},prepare=null){
  if(!actor?.ready||!actor.model)return null;
  const group=new T.Group();group.name='All outfit, skin and palette materials / loading only';group.visible=false;
@@ -18830,6 +19079,17 @@ function createWarmup(actor,player={},prepare=null){
     proxy.userData={...proxy.userData,mazeWarmStyle:entry.style||null,mazeWarmVariant:entry.name,mazeWarmKind:part.kind,mazeWarmSource:part.name};group.add(proxy);
    }
   }
+  // The alternate body texture shares the live skin shader. Upload it in
+  // every prepared renderer even while the preference is off, so the first
+  // toggle only exchanges existing texture references. The setting itself
+  // remains unchanged while these temporary representatives are built.
+  const record=records.get(actor);
+  for(const part of record.materials)if(part.bodyAtlas){
+   const covered=coveredSkin(record,part.map),map=sfwTexturesEnabled?part.map:covered;if(map===part.material.map)continue;
+   const original=part.material,material=original.clone();material.map=map;material.onBeforeCompile=original.onBeforeCompile;material.customProgramCacheKey=original.customProgramCacheKey;
+   const proxy=part.mesh.clone(false);proxy.material=material;proxy.visible=true;proxy.frustumCulled=false;proxy.castShadow=false;proxy.layers.enableAll();proxy.userData={...proxy.userData,mazeWarmStyle:null,mazeWarmVariant:sfwTexturesEnabled?'original-body':'covered-body',mazeWarmKind:'skin',mazeWarmSource:part.name};group.add(proxy);
+  }
+  if(record.mosaic){const original=record.mosaic.material,material=original.clone();material.onBeforeCompile=original.onBeforeCompile;material.customProgramCacheKey=original.customProgramCacheKey;const proxy=bindMosaicProjection(record.mosaic.mesh.clone(false),record.mosaic);proxy.material=material;proxy.visible=true;proxy.frustumCulled=false;proxy.castShadow=false;proxy.layers.enableAll();proxy.userData={...proxy.userData,mazeWarmStyle:null,mazeWarmVariant:'mosaic-censoring',mazeWarmKind:'skin',mazeWarmSource:'local-mosaic'};group.add(proxy);}
   return group;
  }catch(error){disposeWarmup(group);throw error;}
  finally{apply(actor,player);actor.group.visible=visible;}
@@ -18837,9 +19097,9 @@ function createWarmup(actor,player={},prepare=null){
 function disposeWarmup(group){
  if(!group)return;group.removeFromParent();for(const mesh of group.children)for(const material of Array.isArray(mesh.material)?mesh.material:[mesh.material])material?.dispose();group.clear();
 }
-function inspect(actor){const r=records.get(actor);return r?{base:r.base,worn:r.worn,outfitPalette:r.outfitPalette,outfitStyle:r.outfitStyle,reflectionLight:r.reflectionLight,hidden:r.meshes.filter(m=>m.outfit&&!m.mesh.visible).map(m=>m.name),mapped:r.materials.map(m=>({mesh:m.name,kind:m.kind,outfit:m.outfit,color:m.material.color?.getHexString(),roughness:m.material.roughness,metalness:m.material.metalness,envMapIntensity:m.material.envMapIntensity,legendary:!!m.material.envMap&&m.material.envMap===r.environment?.texture}))}:null;}
-function cacheStats(){return{variants:textures.size,legendary:[...textures.values()].filter(e=>e.legendary).length,palettes:[...textures.values()].filter(e=>e.keepWarm).length,cubemap:!!legendaryEnvironment,reflectionRefs:legendaryEnvironment?.refs||0};}
-global.MazeAppearance={palettes,legendaryStyles,stylePalette,acquireLegendaryEnvironment,apply,clear,inspect,recolorPixels,prewarm,prewarmPalette,hasLegendary,shadeLegendary,shadeDroppedLegendary,createWarmup,disposeWarmup,cacheStats};
+function inspect(actor){const r=records.get(actor);return r?{base:r.base,worn:r.worn,outfitPalette:r.outfitPalette,outfitStyle:r.outfitStyle,reflectionLight:r.reflectionLight,sfwTextures:r.sfw,mosaicCensoring:mosaicEnabled,mosaicVisible:!!r.mosaic?.group.visible,mosaicRegions:r.mosaic?MOSAIC_REGIONS.length:0,hidden:r.meshes.filter(m=>m.outfit&&!m.mesh.visible).map(m=>m.name),mapped:r.materials.map(m=>({mesh:m.name,kind:m.kind,outfit:m.outfit,covered:!!m.bodyAtlas&&sfwSources.has(m.material.map),color:m.material.color?.getHexString(),roughness:m.material.roughness,metalness:m.material.metalness,envMapIntensity:m.material.envMapIntensity,legendary:!!m.material.envMap&&m.material.envMap===r.environment?.texture}))}:null;}
+function cacheStats(){const sfw=[...textures.values()].filter(e=>e.sfw);return{variants:textures.size,legendary:[...textures.values()].filter(e=>e.legendary).length,palettes:[...textures.values()].filter(e=>e.keepWarm&&!e.sfw).length,cubemap:!!legendaryEnvironment,reflectionRefs:legendaryEnvironment?.refs||0,sfwTextures:sfw.length,sfwChangedPixels:sfw.reduce((n,e)=>n+e.changed,0),mosaicTexture:!!mosaicTexture,mosaicGeometries:mosaicGeometryTemplate?1:0,mosaicVertices:mosaicGeometryTemplate?.geometry.attributes.position.count||0,mosaicSampleVertices:mosaicSamplesTemplate?.samples.reduce((total,region)=>total+region.length,0)||0};}
+global.MazeAppearance={palettes,legendaryStyles,stylePalette,acquireLegendaryEnvironment,apply,clear,inspect,recolorPixels,prewarm,prewarmPalette,prewarmSfwTextures,prewarmAsync,prewarmPaletteAsync,prewarmSfwTexturesAsync,setSfwTextures,getSfwTextures:()=>sfwTexturesEnabled,createSfwSetting,prewarmMosaicRenderer,setMosaicCensoring,getMosaicCensoring:()=>mosaicEnabled,createMosaicSetting,hasLegendary,shadeLegendary,shadeDroppedLegendary,createWarmup,disposeWarmup,cacheStats};
 })(window);
 
 </script><script>MazeBoot.advance(13490);</script>
@@ -19695,7 +19955,7 @@ class MazeLobbyStage{
   for(let i=0;i<4;i++){
    const p=this.players[i],pad=this.pads[i];if(pad){pad.base.material.color.set(p?0x3c4d5e:0x263340);pad.ring.material.emissiveIntensity=p?.connected===false?.2:p?.id?.length?1.4:.35;}
    if(!p||!this.template)continue;const id=String(p.id);let entry=this.entries.get(id);
-   if(!entry){const avatar=cloneAvatar(this.template,id);this.scene.add(avatar.group);entry={id,avatar,index:i};this.entries.set(id,entry);}
+   if(!entry){const avatar=cloneAvatar(this.template,id);global.MazeAppearance?.prewarmSfwTextures(avatar,this.renderer);global.MazeAppearance?.prewarmMosaicRenderer(avatar,this.renderer,this.scene,this.camera);this.scene.add(avatar.group);entry={id,avatar,index:i};this.entries.set(id,entry);}
    entry.index=i;entry.player=p;entry.avatar.group.position.set(POSITIONS[i],.06,0);entry.avatar.setPlayer(p);
   }
  }
@@ -19723,6 +19983,7 @@ global.MazeLobbyStage=MazeLobbyStage;
 (function () {
   'use strict';
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const VOICE_ATTACH_TIMEOUT = 12000, VOICE_NEGOTIATION_GRACE = 8000, VOICE_RETRY_DELAY = 1500;
   const dead = p => !!p && (p.alive === false || p.dead === true || p.spectator === true);
   const editable = target => {
     if (typeof window.MazeInput?.isTextTarget === 'function') return window.MazeInput.isTextTarget(target);
@@ -19751,6 +20012,8 @@ global.MazeLobbyStage=MazeLobbyStage;
       this.context = null;
       this.peers = new Map();
       this.sends = new Map();
+      this.sendSerial = 0;
+      this.receiveAttempts = new Map();
       this.retryAt = new Map();
       this.preferences = new Map();
       this.controls = new Map();
@@ -19858,10 +20121,26 @@ global.MazeLobbyStage=MazeLobbyStage;
         // Admission may arrive just after stream signaling. Keep at most four
         // pending streams, silent until the authoritative roster admits them.
         if (id === this.net.id || (!this.peers.has(id) && this.peers.size >= 4)) return;
+        const connection = room.getPeers()[id], attempt = metadata.attempt;
+        if (Number.isSafeInteger(attempt) && attempt > 0) {
+          const latest = this.receiveAttempts.get(id);
+          // Late completion of a cancelled sender must not replace a newer
+          // working stream. Serials are scoped to the actual peer connection.
+          if (latest?.connection === connection && attempt < latest.attempt) return;
+          this.receiveAttempts.set(id, { connection, attempt });
+        }
         const old = this.peers.get(id);
-        if (old?.stream === stream && old.stream.getAudioTracks().some(t => t.readyState === 'live')) return;
+        const preferredTrackId = typeof metadata.trackId === 'string' ? metadata.trackId : null;
+        if (old?.stream === stream) {
+          // Renegotiation can add a replacement to the same stream object.
+          // Keep its playback graph only while it still uses the chosen track.
+          old.receivedAt = performance.now();
+          if (preferredTrackId) old.preferredTrackId = preferredTrackId;
+          this.update();
+          return;
+        }
         this.removePeer(id);
-        this.peers.set(id, { stream, receivedAt: performance.now(), gainValue: 0, panValue: 0, cutoff: 18000, speaking: false });
+        this.peers.set(id, { stream, preferredTrackId, receivedAt: performance.now(), gainValue: 0, panValue: 0, cutoff: 18000, speaking: false });
         this.update();
       };
       room.onPeerStream = this.streamHandler;
@@ -19929,9 +20208,12 @@ global.MazeLobbyStage=MazeLobbyStage;
       const generation = this.generation;
       const room = this.room, session = this.getState()?.session;
       this.error = this.errorDetail = '';
-      this.request = (async () => {
+      // Assign the pending promise before invoking browser capture: some
+      // implementations throw synchronously instead of rejecting a promise.
+      this.request = Promise.resolve().then(async () => {
         let stream;
         try {
+          if (generation !== this.generation || room !== this.room || session !== this.getState()?.session || !this.getState()?.active) return;
           stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: {
             echoCancellation: true, noiseSuppression: true, autoGainControl: false, channelCount: { ideal: 1 }
           } });
@@ -19971,7 +20253,7 @@ global.MazeLobbyStage=MazeLobbyStage;
         } finally {
           if (generation === this.generation) { this.request = null; this.update(); }
         }
-      })();
+      });
       this.render();
       return this.request;
     }
@@ -20003,6 +20285,7 @@ global.MazeLobbyStage=MazeLobbyStage;
       this.held = this.transmitting = false;
       this.level = this.speakingUntil = 0;
       for (const track of this.stream?.getAudioTracks() || []) track.enabled = false;
+      for (const send of this.sends.values()) if (send.track) send.track.enabled = false;
       this.render();
     }
 
@@ -20011,9 +20294,9 @@ global.MazeLobbyStage=MazeLobbyStage;
       if (this.stream) {
         const stream = this.stream;
         this.stream = null;
-        try { this.room?.removeStream(stream); } catch (_) {}
         stream.getTracks().forEach(t => t.stop());
       }
+      for (const [id, send] of this.sends) this.retireSender(id, send);
       this.sends.clear();
       for (const name of ['localSource', 'localAnalyser', 'silentMonitor']) {
         try { this[name]?.disconnect(); } catch (_) {}
@@ -20061,49 +20344,96 @@ global.MazeLobbyStage=MazeLobbyStage;
       return { gain: falloff * (1 - blocked * .8), pan, cutoff: 18000 * Math.pow(900 / 18000, blocked), orb: !!orb };
     }
 
+    retireSender(id, send) {
+      send.cancelled = true;send.ready = false;
+      // Each attachment owns a clone. A delayed metadata acknowledgement may
+      // still run addTrack later, but that retired track is already stopped.
+      // Cleaning it up can never remove a newer attempt's sender.
+      for (const track of send.stream?.getTracks() || []) { track.enabled = false;track.stop(); }
+      try {
+        if (typeof send.connection?.getSenders === 'function' && typeof send.connection.removeTrack === 'function') {
+          for (const sender of send.connection.getSenders()) if (sender.track === send.track) send.connection.removeTrack(sender);
+        } else if (send.room?.getPeers()[id] === send.connection) send.room.removeStream(send.stream, { target: id });
+      } catch (_) {}
+    }
+
+    senderState(send) {
+      const pc = send.connection;
+      try {
+        if (typeof pc?.getSenders !== 'function') return { ready: !!send.attached, direction: null };
+        const sender = pc.getSenders().find(s => s.track === send.track && s.track?.readyState === 'live');
+        if (!sender) return { ready: false, direction: null, reason: 'missing sender' };
+        const transceiver = pc.getTransceivers?.().find(t => t.sender === sender);
+        const direction = transceiver?.currentDirection ?? null;
+        const connected = !pc.connectionState || pc.connectionState === 'connected';
+        const sending = !transceiver || !transceiver.stopped && (direction === 'sendrecv' || direction === 'sendonly');
+        const transport = sender.transport?.state;
+        return { ready: !!(send.attached && connected && sending && transport !== 'closed' && transport !== 'failed'), direction,
+          reason: !connected ? 'connection pending' : !sending ? 'negotiation pending' : transport === 'closed' || transport === 'failed' ? 'transport unavailable' : null };
+      } catch (_) { return { ready: false, direction: null, reason: 'sender unavailable' }; }
+    }
+
     syncSenders(state, connected) {
-      const room = this.room;
+      const room = this.room, now = performance.now();
       const desired = new Set(state.players.filter(p => p.id !== this.net.id && connected[p.id] && this.canShareVoice(state, state.local, p)).map(p => p.id));
-      const remove = (id, send) => {
-        // A stale operation must never remove a replacement connection's track.
-        if (room.getPeers()[id] !== send.connection) return;
-        try { room.removeStream(send.stream, { target: id }); } catch (_) {}
+      const failed = (id, send) => {
+        this.retireSender(id, send);
+        if (this.sends.get(id) !== send) return;
+        this.sends.delete(id);this.sendError = true;this.retryAt.set(id, performance.now() + VOICE_RETRY_DELAY);
       };
       for (const [id, send] of this.sends) {
-        const current = send.connection === connected[id] && send.stream === this.stream;
-        const wanted = current && desired.has(id);
-        if (!wanted && !send.cancelled) remove(id, send);
-        send.cancelled = !wanted;
-        // Retain a pending attachment on this connection until it settles. A
-        // quick death/revival can reuse it rather than start a second addTrack.
-        if (!wanted && (send.ready || !current)) this.sends.delete(id);
+        if (send.connection !== connected[id] || send.source !== this.stream || !desired.has(id) || send.track.readyState !== 'live') {
+          this.retireSender(id, send);this.sends.delete(id);continue;
+        }
+        if (!send.attached && now - send.startedAt >= VOICE_ATTACH_TIMEOUT) { failed(id, send);continue; }
+        if (!send.attached || now < send.checkAt) continue;
+        send.checkAt = now + 250;
+        const status = this.senderState(send);send.ready = status.ready;send.direction = status.direction;send.reason = status.reason;
+        if (send.ready) { send.unhealthySince = null;this.retryAt.delete(id);continue; }
+        // currentDirection is allowed to lag during an offer/answer exchange.
+        // Repair only a persistently unusable sender on a stable connection;
+        // a quiet microphone is never evidence of transport failure.
+        const stable = (!send.connection.signalingState || send.connection.signalingState === 'stable') && (!send.connection.connectionState || send.connection.connectionState === 'connected');
+        if (!stable) send.unhealthySince = null;
+        else if (send.unhealthySince === null) send.unhealthySince = now;
+        else if (now - send.unhealthySince >= VOICE_NEGOTIATION_GRACE) failed(id, send);
       }
-      if (!this.stream) return;
+      const sourceTrack = this.stream?.getAudioTracks().find(t => t.readyState === 'live');
+      if (!sourceTrack) return;
       for (const id of desired) {
-        if (this.sends.has(id) || performance.now() < (this.retryAt.get(id) || 0)) continue;
-        const send = { connection: connected[id], stream: this.stream, ready: false, cancelled: false };
-        this.sends.set(id, send);
-        const failed = () => {
-          if (this.room !== room || this.sends.get(id) !== send) return;
-          remove(id, send);this.sends.delete(id);
-          if (!send.cancelled) { this.sendError = true;this.retryAt.set(id, performance.now() + 3000); }
-        };
+        if (this.sends.has(id) || now < (this.retryAt.get(id) || 0)) continue;
+        let send;
         try {
-          const attachments = room.addStream(send.stream, { target: id, metadata: { kind: 'maze-voice-v1' } });
-          // The bundled room returns an array of per-peer promises.
+          const track = sourceTrack.clone();track.enabled = sourceTrack.enabled;
+          send = { room, connection: connected[id], source: this.stream, track, stream: new MediaStream([track]), attempt: ++this.sendSerial, ready: false,
+            attached: false, cancelled: false, startedAt: now, checkAt: 0, unhealthySince: null, direction: null, reason: 'attaching' };
+          this.sends.set(id, send);
+          const attachments = room.addStream(send.stream, { target: id, metadata: { kind: 'maze-voice-v1', trackId: track.id, attempt: send.attempt } });
           Promise.all(Array.isArray(attachments) ? attachments : [attachments]).then(() => {
-            if (this.room === room && this.sends.get(id) === send) {
-              if (send.cancelled) { remove(id, send);this.sends.delete(id); }
-              else { send.ready = true;this.sendError = false;this.retryAt.delete(id); }
-            } else if (this.room !== room || this.sends.get(id)?.stream !== send.stream) remove(id, send);
-          }).catch(failed);
-        } catch (_) { failed(); }
+            if (this.room !== room || this.sends.get(id) !== send || send.cancelled || send.source !== this.stream) { this.retireSender(id, send);return; }
+            send.attached = true;send.checkAt = 0;this.update();
+          }).catch(() => { if (this.room === room && this.sends.get(id) === send) failed(id, send);else this.retireSender(id, send); });
+        } catch (_) {
+          if (send) failed(id, send);
+          else { this.sendError = true;this.retryAt.set(id, now + VOICE_RETRY_DELAY); }
+        }
       }
+      if (desired.size && [...desired].every(id => this.sends.get(id)?.ready)) this.sendError = false;
+    }
+
+    peerAudioTrack(peer) {
+      const tracks = peer.stream.getAudioTracks().filter(t => t.readyState === 'live');
+      const preferred = tracks.find(t => t.id === peer.preferredTrackId);
+      if (preferred && !preferred.muted) return preferred;
+      // Removed WebRTC tracks may remain live but muted in a retained stream.
+      // Prefer the replacement that is receiving, rather than its first entry.
+      for (let i = tracks.length - 1; i >= 0; i--) if (!tracks[i].muted) return tracks[i];
+      return preferred || tracks[tracks.length - 1] || null;
     }
 
     attachPeer(id, peer) {
       if (!this.context) return;
-      const track = peer.stream.getAudioTracks().find(t => t.readyState === 'live');
+      const track = this.peerAudioTrack(peer);
       if (!track) return;
       if (peer.source && peer.sourceTrack === track && peer.source.context === this.context && peer.sourceMaster === this.master) return;
       if (peer.source) this.detachPeer(peer);
@@ -20237,6 +20567,7 @@ global.MazeLobbyStage=MazeLobbyStage;
       this.bindRoom(room);
       if (!state?.active) { this.release(); for(const peer of this.peers.values()){const at=this.context?.currentTime||0;for(const param of [peer.gain?.gain,peer.ghost?.gain.gain])if(param){param.cancelScheduledValues(at);param.setValueAtTime(0,at);}peer.gainValue=peer.ghostGainValue=0;peer.speaking=false;this.updatePhoneSpeakers(state,peer,null);} this.render(state); return; }
       const connected = room?.getPeers()||{};
+      for (const [id, received] of this.receiveAttempts) if (connected[id] !== received.connection) this.receiveAttempts.delete(id);
       const allowed = !!(state.canTalk && state.scene !== 'loading' && !document.hidden && this.focused);
       if (!allowed) this.release();
       const track = this.stream?.getAudioTracks().find(t => t.readyState === 'live');
@@ -20244,8 +20575,12 @@ global.MazeLobbyStage=MazeLobbyStage;
         this.requestMicrophone();
         return;
       }
-      this.transmitting = !!(allowed && (this.openMic || this.held) && !this.muted && track && !track.muted && this.context?.state === 'running');
-      if (track) track.enabled = this.transmitting;
+      const captureWanted = !!(allowed && (this.openMic || this.held) && !this.muted && track && this.context?.state === 'running');
+      // muted describes source availability, not the player's mute choice.
+      // A disabled source may need enabling before it can emit unmute.
+      if (track) track.enabled = captureWanted;
+      for (const send of this.sends.values()) send.track.enabled = captureWanted;
+      this.transmitting = !!(captureWanted && !track.muted);
       if(room)this.syncSenders(state, connected);
       const now = performance.now();
       this.level = this.transmitting ? this.rms(this.localAnalyser, this.localSamples) : 0;
@@ -20416,6 +20751,7 @@ global.MazeLobbyStage=MazeLobbyStage;
       this.clearMicrophone();
       if (this.room && this.room.onPeerStream === this.streamHandler) this.room.onPeerStream = this.previousStreamHandler || null;
       for (const id of this.peers.keys()) this.removePeer(id);
+      this.receiveAttempts.clear();
       this.room = null;
       this.request = null;
       this.openMicAttempted = false;
@@ -21241,6 +21577,9 @@ class MazeInventoryPreview{
  _surface(){
   this.scene=new T.Scene();this.camera=new T.PerspectiveCamera(33,1,.03,30);this.camera.layers.enable(2);
   this.renderer=new T.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.setClearColor(0x101614,0);this.renderer.setPixelRatio(Math.min(1.5,global.devicePixelRatio||1));
+  // Successful shader log readbacks can synchronously stall older drivers.
+  // The explicit validation mode retains Three's full diagnostics for QA.
+  this.renderer.debug.checkShaderErrors=new URLSearchParams(global.location?.search||'').get('shader-checks')==='1';
   const canvas=this.renderer.domElement;canvas.style.cssText='display:block;width:100%;height:100%;touch-action:none;cursor:grab';if(this.materialsPreparing)canvas.style.visibility='hidden';canvas.setAttribute('aria-label','Character preview. Use the rotation buttons to turn. Drag weighted body parts to move them.');
   canvas.addEventListener('pointerdown',this.onDown);canvas.addEventListener('pointermove',this.onMove);canvas.addEventListener('pointerup',this.onUp);canvas.addEventListener('pointercancel',this.onUp);canvas.addEventListener('lostpointercapture',this.onUp);canvas.addEventListener('webglcontextlost',this.onLost);
   this.host.appendChild(canvas);const key=new T.DirectionalLight(0xfff4dd,2.2);key.position.set(2.5,4,-3.5);const fill=new T.DirectionalLight(0xa9d6ef,.75);fill.position.set(-2,1.5,1.7);this.scene.add(new T.HemisphereLight(0xffffff,0x526763,1.8),key,fill);this._observeResize();this._resize();
@@ -21270,9 +21609,49 @@ class MazeInventoryPreview{
  async _prepareLegendary(token,requested=()=>true,onProgress=null){
   const renderer=this.renderer,scene=this.scene,camera=this.camera,actor=this.actor;
   const valid=()=>!this.disposed&&token===this.token&&renderer===this.renderer&&!renderer.getContext().isContextLost()&&requested();
-  const yieldFrame=()=>new Promise(resolve=>setTimeout(resolve,0));
+  // A real rest between submissions lets the browser paint the loading UI
+  // and keeps a slow driver from accumulating a tail of preview shaders.
+  const yieldFrame=()=>new Promise(resolve=>setTimeout(resolve,8));
+  const parallel=renderer.extensions.has('KHR_parallel_shader_compile');
+  const waitPrograms=async programs=>{
+   if(!parallel)return valid();
+   while(valid()){
+    if(programs.every(program=>!program.program||program.isReady()))return true;
+    await yieldFrame();
+   }
+   return false;
+  };
+  const waitUploads=async()=>{
+   const gl=renderer.getContext();
+   if(!gl.fenceSync||!gl.clientWaitSync){gl.flush();await yieldFrame();return valid();}
+   const fence=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);gl.flush();
+   if(!fence){await yieldFrame();return valid();}
+   try{
+    // Restore all temporary scene/material state before this first yield.
+    await yieldFrame();
+    while(valid()){
+     const status=gl.clientWaitSync(fence,0,0);
+     if(status===gl.ALREADY_SIGNALED||status===gl.CONDITION_SATISFIED)return true;
+     if(status===gl.WAIT_FAILED)return false;
+     await yieldFrame();
+    }
+    return false;
+   }finally{gl.deleteSync(fence);}
+  };
   if(this.open)this._status('Preparing outfit materials…');await yieldFrame();if(!valid())return false;
-  for(let palette=0;palette<5;palette++){global.MazeAppearance?.prewarmPalette(actor,palette);await yieldFrame();if(!valid())return false;}
+  const appearance=global.MazeAppearance,textureOptions={yieldStep:yieldFrame,valid,budgetMs:6};
+  for(let palette=0;palette<5;palette++){
+   const prepared=appearance?.prewarmPaletteAsync?await appearance.prewarmPaletteAsync(actor,palette,textureOptions):appearance?.prewarmPalette(actor,palette);
+   if(prepared===false||!valid())return false;await yieldFrame();if(!valid())return false;
+  }
+  for(const style of ['gold','chrome','prism']){
+   const prepared=appearance?.prewarmAsync?await appearance.prewarmAsync(actor,style,textureOptions):appearance?.prewarm(actor,style);
+   if(prepared===false||!valid())return false;await yieldFrame();if(!valid())return false;
+  }
+  if(appearance?.prewarmSfwTexturesAsync)await appearance.prewarmSfwTexturesAsync(actor,null,textureOptions);else appearance?.prewarmSfwTextures?.(actor);
+  // An avatar without the optional compatible skin atlas still needs all its
+  // ordinary preview programs. Only a superseded load cancels this stage.
+  if(!valid())return false;
   const group=global.MazeAppearance?.createWarmup(actor,this.player);if(!group)return true;
   // Include the original hair, lashes, transparent surfaces and uncovered
   // body too. Outfit proxies alone do not compile those screen programs.
@@ -21286,22 +21665,28 @@ class MazeInventoryPreview{
    // Poses stay fixed throughout preparation. Cache their world matrices once;
    // tiny uploads need neither a full skeleton traversal nor full mesh draws.
    scene.updateMatrixWorld(true);
-   const meshes=group.children,compileRoot=new T.Group();compileRoot.traverseVisible=()=>{};
-   for(let first=0;first<meshes.length;first+=6){
-    if(!valid())return false;const batch=meshes.slice(first,first+6);compileRoot.traverse=visit=>{for(const mesh of batch)visit(mesh);};
-    if(renderer.extensions.has('KHR_parallel_shader_compile')&&typeof renderer.compileAsync==='function')await renderer.compileAsync(compileRoot,camera,scene);else renderer.compile(compileRoot,camera,scene);
-    if(!valid())return false;
-    const selected=new Set(batch),oldTarget=renderer.getRenderTarget(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest(),visible=actor.group.visible,matrixAuto=scene.matrixWorldAutoUpdate,ranges=new Map();
-    try{actor.group.visible=false;group.visible=true;for(const mesh of meshes)mesh.visible=selected.has(mesh);
-     for(const mesh of batch){const geometry=mesh.geometry;if(!geometry)continue;let saved=ranges.get(geometry);if(!saved){saved={start:geometry.drawRange.start,count:geometry.drawRange.count,multi:false,groups:geometry.groups.map(entry=>({entry,count:entry.count}))};ranges.set(geometry,saved);}if(Array.isArray(mesh.material))saved.multi=true;}
-     for(const [geometry,saved]of ranges)if(saved.multi&&saved.groups.length){geometry.setDrawRange(0,Infinity);for(const row of saved.groups)row.entry.count=Math.min(3,row.count);}else geometry.setDrawRange(saved.start,Math.min(3,saved.count));
+   const meshes=group.children,units=[],compileRoot=new T.Group();compileRoot.traverseVisible=()=>{};
+   for(const mesh of meshes)for(const material of Array.isArray(mesh.material)?mesh.material:[mesh.material])if(material)units.push({mesh,material});
+   for(let index=0;index<units.length;index++){
+    if(!valid())return false;const {mesh,material}=units[index],originalMaterial=mesh.material,previousPrograms=new Set(renderer.info.programs);
+    // One material, including each member of a multi-material mesh. Array
+    // groups otherwise let a single character enqueue several unseen shaders.
+    // Using the same mesh preserves its skinning, geometry and live hooks.
+    try{mesh.material=material;compileRoot.traverse=visit=>visit(mesh);renderer.compile(compileRoot,camera,scene);}
+    finally{mesh.material=originalMaterial;}
+    if(!await waitPrograms(renderer.info.programs.filter(program=>!previousPrograms.has(program)))||!valid())return false;
+    const oldTarget=renderer.getRenderTarget(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest(),visible=actor.group.visible,matrixAuto=scene.matrixWorldAutoUpdate,geometry=mesh.geometry,start=geometry?.drawRange.start,count=geometry?.drawRange.count;
+    try{actor.group.visible=false;group.visible=true;for(const candidate of meshes)candidate.visible=candidate===mesh;mesh.material=material;
+     // All vertex/index buffers and textures still upload in full. A single
+     // primitive exercises the exact program without a full character draw.
+     if(geometry)geometry.setDrawRange(start,Math.min(3,count));
      renderer.setRenderTarget(null);renderer.setViewport(0,0,8,8);renderer.setScissor(0,0,8,8);renderer.setScissorTest(true);scene.matrixWorldAutoUpdate=false;renderer.render(scene,camera);}
-    finally{scene.matrixWorldAutoUpdate=matrixAuto;for(const [geometry,saved]of ranges){geometry.setDrawRange(saved.start,saved.count);for(const row of saved.groups)row.entry.count=row.count;}renderer.setRenderTarget(oldTarget);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);actor.group.visible=visible;group.visible=false;for(const mesh of meshes)mesh.visible=true;}
-    if(typeof onProgress==='function')onProgress({stage:'inventory-preview',completed:Math.min(meshes.length,first+6),total:meshes.length});await yieldFrame();
+    finally{scene.matrixWorldAutoUpdate=matrixAuto;if(geometry)geometry.setDrawRange(start,count);mesh.material=originalMaterial;renderer.setRenderTarget(oldTarget);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);actor.group.visible=visible;group.visible=false;for(const candidate of meshes)candidate.visible=true;}
+    if(typeof onProgress==='function')onProgress({stage:'inventory-preview',completed:index+1,total:units.length});
+    // Complete this draw before submitting the next material on both parallel
+    // and non-parallel drivers; the final loading step cannot fill their queue.
+    if(!await waitUploads())return false;
    }
-   // A fence yields while those tiny first draws finish uploading. It avoids
-   // forcing a large synchronous completion when the player opens inventory.
-   const gl=renderer.getContext();if(gl.fenceSync&&gl.clientWaitSync){const fence=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);if(fence){try{gl.flush();while(valid()){const status=gl.clientWaitSync(fence,0,0);if(status===gl.ALREADY_SIGNALED||status===gl.CONDITION_SATISFIED||status===gl.WAIT_FAILED)break;await new Promise(resolve=>setTimeout(resolve,4));}}finally{gl.deleteSync(fence);}}}
    return valid();
   }finally{scene.remove(group);}
  }
@@ -22512,6 +22897,11 @@ function decorateLayout(data,level){
 }
 function attach(T,data,built){
  const fixtures=[],doors=[],sources=built.waterSources||(built.waterSources=[]),resources={geometries:new Set(),materials:new Set()},groups=[],colliders=built.colliders;
+ const floorSurfaces=built.footstepSurfaces||(built.footstepSurfaces=[]);
+ function walkingSurface(b,name,x,z,w,d,y){
+  const p=localPoint(b,x,z),bounds=localBounds(b,x,z,w,d,y,name);
+  floorSurfaces.push({minX:bounds.minX,maxX:bounds.maxX,minZ:bounds.minZ,maxZ:bounds.maxZ,y,surface:'tile',source:name,physicalFloor:true,collisionOBB:{x:p.x,z:p.z,ux:Math.cos(b.yaw),uz:-Math.sin(b.yaw),halfWidth:w/2,halfDepth:d/2}});
+ }
  const boxG=new T.BoxGeometry(1,1,1),cylG=new T.CylinderGeometry(1,1,1,16),sphereG=new T.SphereGeometry(1,16,10),ringG=new T.TorusGeometry(1,.08,8,32);for(const g of[boxG,cylG,sphereG,ringG])resources.geometries.add(g);
  const material=(name,color,opts={})=>{const m=new T.MeshStandardMaterial({color,roughness:.42,...opts});m.name='Bathroom / '+name;resources.materials.add(m);return m;};
  function part(parent,name,geo,mat,x,y,z,sx,sy,sz){const mesh=new T.Mesh(geo,mat);mesh.name=name;mesh.position.set(x,y,z);mesh.scale.set(sx,sy,sz);mesh.castShadow=!mat.transparent;mesh.receiveShadow=true;parent.add(mesh);return mesh;}
@@ -22585,11 +22975,13 @@ function attach(T,data,built){
   const toiletCollider=localBounds(b,-1.03,1.19,.64,.94,.65,toilet.id,{enemyPassThrough:true,standable:true,footstepSurface:'tile'});colliders.push(toiletCollider);toilet.interactionIgnore.push(toiletCollider);lid.interactionIgnore.push(toiletCollider);
   const showerG=new T.Group();showerG.position.set(.82,0,.86);g.add(showerG);showerG.userData.dynamicTransform=true;const half=.86,depth=.90,base=b.variant==='bathtub'?.09:.063;
   box(showerG,b.variant==='bathtub'?'Recessed bathtub base':'Low shower tray',ceramic,0,base/2,0,1.72,base,1.8);cyl(showerG,'Chrome shower drain',metal,0,base+.006,0,.09,.009);for(const x of[-.048,0,.048])box(showerG,'Drain slots',dark,x,base+.012,0,.014,.004,.11);
+  walkingSurface(b,b.variant==='bathtub'?'Bathtub basin floor':'Shower tray floor',.82,.86,1.72,1.8,base);
   if(b.variant==='bathtub'){
    for(const x of[-.82,.82]){box(showerG,'Bathtub raised side',ceramic,x,.28,0,.08,.44,1.80);box(showerG,'Rounded bathtub rim',ceramic,x,.505,0,.11,.065,1.83);}box(showerG,'Bathtub head wall',ceramic,0,.28,.85,1.62,.44,.10);box(showerG,'Bathtub end rim',ceramic,0,.505,.85,1.73,.065,.13);
    // The full-width low entry allows both capsule sizes to walk into the tub.
    // Side/head walls stay physical; there is no box filling the hollow basin.
    box(showerG,'Walk-in bathtub low entry lip',ceramic,0,.065,-.85,1.62,.13,.10);box(showerG,'Textured bath entry step',floor,0,.035,-1.00,1.40,.07,.22);
+   walkingSurface(b,'Bathtub entry lip',.82,.01,1.62,.10,.13);walkingSurface(b,'Bathtub entry step',.82,-.14,1.40,.22,.07);
    for(const x of[-.82,.82])colliders.push(localBounds(b,.82+x,.86,.08,1.80,.50,b.id+':tub-side:'+x,{standable:true,footstepSurface:'tile'}));
   }else{
    for(const x of[-half,half]){box(showerG,'Fixed clear shower side',glass,x,1.20,0,.015,2.25,1.80);for(const z of[-depth,depth])box(showerG,'Shower upright',metal,x,1.19,z,.028,2.29,.028);colliders.push(localBounds(b,.82+x,.86,.025,1.8,2.35,b.id+':glass-side:'+x,{visionTransparent:true}));}
@@ -22609,7 +23001,9 @@ function attach(T,data,built){
   head.updateWorldMatrix(true,false);shower.soundPosition=head.getWorldPosition(new T.Vector3());shower.soundObject=head;controls.updateWorldMatrix(true,false);shower.aiTarget=controls.getWorldPosition(new T.Vector3());
   const jets=[];for(let n=0;n<21;n++){const angle=n*2.399963,r=.035+Math.sqrt(n/21)*.15,j=cyl(showerG,'Individual shower stream',water,Math.cos(angle)*r,1.20,.28+Math.sin(angle)*r,.006,2.07);jets.push(j);}const splash=part(showerG,'Shower splash pool',sphereG,water,0,base+.015,.20,.54,.012,.52);
   shower.updateVisual=()=>{for(const j of jets)j.visible=shower.on;splash.visible=shower.on;valve.rotation.z=shower.on?-.75:0;};shower.animate=t=>{for(let n=0;n<jets.length;n++){jets[n].scale.x=jets[n].scale.z=.0045+.002*Math.sin(t*13+n);jets[n].position.x+=Math.sin(t*7+n)*.0003;}splash.scale.x=.49+.04*Math.sin(t*7);};shower.updateVisual();fixtures.push(shower);
-  built.footstepSurfaces??=[];for(const cell of b.section.cells)built.footstepSurfaces.push({minX:cell.x*4-2,maxX:cell.x*4+2,minZ:cell.z*4-2,maxZ:cell.z*4+2,y:.058,surface:'tile',source:pal.name});
+  // Drops rest on the visible tile/grout top, which is above the structural
+  // y=0 slab. Keep this footprint independent of room visibility and batching.
+  for(const cell of b.section.cells)floorSurfaces.push({minX:cell.x*4-2,maxX:cell.x*4+2,minZ:cell.z*4-2,maxZ:cell.z*4+2,y:.058,placementY:b.theme==='suburb'?.0575:.061,surface:'tile',source:pal.name,physicalFloor:true});
  }
  for(const f of data.fountains||[]){
   const g=new T.Group();g.position.set(f.x,0,f.z);g.rotation.y=f.yaw;g.name='Garden drinking fountain';trackGroup(g,f.id,'water-fountain',f.cell);const stone=material('fountain sandstone',0x9dafa1),bronze=material('fountain bronze',0xa79560,{metalness:.74,roughness:.29}),water=material('fountain water',0x9ddfe2,{transparent:true,opacity:.65,depthWrite:false});
@@ -23130,7 +23524,7 @@ function build(THREE,data){
  function manilaRoom(room,rg){
   if(!mats.manilaWall){const pixels=new Uint8Array(128*128*4);for(let y=0;y<128;y++)for(let x=0;x<128;x++){const dx=x/128-.5,dy=y/128-.5,ring=Math.abs(Math.abs(dx)*.78+Math.abs(dy)-.34)<.021,flower=Math.abs(Math.hypot(dx*1.1,dy*.80)-.205)<.013,orange=ring||flower,i=(y*128+x)*4,grain=((x*13+y*7)%9)-4,color=orange?[181,107,61]:[232,216,181];pixels[i]=color[0]+grain;pixels[i+1]=color[1]+grain;pixels[i+2]=color[2]+grain;pixels[i+3]=255;}const tex=new T.DataTexture(pixels,128,128,T.RGBAFormat);tex.name='Manila cream and orange repeating wallpaper';tex.wrapS=tex.wrapT=T.RepeatWrapping;tex.repeat.set(3,3);tex.colorSpace=T.SRGBColorSpace;tex.magFilter=T.LinearFilter;tex.minFilter=T.LinearMipmapLinearFilter;tex.generateMipmaps=true;tex.needsUpdate=true;resources.textures.add(tex);mats.manilaWall=material('Manila cream orange patterned wallpaper',0xffffff,{map:tex,roughness:.94});}
   const x0=Math.min(...room.cells.map(c=>c.x))*4-1.98,x1=Math.max(...room.cells.map(c=>c.x))*4+1.98,z0=Math.min(...room.cells.map(c=>c.z))*4-1.98,z1=Math.max(...room.cells.map(c=>c.z))*4+1.98,cx=(x0+x1)/2,cz=(z0+z1)/2;
-  const roof=new T.Group();roof.name='Removable Manila cutaway roof';roof.userData.cutawayRoof=true;rg.add(roof);cutawayRoofs.push(roof);for(const cell of room.cells){box(rg,'Manila orange brown carpet',mats.velvet,cell.x*4,.012,cell.z*4,4,.024,4);footstepSurfaces.push({minX:cell.x*4-2,maxX:cell.x*4+2,minZ:cell.z*4-2,maxZ:cell.z*4+2,y:.024,surface:'carpet',source:'Manila Room carpet'});box(roof,'Manila warm plaster ceiling',mats.ceiling,cell.x*4,3.11,cell.z*4,3.98,.12,3.98);}
+  const roof=new T.Group();roof.name='Removable Manila cutaway roof';roof.userData.cutawayRoof=true;rg.add(roof);cutawayRoofs.push(roof);for(const cell of room.cells){box(rg,'Manila orange brown carpet',mats.velvet,cell.x*4,.012,cell.z*4,4,.024,4);footstepSurfaces.push({minX:cell.x*4-2,maxX:cell.x*4+2,minZ:cell.z*4-2,maxZ:cell.z*4+2,y:.024,surface:'carpet',source:'Manila Room carpet',physicalFloor:true});box(roof,'Manila warm plaster ceiling',mats.ceiling,cell.x*4,3.11,cell.z*4,3.98,.12,3.98);}
   for(const b of room.boundaries){const base=new T.Group();base.position.set(b.cell.x*4,0,b.cell.z*4);base.rotation.y=Math.atan2(b.dx,b.dz);rg.add(base);for(const[u,w]of b.doorId?[[-1.515,.97],[1.515,.97]]:[[0,4]]){box(base,'Manila patterned wall',mats.manilaWall,u,1.525,1.955,w,3.05,.070);box(base,'Manila wood skirting',mats.wood,u,.075,1.90,w,.15,.04);}if(b.doorId)box(base,'Manila doorway lintel',mats.manilaWall,0,2.79,1.955,2.06,.52,.070);box(base,'Manila ceiling coving',mats.ceiling,0,3.015,1.90,4,.065,.10);}
   for(const cell of room.cells)ceilingFixtures.add(rg,cell.x*4,cell.z*4,'opal',3.05);
   for(const item of data.furniture.filter(f=>f.roomId===room.id))rg.add(item.kind==='wooden-chair'?woodenChair(item):manilaTable(item));
@@ -23142,10 +23536,10 @@ function build(THREE,data){
   for(const cell of room.cells){const edges=room.boundaries.filter(b=>b.cell.x===cell.x&&b.cell.z===cell.z),edge=(dx,dz)=>edges.some(b=>b.dx===dx&&b.dz===dz),x0=cell.x*4-2+(edge(-1,0)?.04:0),x1=cell.x*4+2-(edge(1,0)?.04:0),z0=cell.z*4-2+(edge(0,-1)?.04:0),z1=cell.z*4+2-(edge(0,1)?.04:0),cx=(x0+x1)/2,cz=(z0+z1)/2;
    if(theme==='garden'){for(let x=x0+.18;x<x1;x+=.92)box(roof,'Pergola open roof rafter',mats.wood,x,3.15,cz,.105,.21,z1-z0);for(const z of[z0+.18,z1-.18])box(roof,'Pergola crossbeam',mats.wood,cx,3.035,z,x1-x0,.19,.15);}
    else box(roof,theme==='poolrooms'?'Porcelain lounge canopy':theme==='catacombs'?'Crypt stone ceiling':'Enclosed room ceiling',mats.ceiling,cx,3.11,cz,x1-x0,.12,z1-z0);
-   if(dorm){box(rg,carpeted?'Guest suite velvet carpet':theme==='poolrooms'?'Submerged lounge paving':'Resting room paving',restFloor,cell.x*4,.010,cell.z*4,4,.02,4);footstepSurfaces.push({minX:cell.x*4-2,maxX:cell.x*4+2,minZ:cell.z*4-2,maxZ:cell.z*4+2,y:.020,surface:restFloor.userData.footstepSurface,source:area.rest+' floor'});}
+   if(dorm){box(rg,carpeted?'Guest suite velvet carpet':theme==='poolrooms'?'Submerged lounge paving':'Resting room paving',restFloor,cell.x*4,.010,cell.z*4,4,.02,4);footstepSurfaces.push({minX:cell.x*4-2,maxX:cell.x*4+2,minZ:cell.z*4-2,maxZ:cell.z*4+2,y:.020,surface:restFloor.userData.footstepSurface,source:area.rest+' floor',physicalFloor:true});}
   }
   for(const cell of room.cells){const base=new T.Group();base.position.set(cell.x*4,0,cell.z*4);rg.add(base);
-   if(!dorm){box(base,theme==='poolrooms'?'Submerged hydration gallery tiles':'Room floor finish',mats.floor,0,.012,0,3.995,.018,3.995);footstepSurfaces.push({minX:cell.x*4-1.9975,maxX:cell.x*4+1.9975,minZ:cell.z*4-1.9975,maxZ:cell.z*4+1.9975,y:.021,surface:mats.floor.userData.footstepSurface,source:'kitchen ceramic floor'});const joints=[-1.5,-1,-.5,0,.5,1,1.5];for(const v of joints){part(base,'Kitchen floor tile grout',geoplane,mats.grout,0,.024,v,3.99,.009,1,[-Math.PI/2,0,0]);for(const[a,b]of segments(-1.995,1.995,joints,.0045))part(base,'Kitchen floor tile grout',geoplane,mats.grout,v,.024,(a+b)/2,.009,b-a,1,[-Math.PI/2,0,0]);}}
+   if(!dorm){box(base,theme==='poolrooms'?'Submerged hydration gallery tiles':'Room floor finish',mats.floor,0,.012,0,3.995,.018,3.995);footstepSurfaces.push({minX:cell.x*4-1.9975,maxX:cell.x*4+1.9975,minZ:cell.z*4-1.9975,maxZ:cell.z*4+1.9975,y:.021,surface:mats.floor.userData.footstepSurface,source:'kitchen ceramic floor',physicalFloor:true,placementY:.024});const joints=[-1.5,-1,-.5,0,.5,1,1.5];for(const v of joints){part(base,'Kitchen floor tile grout',geoplane,mats.grout,0,.024,v,3.99,.009,1,[-Math.PI/2,0,0]);for(const[a,b]of segments(-1.995,1.995,joints,.0045))part(base,'Kitchen floor tile grout',geoplane,mats.grout,v,.024,(a+b)/2,.009,b-a,1,[-Math.PI/2,0,0]);}}
    // The bathroom pass supplies a real shared lamp model, not this room
    // tile's generic cube / fluorescent. Keep the floor but skip its old lamp.
    if((data.bathrooms||[]).some(b=>b.section.cells.some(c=>c.x===cell.x&&c.z===cell.z)))continue;
@@ -27030,30 +27424,39 @@ function switchSite(room,data,colliders){
  if(!candidates.length)throw new Error('School room has no switch wall: '+room.id);
  return candidates[0];
 }
+function bathroomCircuitRoom(bath,data){
+ const parent=data.rooms.find(r=>r.id===bath.roomId),cells=new Set(bath.section.cells.map(c=>key(c.x,c.z))),seen=new Set();
+ const faces=[...(parent?.boundaries||[]),...(parent?.partitions||[]),...(parent?.partitions||[]).map(f=>({...f,cell:{x:f.cell.x+f.dx,z:f.cell.z+f.dz},dx:-f.dx,dz:-f.dz}))].map(f=>({...f})).filter(f=>{
+  const id=key(f.cell.x,f.cell.z)+':'+f.dx+','+f.dz;if(seen.has(id)||!cells.has(key(f.cell.x,f.cell.z))||cells.has(key(f.cell.x+f.dx,f.cell.z+f.dz)))return false;seen.add(id);return true;
+ });
+ for(const face of faces)if((parent?.windows||[]).some(w=>w.cell.x===face.cell.x&&w.cell.z===face.cell.z&&w.dx===face.dx&&w.dz===face.dz))face.window=true;
+ return{id:bath.id,kind:'bathroom',displayName:'Bathroom',cells:bath.section.cells,boundaries:faces,floorY:bath.section.floorY??parent?.floorY??0};
+}
 function attachRoomSwitches(T,data,world){
  if(data?.theme!=='school'||world.schoolPowerSwitchesAttached)return world;
  world.schoolPowerSwitchesAttached=true;
  const seed=data.sourceSeed??data.seed,resources={geometries:new Set(),materials:new Set()},ownGeometry=g=>(resources.geometries.add(g),g),ownMaterial=m=>(resources.materials.add(m),m);
  const box=ownGeometry(new T.BoxGeometry(1,1,1)),screw=ownGeometry(new T.CylinderGeometry(1,1,1,8)),plateMaterial=ownMaterial(new T.MeshStandardMaterial({color:0xbfc4b4,roughness:.84})),recessMaterial=ownMaterial(new T.MeshStandardMaterial({color:0x161b18,roughness:.92})),rockerMaterial=ownMaterial(new T.MeshStandardMaterial({color:0xd3d5c5,roughness:.77}));
  const mesh=(parent,name,geometry,material,x,y,z,sx,sy,sz)=>{const m=new T.Mesh(geometry,material);m.name=name;m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=false;m.receiveShadow=true;parent.add(m);return m;};
- const controls=world.lightSwitches||(world.lightSwitches=[]),specs=data.schoolLightSwitches||(data.schoolLightSwitches=[]),rooms=data.rooms.filter(r=>r.kind==='dormitory'||r.kind==='kitchen').slice().sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
+ const controls=world.lightSwitches||(world.lightSwitches=[]),specs=data.schoolLightSwitches||(data.schoolLightSwitches=[]),bathrooms=data.bathrooms||[],bathroomCells=new Set(bathrooms.flatMap(b=>b.section.cells.map(c=>key(c.x,c.z))));
+ const rooms=[...data.rooms.filter(r=>r.kind==='dormitory'||r.kind==='kitchen').map(r=>({...r,boundaries:(r.boundaries||[]).filter(f=>!bathroomCells.has(key(f.cell.x,f.cell.z)))})),...bathrooms.map(b=>bathroomCircuitRoom(b,data))].sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0);
  for(const room of rooms){
   const record=world.roomGroups.find(r=>r.id===room.id);if(!record)continue;
-  const cells=new Set(room.cells.map(c=>key(c.x,c.z))),roomGroups=world.roomGroups.filter(r=>r.id===room.id||r.kind==='bathroom'&&r.cells?.length&&r.cells.every(c=>cells.has(key(c.x,c.z))));
-  const lights=(world.lights||data.lights||[]).filter(l=>l.roomId===room.id||cells.has(key(Math.floor(l.x/CELL+.5),Math.floor(l.z/CELL+.5))));
+  const bathroom=room.kind==='bathroom',cells=new Set(room.cells.map(c=>key(c.x,c.z))),roomGroups=[record];
+  const lights=(world.lights||data.lights||[]).filter(l=>{const tile=key(Math.floor(l.x/CELL+.5),Math.floor(l.z/CELL+.5));return bathroom?cells.has(tile):!bathroomCells.has(tile)&&(l.roomId===room.id||cells.has(tile));});
   for(const light of lights){light.schoolRoomPower=true;light.roomId=room.id;light.baseIntensity=Number.isFinite(light.baseIntensity)?light.baseIntensity:light.intensity>0?light.intensity:2.6;}
   const materials=new Map();
   // Room merging and bathroom attachment clone materials. Bind the live meshes
-  // after those passes and isolate every circuit, including bathroom lamps.
+  // after those passes. Each bathroom has its own independent, working circuit.
   for(const owner of roomGroups)owner.group.traverse(o=>{
    if(!o.isMesh||!o.material)return;
    const bind=m=>{if(!m.emissive||!(m.emissiveIntensity>0||m.userData.baseEmissive>0))return m;
     if(!materials.has(m)){const clone=ownMaterial(m.clone());clone.userData.schoolRoomPower=true;clone.userData.roomLightEnabled=false;clone.userData.baseEmissive=m.userData.baseEmissive??m.emissiveIntensity;clone.emissiveIntensity=0;materials.set(m,clone);}return materials.get(m);};
    o.material=Array.isArray(o.material)?o.material.map(bind):bind(o.material);
   });
-  const site=switchSite(room,data,world.colliders||data.colliders||[]),id='school-switch:'+room.id;
+  const site=switchSite(room,bathroom?{bathrooms:[{roomId:room.id,section:{cells:room.cells}}]}:data,world.colliders||data.colliders||[]),id='school-switch:'+room.id;
   let spec=specs.find(s=>s.id===id);if(!spec){spec={id,on:false};specs.push(spec);}
-  const working=roomWorking(seed,room.id),g=new T.Group();g.name=(room.displayName||room.kind)+' wall light switch';g.position.set(site.x,site.y,site.z);g.rotation.y=Math.atan2(-site.dx,-site.dz);g.userData.lightSwitchId=id;g.userData.schoolRoomPower=true;record.group.add(g);
+  const working=bathroom||roomWorking(seed,room.id),g=new T.Group();g.name=(room.displayName||room.kind)+' wall light switch';g.position.set(site.x,site.y,site.z);g.rotation.y=Math.atan2(-site.dx,-site.dz);g.userData.lightSwitchId=id;g.userData.schoolRoomPower=true;world.group.add(g);record.group.attach(g);
   mesh(g,'Aged switch wall plate',box,plateMaterial,0,0,.014,.15,.24,.028);mesh(g,'Recessed switch surround',box,recessMaterial,0,0,.032,.105,.156,.012);
   const button=mesh(g,'Tilting electrical rocker',box,rockerMaterial,0,0,.052,.081,.127,.024);button.userData.dynamicTransform=true;
   for(const y of[-.094,.094]){const bolt=mesh(g,'Recessed switch screw',screw,recessMaterial,0,y,.031,.006,.007,.006);bolt.rotation.x=Math.PI/2;}
@@ -27309,12 +27712,12 @@ const worldOnly=new URLSearchParams(location.search).get('worldOnly')==='1';
 const reviewStart=(()=>{const query=new URLSearchParams(location.search),theme=query.get('reviewTheme'),seed=query.get('reviewSeed');return ['garden','poolrooms','school','catacombs','industrial','hotel','forest','backrooms','suburb'].includes(theme)&&/^(0|[1-9][0-9]{0,9})$/.test(seed||'')&&Number(seed)<=4294967295?{theme,seed:Number(seed)}:null;})();
 let touch=MazeInput.lastDevice()==='touch';
 let inputResetTouch=()=>{};
-const settings={volume:70,sensitivity:50,quality:'balanced',qualityDefaultVersion:3,mouseProtection:true,rawMouse:false};
+const settings={volume:70,sensitivity:50,quality:'balanced',qualityDefaultVersion:3,mouseProtection:true,rawMouse:false,sfwCharacterTextures:false,mosaicNudityCensoring:false};
 const mouseGuard=new MazeClientHealth.MouseGuard(),clientFrames=new MazeClientHealth.FrameStats();
 const MOTION={standEye:1.53,crouchEye:1.195,jumpSpeed:C.PLAYER_JUMP_SPEED,gravity:C.PLAYER_GRAVITY,leanReach:.42};
 function makePlayer(x,z,yaw){return MazeStamina.init(MazeWeaponGameplay.init({x,y:0,z,yaw,pitch:0,speed:0,crouched:false,hidden:false,grounded:true,velocityY:0,lean:0}));}
 let best=0;try{const saved=JSON.parse(localStorage.getItem('maze3d.settings')||'{}');Object.assign(settings,saved);if(saved.qualityDefaultVersion!==3){if(!saved.quality||saved.quality==='high')settings.quality='balanced';settings.qualityDefaultVersion=3;localStorage.setItem('maze3d.settings',JSON.stringify(settings));}best=Number(localStorage.getItem('maze3d.best'))||0;}catch(e){}
-delete settings.bob;settings.sensitivity=C.clamp(Number.isFinite(settings.sensitivity)?settings.sensitivity:50,10,100);settings.mouseProtection=settings.mouseProtection!==false;settings.rawMouse=settings.rawMouse===true;
+delete settings.bob;settings.sensitivity=C.clamp(Number.isFinite(settings.sensitivity)?settings.sensitivity:50,10,100);settings.mouseProtection=settings.mouseProtection!==false;settings.rawMouse=settings.rawMouse===true;settings.sfwCharacterTextures=settings.sfwCharacterTextures===true;MazeAppearance.setSfwTextures(settings.sfwCharacterTextures);settings.mosaicNudityCensoring=settings.mosaicNudityCensoring===true;MazeAppearance.setMosaicCensoring(settings.mosaicNudityCensoring);
 const state={mode:'loading',resume:'playing',level:null,env:null,safe:null,closets:[],serviceDoors:[],wardrobes:[],exit:null,player:makePlayer(0,0,0),enemy:null,score:0,seed:0,theme:'garden',lastTheme:null,time:0,planRemaining:15,putAway:0,locked:false,keys:new Set(),crouchToggle:false,jumpQueued:false,seen:new Map(),lights:new Map(),visibilityTick:0,noticeUntil:0,flashlight:true,deathTimer:null,transitionTimer:null,loadToken:0,menuTime:0,tabletFocus:false,spectatorMap:false,tabletView:{zoom:1,panX:0,panY:0,dirty:true,width:1,height:1,ratio:1},tabletTick:0,acousticTick:0,occlusion:0,shadowTick:0,shadowDirty:true,skipUnlockPause:false,closetByKey:new Map(),movingDoors:new Set(),enemyClosetDoor:null,menuRenderAt:0,renderRatio:1,adaptiveScale:1,frameAverage:1/60,slowFrames:0,fastFrames:0,enemyBrightness:0};
 let renderer,scene,camera,actor,tablet,torch,hemi,sun,flash,flashTarget,fillLight,goku,gokuActor,security,mirror,safeLight,flashlightOcclusion,berryEffects=null,magicLighting=null,droppedFlashlightRenderer=null,pointLights=[],lastFrame=0,smoothedHeight=MOTION.standEye;
 const shadeCache=new WeakMap(),doorActors=[null,null],viewProbe={x:0,z:0};
@@ -27396,8 +27799,9 @@ function loadingCurrent(job){return !!job&&loadingJob===job&&!job.cancelled&&job
 function loadingReport(job,percent,label){
  if(!loadingCurrent(job))return false;
  job.percent=Math.max(job.percent,Math.min(100,Math.max(0,Number(percent)||0)));if(label)job.label=label;
+ const display=Math.floor(job.percent*10)/10;if(job.displayPercent===display&&job.displayLabel===job.label)return true;job.displayPercent=display;job.displayLabel=job.label;
  const value=Math.floor(job.percent),track=$('loadingTrack'),fill=$('loadingFill'),counter=$('loadingProgress');
- $('loadingText').textContent=job.label;if(track){track.setAttribute('aria-valuenow',String(value));track.setAttribute('aria-valuetext',value+'% · '+job.label);}if(fill)fill.style.width=job.percent+'%';if(counter)counter.textContent=value+'%';
+ $('loadingText').textContent=job.label;if(track){track.setAttribute('aria-valuenow',String(value));track.setAttribute('aria-valuetext',value+'% · '+job.label);}if(fill)fill.style.width=display+'%';if(counter)counter.textContent=value+'%';
  return true;
 }
 function loadingStart(label,valid){
@@ -27798,6 +28202,9 @@ function chooseTheme(){const chosen=$('themeSelect').value;if(chosen!=='random')
 function init(){
  try{
   renderer=new T.WebGLRenderer({canvas:$('world'),antialias:false,alpha:false,powerPreference:'high-performance'});renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.03;renderer.shadowMap.type=T.PCFSoftShadowMap;
+  // Driver info-log reads force synchronous shader completion on some PCs.
+  // Keep full diagnostics available for shader validation, outside normal play.
+  renderer.debug.checkShaderErrors=new URLSearchParams(location.search).get('shader-checks')==='1';
   scene=new T.Scene();scene.onBeforeRender=(_renderer,_scene,viewCamera)=>state.env?.prepareView?.(viewCamera,!!sun?.castShadow);scene.updateMatrix();scene.matrixAutoUpdate=false;camera=new T.PerspectiveCamera(76,innerWidth/innerHeight,.025,100);camera.rotation.order='YXZ';scene.add(camera);scene.add(spectatorNightLight);
   hemi=new T.HemisphereLight(0xe9f5ff,0x35422d,1);scene.add(hemi);sun=new T.DirectionalLight(0xffeed0,2);sun.shadow.camera.left=-25;sun.shadow.camera.right=25;sun.shadow.camera.top=25;sun.shadow.camera.bottom=-25;sun.shadow.camera.near=.1;sun.shadow.camera.far=90;sun.shadow.normalBias=.03;sun.shadow.bias=-.00014;scene.add(sun,sun.target);
   flash=new T.SpotLight(0xe9f1d2,8,23,.56,.65,1.25);flash.castShadow=false;flashTarget=new T.Object3D();scene.add(flash,flashTarget);flash.target=flashTarget;
@@ -28407,6 +28814,8 @@ let settingsFrom='menu';const joystick={x:0,y:0};let touchRun=false,touchLean=0;
 function openSettings(){if(state.player.sleeping)return;survivalCloseLoot(false);inventoryClose(false);resetMovementInput();exitLock();if(mp?.ending)return;if(mp&&coopLive()){mp.localPaused=true;settingsFrom='mp';show('pauseScreen',false);show('settingsScreen');$('settingsScreen').querySelector('.menu-panel-content').scrollTop=0;$('closeSettings').focus({preventScroll:true});return;}settingsFrom=state.mode==='paused'?'paused':'menu';state.mode='settings';show('pauseScreen',false);show('settingsScreen');$('settingsScreen').querySelector('.menu-panel-content').scrollTop=0;$('closeSettings').focus({preventScroll:true});}
 function bindUI(){
  bindDisclaimers();
+ if(!$('sfwCharacterTextures'))$('quality').closest('.setting').after(MazeAppearance.createSfwSetting({value:settings.sfwCharacterTextures,onChange:value=>{settings.sfwCharacterTextures=value;MazeAppearance.setSfwTextures(value);saveSettings();}}));
+ if(!$('mosaicNudityCensoring'))$('sfwCharacterTextures').closest('.setting').after(MazeAppearance.createMosaicSetting({value:settings.mosaicNudityCensoring,onChange:value=>{settings.mosaicNudityCensoring=value;MazeAppearance.setMosaicCensoring(value);saveSettings();}}));
  $('startButton').onclick=startRun;$('retryButton').onclick=startRun;$('deathMenu').onclick=menu;$('quitButton').onclick=menu;$('resumeButton').onclick=resume;$('pauseButton').onclick=pause;$('settingsButton').onclick=openSettings;$('pauseSettings').onclick=openSettings;$('closeSettings').onclick=()=>{MazeInput.cancelCapture();if(settingsFrom==='mp'){show('settingsScreen',false);show('pauseScreen');return;}state.mode=settingsFrom;show('settingsScreen',false);if(settingsFrom==='paused')show('pauseScreen');};$('reloadButton').onclick=()=>location.reload();$('skipDeath').onclick=showDeathResult;$('deathVideo').addEventListener('ended',showDeathResult);$('deathVideo').addEventListener('error',()=>{if(state.mode==='dead')showDeathResult();});
  for(const name of ['volume','sensitivity','quality']){const el=$(name);el.value=settings[name];el.oninput=()=>updateSetting(name,el);if(name==='sensitivity')el.onchange=el.oninput;}$('volumeOut').value=settings.volume+'%';$('sensitivityOut').value=(settings.sensitivity/50).toFixed(2)+'×';
  $('themeSelect').onchange=()=>{if(state.mode!=='menu')return;try{const theme=$('themeSelect').value==='random'?'garden':$('themeSelect').value;buildLevel(theme,C.hashSeed('maze3d-title'));}catch(e){fatal(e);}};
@@ -28455,7 +28864,7 @@ function bindUI(){
  for(const event of ['pointerup','pointercancel'])mapCanvas.addEventListener(event,()=>mapDrag=null);
  const context=document.modelContext;if(context?.registerTool){try{Promise.resolve(context.registerTool({name:'get_maze_status',title:'Read maze status',description:'Read the current maze, cleared count, phase, and tablet battery.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(input){if(!input||Object.keys(input).length)throw new Error('This tool takes no arguments.');return{phase:state.mode,maze:state.score+1,cleared:state.score,theme:state.env.theme.name,tabletSeconds:Math.ceil(tabletCharge()),hidden:state.player.hidden};}})).catch(()=>{});}catch(e){}}
  // Read-only performance / geometry diagnostics; player-free mode is a separate startup path.
- window.MazeDiagnostics={getStatus:()=>({build:'V7.40.0 · School overhaul / prepared actions / visible floor loading / kitchen door physics',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable,captureError:inputLockError||null,capturePending:!!inputLockAttempt,touchMode:touch,pointerLockAPI:typeof $('world').requestPointerLock==='function'},performance:{...clientFrames.status(),loading:loadingJob?{percent:Math.floor(loadingJob.percent),stage:loadingJob.label}:null,graphicsPreparation:state.graphicsWarmup?{milliseconds:state.graphicsWarmup.milliseconds,programs:state.graphicsWarmup.programs,maxBlockingMilliseconds:state.graphicsWarmup.maxBlockingMilliseconds,parallelShaders:state.graphicsWarmup.parallelShaders}:null,enemyNavigation:state.level?.enemyNavigationStats?{...state.level.enemyNavigationStats}:null,simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),safeRoomViews:{passes:safeRoomViews.passes,skipped:safeRoomViews.skipped,lastCostMs:safeRoomViews.lastCost},spectatorMap:!!state.spectatorMap,flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getSchoolStatus:schoolStatus,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
+ window.MazeDiagnostics={getStatus:()=>({build:'V7.41.0 · School overhaul / bathroom lighting / finished-floor items / local SFW textures',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable,captureError:inputLockError||null,capturePending:!!inputLockAttempt,touchMode:touch,pointerLockAPI:typeof $('world').requestPointerLock==='function'},performance:{...clientFrames.status(),loading:loadingJob?{percent:Math.floor(loadingJob.percent),stage:loadingJob.label}:null,graphicsPreparation:state.graphicsWarmup?{milliseconds:state.graphicsWarmup.milliseconds,programs:state.graphicsWarmup.programs,maxBlockingMilliseconds:state.graphicsWarmup.maxBlockingMilliseconds,parallelShaders:state.graphicsWarmup.parallelShaders}:null,enemyNavigation:state.level?.enemyNavigationStats?{...state.level.enemyNavigationStats}:null,simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),safeRoomViews:{passes:safeRoomViews.passes,skipped:safeRoomViews.skipped,lastCostMs:safeRoomViews.lastCost},spectatorMap:!!state.spectatorMap,flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getSchoolStatus:schoolStatus,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
 }
 function look(dx,dy){if(phoneUI.isOpen||state.spectatorMap)return;if(!Number.isFinite(dx)||!Number.isFinite(dy)||inventoryIsOpen()||survivalBlocked())return;const s=mouseLookScale();if(mp?.dead){if(coopLive()&&!mp.ending&&!mp.localPaused&&mp.spectatorView==='orbit'){mp.spectatorYaw=(Number.isFinite(mp.spectatorYaw)?mp.spectatorYaw:0)-dx*s;mp.spectatorPitch=C.clamp((Number.isFinite(mp.spectatorPitch)?mp.spectatorPitch:.12)-dy*s,-Math.PI/2,Math.PI/2);}return;}const p=state.player,inversion=MazeBerryGameplay.mouseMultiplier(p,state.time);p.yaw-=dx*s*inversion;p.pitch=C.clamp(p.pitch-dy*s*inversion,-1.43,1.25);}
 // Service passages occupy real half-cells; presentation and interaction use
@@ -29325,7 +29734,7 @@ function coopControl(event){
  else if(event.type==='house-door-break')coopHouseDoorBreak(event);
  else if(event.type==='world-state'&&event.epoch===mp.epoch)coopReceiveWorld(event);
  else if(event.type==='repair-map'&&event.epoch===mp.epoch){coopCancelLevelLoad();mp.epoch=null;coopStartClientLevel(event.spec,false);}
- else if(event.type==='map-error')coopMapError('Map verification failed. Everyone must load the same V7.40.0 school-overhaul build.');
+ else if(event.type==='map-error')coopMapError('Map verification failed. Everyone must load the same V7.41.0 school-overhaul build.');
  else if(event.type==='inventory-ack'&&event.epoch===mp.epoch&&!mp.net.isHost){mp.inventoryPending.delete(event.nonce);inventoryMessage=event.accepted?'':'That item changed, is out of reach, or there is no room.';inventoryUI?.refresh();}
  else if(event.type==='survival-ack'&&event.epoch===mp.epoch&&!mp.net.isHost){const pending=mp.survivalPending.get(event.nonce);mp.survivalPending.delete(event.nonce);if(!event.accepted){if(pending?.previous){Object.assign(state.player,pending.previous);state.flashlight=!!state.player.flashlight;}announce('That action is not available.',2);}inventoryUI?.refresh();}
  else if(event.type==='weapon-ack'&&event.epoch===mp.epoch&&!mp.net.isHost){const sample=MazeStateCodec.readWeapon(event.weapon);if(sample)sample.inventoryRevision=event.inventoryRevision;if(sample)coopReconcileWeapon(state.player,sample,mp.clock.age(event.time,performance.now()/1000),null,!event.accepted);}
@@ -29923,6 +30332,14 @@ function survivalBaseFloorAt(p){
 }
 function survivalPhysicalFloorAt(p,limit=Number.isFinite(p?.y)?p.y:0){
  let top=survivalBaseFloorAt(p);
+ // Bathroom tiles, shower trays and room finishes sit above the structural
+ // slab. Their authored support heights apply to every item model, including
+ // flat phones/tablets. Water and breached floors never become solid support.
+ if(!C.playerPitAt?.(state.level,p.x,p.z))for(const surface of state.survivalWorld?.footstepSurfaces||[]){
+  if(!surface.physicalFloor||surface.enabled===false||surface.surface==='water')continue;
+  const y=Number.isFinite(surface.placementY)?surface.placementY:surface.y;
+  if(Number.isFinite(y)&&y>top&&C.circleAABB(p.x,p.z,.001,surface))top=y;
+ }
  for(const b of state.level?.roomColliders||[]){
   if(b.enabled===false||!b.standable||!Number.isFinite(b.maxY)||b.maxY>limit+.001||b.maxY<=top)continue;
   if(C.circleAABB(p.x,p.z,.001,b))top=b.maxY;
@@ -30970,9 +31387,9 @@ function warmLegendaryRenderer(){
 }
 
 
-// Submit compilation before drawing so the driver can compile in parallel.
-// Every wait yields: the loading screen and multiplayer heartbeats stay live.
-const graphicsYield=()=>new Promise(resolve=>setTimeout(resolve,0));
+// Leave real idle time between loading slices. A zero-delay loop can keep the
+// browser and graphics driver busy together even while the progress UI yields.
+const graphicsYield=(work=0)=>new Promise(resolve=>setTimeout(resolve,Math.min(40,Math.max(8,Number(work)||0))));
 async function waitGraphicsPrograms(programs,valid,onProgress){
  if(!renderer.extensions.has('KHR_parallel_shader_compile'))return valid();
  while(valid()){
@@ -30980,7 +31397,7 @@ async function waitGraphicsPrograms(programs,valid,onProgress){
   const ready=programs.reduce((count,program)=>count+Number(!program.program||program.isReady()),0);
   if(ready===programs.length)return true;
   onProgress?.(ready/Math.max(1,programs.length));
-  await new Promise(resolve=>setTimeout(resolve,8));
+  await new Promise(resolve=>setTimeout(resolve,12));
  }
  return false;
 }
@@ -30993,7 +31410,7 @@ async function waitGraphicsUploads(valid){
   const status=gl.clientWaitSync(fence,0,0);
   if(status===gl.ALREADY_SIGNALED||status===gl.CONDITION_SATISFIED)return true;
   if(status===gl.WAIT_FAILED||gl.isContextLost())throw new Error('The graphics context was interrupted.');
-  await new Promise(resolve=>setTimeout(resolve,4));
+  await new Promise(resolve=>setTimeout(resolve,8));
  }}finally{gl.deleteSync(fence);}
  return false;
 }
@@ -31033,8 +31450,10 @@ async function warmLevelGraphics(job=null){
  // Clients never run enemy navigation; the authority prepares this graph.
  if(!session||session.net.isHost)C.prepareNavigation?.(state.level);
  loadingReport(job,33,'Preparing character materials…');
- for(let palette=0;palette<5;palette++){MazeAppearance.prewarmPalette?.(actor,palette);loadingReport(job,33+palette*.5,'Preparing outfit colours…');await graphicsYield();if(!valid())return false;}
- for(const [index,style] of ['gold','chrome','prism'].entries()){MazeAppearance.prewarm(actor,style);loadingReport(job,36+index*.5,'Preparing reflective materials…');await graphicsYield();if(!valid())return false;}
+ const texturePreparation={yieldStep:graphicsYield,valid,budgetMs:6};
+ for(let palette=0;palette<5;palette++){if(MazeAppearance.prewarmPaletteAsync){if(!await MazeAppearance.prewarmPaletteAsync(actor,palette,texturePreparation))return false;}else MazeAppearance.prewarmPalette?.(actor,palette);loadingReport(job,33+palette*.5,'Preparing outfit colours…');await graphicsYield();if(!valid())return false;}
+ for(const [index,style] of ['gold','chrome','prism'].entries()){if(MazeAppearance.prewarmAsync){if(!await MazeAppearance.prewarmAsync(actor,style,texturePreparation))return false;}else MazeAppearance.prewarm(actor,style);loadingReport(job,36+index*.5,'Preparing reflective materials…');await graphicsYield();if(!valid())return false;}
+ if(MazeAppearance.prewarmSfwTexturesAsync)await MazeAppearance.prewarmSfwTexturesAsync(actor,null,texturePreparation);if(!valid())return false;
  flashlightOcclusion?.prepareDepth?.();await graphicsYield();if(!valid())return false;
  // The render wrapper enables the four flashlight shadow slots. Configure
  // those before compilation, otherwise it compiles a second lighting variant
@@ -31053,7 +31472,7 @@ async function warmLevelGraphics(job=null){
  try{
  await graphicsYield();if(!valid())return false;
  scene.updateMatrixWorld(true);lens.updateMatrixWorld(true);
- const nodes=[],renderables=[],compileLights=[];scene.traverse(o=>{nodes.push(o);if(o.isInstancedMesh){o.computeBoundingBox();o.computeBoundingSphere();}if(o.isMesh||o.isLine||o.isPoints||o.isSprite)renderables.push(o);});scene.traverseVisible(o=>{if(o.isLight)compileLights.push(o);});
+ const renderables=[],compileLights=[];let preparationNodeCount=0;scene.traverse(o=>{preparationNodeCount++;if(o.isInstancedMesh){o.computeBoundingBox();o.computeBoundingSphere();}if(o.isMesh||o.isLine||o.isPoints||o.isSprite)renderables.push(o);});scene.traverseVisible(o=>{if(o.isLight)compileLights.push(o);});
  // PMREM conversion renders a tiny reflection map internally. Do it before
  // queuing the floor's shaders; otherwise that hidden draw drains the entire
  // outstanding compiler queue synchronously inside the final material batch.
@@ -31067,26 +31486,25 @@ async function warmLevelGraphics(job=null){
   // Mirror and CCTV use the same output program. Compile/upload it once.
   if(!targetKeys.has(signature)){targetKeys.add(signature);targets.push(target);}
  }
- // Reused storage avoids thousands of temporary objects and garbage-collection
- // pauses while the same scene is visited by the small upload batches.
- const savedVisibility=new Uint8Array(nodes.length),savedCulling=new Uint8Array(nodes.length),savedCounts=new Int32Array(nodes.length);
- const parallelShaders=renderer.extensions.has('KHR_parallel_shader_compile'),batchSize=32,batchMilliseconds=[],passMilliseconds=[],compileMilliseconds=[],compilerDrawMilliseconds=[];
+ // Only visit the objects in this upload. Walking and hiding the entire maze
+ // for every tiny batch multiplied loading work by the number of batches.
+ const parallelShaders=renderer.extensions.has('KHR_parallel_shader_compile'),batchMilliseconds=[],passMilliseconds=[],compileMilliseconds=[],compilerDrawMilliseconds=[];
+ let peakQueuedPrograms=0,uploadObjectVisits=0;
  function withTarget(destination,selected,operation){
-  const beforeRender=scene.onBeforeRender,target=renderer.getRenderTarget(),face=renderer.getActiveCubeFace(),mip=renderer.getActiveMipmapLevel(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest(),auto=renderer.shadowMap.autoUpdate,dirty=renderer.shadowMap.needsUpdate,secondaryPass=flashlightOcclusion?.secondaryPass,matrixAuto=scene.matrixWorldAutoUpdate,geometryRanges=new Map();
-  const targetViewport=destination?.viewport.clone(),targetScissor=destination?.scissor.clone(),targetScissorTest=destination?.scissorTest;
+  const beforeRender=scene.onBeforeRender,target=renderer.getRenderTarget(),face=renderer.getActiveCubeFace(),mip=renderer.getActiveMipmapLevel(),viewport=renderer.getViewport(new T.Vector4()),scissor=renderer.getScissor(new T.Vector4()),scissorTest=renderer.getScissorTest(),auto=renderer.shadowMap.autoUpdate,dirty=renderer.shadowMap.needsUpdate,secondaryPass=flashlightOcclusion?.secondaryPass,matrixAuto=scene.matrixWorldAutoUpdate,children=scene.children,geometryRanges=new Map(),savedObjects=[];
+  const targetViewport=destination?.viewport.clone(),targetScissor=destination?.scissor.clone(),targetScissorTest=destination?.scissorTest,mirrorVisible=mirror?.glass.visible,screenVisible=security?.screen.visible;
   try{
    if(state.level?.suburb)scene.onBeforeRender=()=>{};
-   for(let index=0;index<nodes.length;index++){const o=nodes[index];if(o.isLight)continue;const drawable=o.isMesh||o.isLine||o.isPoints||o.isSprite;savedVisibility[index]=o.visible?1:0;savedCulling[index]=o.frustumCulled?1:0;if(o.isInstancedMesh)savedCounts[index]=o.count;o.visible=!drawable||selected.has(o);o.frustumCulled=false;if(o.isInstancedMesh)o.count=Math.min(1,o.instanceMatrix.count);}
-   // Drawable parents can contain warmed props. They must be visible for
-   // Three to reach those children, so include their geometry in the same
-   // temporary primitive limit instead of drawing a complete parent model.
-   const drawn=new Set(selected);
-   for(const o of selected)for(let parent=o.parent;parent&&parent!==scene;parent=parent.parent){parent.visible=true;if(parent.isMesh||parent.isLine||parent.isPoints||parent.isSprite)drawn.add(parent);}
+   // Keep each object's real parent, skeleton and world matrix. The temporary
+   // child list gives the renderer direct access without reparenting, cloning,
+   // or touching unrelated architecture. No override survives this call.
+   for(const object of selected){savedObjects.push({object,children:object.children,visible:object.visible,culled:object.frustumCulled,count:object.count});object.children=[];object.visible=true;object.frustumCulled=false;if(object.isInstancedMesh)object.count=Math.min(1,object.instanceMatrix.count);}
+   scene.children=[...selected,...compileLights];uploadObjectVisits+=selected.size;
    // A tiny viewport still runs the vertex shader for a complete character.
    // Submit one primitive per material group instead. Three uploads the full
    // unchanged vertex/index buffers and textures, so their first gameplay draw
    // is prepared without rendering millions of unnecessary loading vertices.
-   for(const object of drawn){const geometry=object.geometry;if(!geometry)continue;let saved=geometryRanges.get(geometry);if(!saved){saved={start:geometry.drawRange.start,count:geometry.drawRange.count,groups:geometry.groups.map(group=>({group,count:group.count})),multi:false};geometryRanges.set(geometry,saved);}if(Array.isArray(object.material))saved.multi=true;}
+   for(const object of selected){const geometry=object.geometry;if(!geometry)continue;let saved=geometryRanges.get(geometry);if(!saved){saved={start:geometry.drawRange.start,count:geometry.drawRange.count,groups:geometry.groups.map(group=>({group,count:group.count})),multi:false};geometryRanges.set(geometry,saved);}if(Array.isArray(object.material))saved.multi=true;}
    for(const [geometry,saved]of geometryRanges){if(saved.multi&&geometry.groups.length){geometry.setDrawRange(0,Infinity);for(const {group,count}of saved.groups)group.count=Math.min(3,count);}else geometry.setDrawRange(saved.start,Math.min(3,saved.count));}
    if(mirror&&destination===mirror.target)mirror.glass.visible=false;
    if(security&&destination===security.target)security.screen.visible=false;
@@ -31101,14 +31519,16 @@ async function warmLevelGraphics(job=null){
   }finally{
    scene.onBeforeRender=beforeRender;
    scene.matrixWorldAutoUpdate=matrixAuto;
+   scene.children=children;
    for(const [geometry,saved]of geometryRanges){geometry.setDrawRange(saved.start,saved.count);for(const {group,count}of saved.groups)group.count=count;}
    if(flashlightOcclusion)flashlightOcclusion.secondaryPass=secondaryPass;
-   for(let index=0;index<nodes.length;index++){const o=nodes[index];if(o.isLight)continue;o.visible=!!savedVisibility[index];o.frustumCulled=!!savedCulling[index];if(o.isInstancedMesh)o.count=savedCounts[index];}
+   for(const saved of savedObjects){const object=saved.object;object.children=saved.children;object.visible=saved.visible;object.frustumCulled=saved.culled;if(object.isInstancedMesh)object.count=saved.count;}
+   if(mirror)mirror.glass.visible=mirrorVisible;if(security)security.screen.visible=screenVisible;
    if(destination){destination.viewport.copy(targetViewport);destination.scissor.copy(targetScissor);destination.scissorTest=targetScissorTest;}
    renderer.setRenderTarget(target,face,mip);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);renderer.shadowMap.autoUpdate=auto;renderer.shadowMap.needsUpdate=dirty;
   }
  }
- const compileBatchSize=parallelShaders?12:4,compileRoot=new T.Group(),compileObjects=[],compileKeys=new Set();
+ const compileRoot=new T.Group(),compileObjects=[],compileKeys=new Set();
  // Geometry layout, skinning, instancing and material identity fully retain
  // the mesh-dependent shader inputs. Repeated furniture with the same layout
  // and materials does not need another compile request.
@@ -31116,7 +31536,10 @@ async function warmLevelGraphics(job=null){
  // The pinned Three renderer accepts a separate target scene for lighting.
  // Visit this batch's actual meshes without reparenting them or cloning assets.
  compileRoot.traverseVisible=()=>{};
- function compileBatch(destination,batch){
+ const compileUnits=[];
+ for(const object of compileObjects)for(const material of new Set(Array.isArray(object.material)?object.material:[object.material]))if(material)compileUnits.push({object,material});
+ function withCompileMaterial(unit,operation){const previous=unit.object.material;try{unit.object.material=unit.material;return operation();}finally{unit.object.material=previous;}}
+ function compileUnit(destination,unit){
   const target=renderer.getRenderTarget(),face=renderer.getActiveCubeFace(),mip=renderer.getActiveMipmapLevel(),traverseVisible=scene.traverseVisible;
   try{
    renderer.setRenderTarget(destination);
@@ -31124,25 +31547,33 @@ async function warmLevelGraphics(job=null){
    // draw or require every decorative node to be made visible. Visit the
    // already-captured lights directly, instead of walking the entire maze.
    scene.traverseVisible=visitor=>{visitor(scene);for(const light of compileLights)visitor(light);};
-   compileRoot.traverse=visitor=>{for(const object of batch)visitor(object);};renderer.compile(compileRoot,lens,scene);
+   compileRoot.traverse=visitor=>visitor(unit.object);withCompileMaterial(unit,()=>renderer.compile(compileRoot,lens,scene));
   }finally{scene.traverseVisible=traverseVisible;renderer.setRenderTarget(target,face,mip);}
  }
- // Queue both output variants before waiting, instead of serializing two
- // independent driver compilation jobs. No scene/viewport override survives a yield.
+ // Bound outstanding compilation to one material, including on drivers that
+ // offer parallel compilation. Enqueuing every shader at once can occupy all
+ // available compiler threads and make an older PC unresponsive. Cached
+ // materials share a short CPU slice; new programs finish before more arrive.
  for(let pass=0;pass<targets.length;pass++){
-  for(let first=0;first<compileObjects.length;first+=compileBatchSize){
-   if(!valid())return false;const compileStart=performance.now(),batch=compileObjects.slice(first,first+compileBatchSize),previousPrograms=renderer.info.programs.length;
-   loadingReport(job,50+20*(pass+(first+batch.length)/Math.max(1,compileObjects.length))/targets.length,'Preparing lighting · '+(pass===0?'player view':'reflections'));
-   compileBatch(targets[pass],batch);
-   compileMilliseconds.push(performance.now()-compileStart);await graphicsYield();if(!valid())return false;
-   if(!parallelShaders&&renderer.info.programs.length>previousPrograms){
-    // Without parallel-compile polling, queuing every program first makes
-    // the first draw synchronously finish the entire queue. Complete only
-    // this small batch, then yield while its GPU work finishes.
-    const drawStarted=performance.now();withTarget(targets[pass],new Set(batch),()=>renderer.render(scene,lens));compilerDrawMilliseconds.push(performance.now()-drawStarted);
-    // Keep the queue bounded without a driver round trip for every tiny
-    // material. CPU linking is already confined to this one small batch.
-    if(compilerDrawMilliseconds.length%2===0&&!await waitGraphicsUploads(valid))return false;
+  let sliceStarted=performance.now();
+  for(let first=0;first<compileUnits.length;first++){
+   if(!valid())return false;const compileStart=performance.now(),unit=compileUnits[first],previousPrograms=renderer.info.programs.length;
+   loadingReport(job,50+20*(pass+(first+1)/Math.max(1,compileUnits.length))/targets.length,'Preparing lighting · '+(pass===0?'player view':'reflections'));
+   compileUnit(targets[pass],unit);
+   const compileDuration=performance.now()-compileStart;compileMilliseconds.push(compileDuration);
+   const queued=renderer.info.programs.slice(previousPrograms);peakQueuedPrograms=Math.max(peakQueuedPrograms,queued.length);
+   if(queued.length){
+    let drawDuration=0;
+    if(parallelShaders){if(!await waitGraphicsPrograms(queued,valid))return false;}
+    else{
+     // A browser without async shader status must complete a draw to link.
+     // Resolve one material instead of making the first draw drain a queue.
+     const drawStarted=performance.now();withCompileMaterial(unit,()=>withTarget(targets[pass],new Set([unit.object]),()=>renderer.render(scene,lens)));drawDuration=performance.now()-drawStarted;compilerDrawMilliseconds.push(drawDuration);
+     if(!await waitGraphicsUploads(valid))return false;
+    }
+    await graphicsYield(compileDuration+drawDuration);if(!valid())return false;sliceStarted=performance.now();
+   }else if(performance.now()-sliceStarted>=6){
+    await graphicsYield(performance.now()-sliceStarted);if(!valid())return false;sliceStarted=performance.now();
    }
   }
  }
@@ -31152,16 +31583,22 @@ async function warmLevelGraphics(job=null){
  const linkMilliseconds=performance.now()-linkStarted;
  for(let pass=0;pass<targets.length;pass++){
   if(!valid())return false;
-  const destination=targets[pass];let passTime=0;
-  for(let first=0;first<renderables.length;first+=batchSize){
+  const destination=targets[pass];let passTime=0,batchSize=8;
+  // Geometry is shared by output targets. The first pass uploads every mesh;
+  // subsequent passes need only each material/layout representative.
+  const uploadObjects=pass===0?renderables:compileObjects;
+  for(let first=0;first<uploadObjects.length;){
    await graphicsYield();if(!valid())return false;
-   const before=performance.now(),selected=new Set(renderables.slice(first,first+batchSize));
-   loadingReport(job,78+18*(pass+(first+selected.size)/Math.max(1,renderables.length))/targets.length,'Preparing graphics · '+(pass===0?'player view':'reflections'));
+   const before=performance.now(),selected=new Set(uploadObjects.slice(first,first+batchSize));first+=selected.size;
+   loadingReport(job,78+18*(pass+first/Math.max(1,uploadObjects.length))/targets.length,'Preparing graphics · '+(pass===0?'player view':'reflections'));
    withTarget(destination,selected,()=>renderer.render(scene,lens));
    const duration=performance.now()-before;batchMilliseconds.push(duration);passTime+=duration;
-   // Every batch yields to the UI. Fence groups of eight small submissions,
-   // rather than serializing a GPU/CPU round trip after every 32 meshes.
-   if((Math.floor(first/batchSize)+1)%8===0&&!await waitGraphicsUploads(valid))return false;
+   // Adjust to measured work, not CPU model/year. A slow batch immediately
+   // shrinks the next one; a fence prevents GPU uploads from piling up behind
+   // the cooperative JavaScript loop.
+   batchSize=duration>8?Math.max(1,Math.floor(selected.size*6/Math.max(1,duration))):Math.min(32,batchSize+2);
+   if(!await waitGraphicsUploads(valid))return false;
+   if(duration>8){await graphicsYield(duration);if(!valid())return false;}
   }
   if(!await waitGraphicsUploads(valid))return false;
   passMilliseconds.push(passTime);
@@ -31169,7 +31606,7 @@ async function warmLevelGraphics(job=null){
  loadingReport(job,97,'Preparing the inventory preview…');await inventoryPreview?.prepare?.({valid,onProgress:({completed,total})=>loadingReport(job,97+2*completed/Math.max(1,total),'Preparing the inventory preview…')});if(!valid())return false;
  environment.graphicsWarmKey=key;
  for(const rig of weaponPreparation?.pending||[])rig.weaponWarmKey=weaponPreparation.key;
- state.graphicsWarmup={milliseconds:performance.now()-started,buildMilliseconds:job?.buildMilliseconds||0,programs:renderer.info.programs.length,renderables:renderables.length,compileObjects:compileObjects.length,passes:targets.length,batches:batchMilliseconds.length,compileMilliseconds,compilerDrawMilliseconds,linkMilliseconds,passMilliseconds,maxBlockingMilliseconds:Math.max(0,...batchMilliseconds,...compileMilliseconds,...compilerDrawMilliseconds),parallelShaders,flashlightTargets,actions:actionPreparation?.stats||null};loadingReport(job,99,'Graphics ready');
+ state.graphicsWarmup={milliseconds:performance.now()-started,buildMilliseconds:job?.buildMilliseconds||0,programs:renderer.info.programs.length,renderables:renderables.length,sceneNodes:preparationNodeCount,compileObjects:compileObjects.length,compileUnits:compileUnits.length,passes:targets.length,batches:batchMilliseconds.length,compileMilliseconds,compilerDrawMilliseconds,linkMilliseconds,passMilliseconds,maxBlockingMilliseconds:Math.max(0,...batchMilliseconds,...compileMilliseconds,...compilerDrawMilliseconds),parallelShaders,peakQueuedPrograms,uploadObjectVisits,loadingWorkBudgetMilliseconds:6,flashlightTargets,actions:actionPreparation?.stats||null};loadingReport(job,99,'Graphics ready');
  return true;
  }finally{
   if(legendary)scene.remove(legendary);scene.remove(magicPreparation);if(actionPreparation?.group)scene.remove(actionPreparation.group);
