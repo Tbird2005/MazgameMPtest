@@ -1053,7 +1053,7 @@ root.MazeSuburbCollision=Object.freeze({index,outsideHeight});
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze — Stasis, Shop Map and Censor Fix v7.42.1</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze — Ruby Rewards and Shop Rebalance v7.42.2</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
 <style id="maze-boot-style">html,body{margin:0;min-height:100%;background:#070d0e}
 #maze-boot{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:28px;color:#dce9e2;background:radial-gradient(ellipse at 48% 40%,#18333780,transparent 66%),repeating-linear-gradient(0deg,#91c5bc04 0 1px,transparent 1px 4px),#070d0e;font:14px/1.5 Arial,Helvetica,sans-serif;box-sizing:border-box;color-scheme:dark}
 #maze-boot *{box-sizing:border-box}#maze-boot-panel{width:min(430px,100%);border-top:1px solid #729b9670;padding-top:25px}#maze-boot-brand{margin:0 0 34px;color:#c9dcc2;letter-spacing:.19em;font-size:13px;font-weight:700}#maze-boot-brand b{float:right;color:#6f9792;font-size:11px;font-weight:400;letter-spacing:.08em}#maze-boot h1{margin:0 0 7px;font-size:24px;font-weight:400;letter-spacing:-.02em}#maze-boot-meta{min-height:22px;margin:0;color:#91b2ac;font-size:12px}#maze-boot-track{height:11px;margin:25px 0 11px;border:1px solid #4f716b;background:#050b0c;padding:2px;box-shadow:inset 0 1px 3px #0009}#maze-boot-fill{height:5px;width:0;background:#b7d9a1;box-shadow:0 0 10px #a9d49735}#maze-boot-bottom{display:flex;justify-content:space-between;gap:16px;color:#75928d;font-size:12px;font-variant-numeric:tabular-nums}#maze-boot-percent{color:#c3d9b9}#maze-boot-retry{margin-top:22px;padding:9px 18px;border:1px solid #7caaa2;background:#18332e;color:#daebdf;font:inherit;cursor:pointer}#maze-boot-retry[hidden]{display:none}#maze-boot-note{margin:25px 0 0;color:#5e7a76;font-size:11px}#maze-boot[data-error] #maze-boot-fill{background:#d4967f}</style><style id="maze-voice-style">
@@ -1279,11 +1279,11 @@ applied afterward. No procedural sinusoidal walk or view bob is used.
 <canvas id="world" aria-label="First-person 3D maze"></canvas><div id="vignette" aria-hidden="true"></div><div id="grain" aria-hidden="true"></div>
 <div id="loading" class="loading"><span class="load-mark"></span><p id="loadingText">Building the maze…</p></div>
 <main id="menu" class="screen menu hidden">
-<header class="brandline"><span class="brandmark" aria-hidden="true">▥</span><span>MAZE GAME <b>3D</b></span><span class="edition">RUBY SHOP & STASIS REVIVAL · V7.42.1</span></header>
+<header class="brandline"><span class="brandmark" aria-hidden="true">▥</span><span>MAZE GAME <b>3D</b></span><span class="edition">RUBY REWARDS & SHOP REBALANCE · V7.42.2</span></header>
 <section class="menu-content"><p class="eyebrow">FIFTEEN SECONDS TO REMEMBER.</p><h1>Know the way.<br><em>Find your way out.</em></h1><p class="intro">Fifteen seconds of battery. A floor to survive.<br>Find the lift. Use its travel button to escape.</p>
 <aside id="photosensitivityWarning" class="photosensitivity-warning" role="note" aria-labelledby="photosensitivityTitle"><strong id="photosensitivityTitle">PHOTOSENSITIVITY / EPILEPSY WARNING</strong><span>Flashing lights, strong color effects and screen distortion may trigger seizures or discomfort in photosensitive players.</span></aside><div class="world-picker"><label for="themeSelect">NEXT ENVIRONMENT</label><select id="themeSelect"><option value="random">Random · a different place every maze</option><option value="garden">01 · Overgrown / open sky</option><option value="poolrooms">02 · Poolrooms / flooded tile</option><option value="school">03 · After Hours / school</option><option value="catacombs">04 · Below Ground / catacombs</option><option value="industrial">05 · Service Level / industrial</option><option value="hotel">06 · Last Guest / hotel</option><option value="forest">07 · Forest / misty trails</option><option value="backrooms">08 · Backrooms / yellow labyrinth</option><option value="suburb">09 · Hollow Pines / suburb</option></select></div>
 <button id="startButton" class="primary">Singleplayer <span>↵</span></button><div class="menu-actions"><button id="settingsButton" class="text-button">Settings & controls</button><button id="disclaimersButton" class="text-button">Disclaimers &amp; help</button><span id="menuBest">BEST · 0 CLEARED</span></div><p class="headphone-note"><span aria-hidden="true">◖◗</span> Headphones recommended · spatial audio</p></section>
-<footer class="menu-footer"><span id="themeCaption">OVERGROWN</span><span>1–4 players · Ruby Shop & Stasis Revival · v7.42.1</span><span id="assetStatus"></span></footer></main>
+<footer class="menu-footer"><span id="themeCaption">OVERGROWN</span><span>1–4 players · Ruby Rewards & Shop Rebalance · v7.42.2</span><span id="assetStatus"></span></footer></main>
 <div id="hud" class="hidden"><div class="hud-top"><span id="levelLabel">FLOOR 01</span><span id="themeLabel">OVERGROWN</span><button id="tabletButton" class="tablet-button hidden" title="Toggle tablet (V)">Focus tablet <kbd>Tab</kbd></button><button id="pauseButton" title="Pause (Esc)" aria-label="Pause">Ⅱ</button></div><div id="crosshair" aria-hidden="true"></div><div id="contextPrompt" class="context-prompt"></div><div id="statusLine" class="status-line"></div><div class="hud-bottom"><span id="objective">Find the exit</span><span id="controlHint">WASD · MOVE &nbsp; R · DOOR &nbsp; Q / E · LEAN &nbsp; F · LIGHT</span></div><div id="notice" role="status"></div></div>
 <section id="tabletFocus" class="tablet-focus hidden" aria-label="Tablet map focus view">
 <header class="tablet-focus-header"><div><p>ROUTE MEMORY</p><span>PORTABLE / LOCAL MAP</span></div><div class="tablet-power"><strong id="focusBattery">100%</strong><span id="focusTime">15 seconds</span><div class="tablet-power-track"><i id="focusCharge"></i></div></div><button id="closeTablet" class="tablet-close">Stow tablet <kbd>Tab</kbd></button></header>
@@ -1293,7 +1293,7 @@ applied afterward. No procedural sinusoidal walk or view bob is used.
 <section id="pauseScreen" class="screen panel-screen hidden"><div class="panel"><p class="eyebrow">TAKE A BREATH</p><h2>Paused.</h2><p>The maze is waiting.</p><button id="resumeButton" class="primary">Resume</button><button id="pauseSettings" class="secondary">Settings & controls</button><button id="pauseDisclaimers" class="secondary">Disclaimers &amp; help</button><button id="quitButton" class="text-button">Return to menu</button></div></section>
 <section id="settingsScreen" class="screen panel-screen hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="panel settings"><header class="menu-panel-heading"><div class="menu-panel-heading-copy"><p class="eyebrow">MAKE YOURSELF COMFORTABLE</p><h2 id="settingsTitle">Settings.</h2></div><button id="closeSettings" class="secondary">Close settings</button></header><div class="menu-panel-content"><div class="setting"><label for="volume">Sound volume <output id="volumeOut">70%</output></label><input id="volume" type="range" min="0" max="100" value="70"></div><div class="setting"><label for="sensitivity">Mouse sensitivity <output id="sensitivityOut">1.00×</output></label><input id="sensitivity" type="range" min="10" max="100" value="50"></div><div class="setting"><label for="quality">Graphics</label><select id="quality"><option value="high" selected>High · shadows & full resolution</option><option value="balanced">Balanced · adaptive resolution</option><option value="low">Performance · reduced resolution</option></select></div><div class="setting mouse-options"><label><input id="mouseProtection" type="checkbox" checked> Mouse snap protection</label><p class="setting-note">Rejects unusually large individual mouse events. Turn off if it interrupts intentional fast flicks.</p><label><input id="rawMouse" type="checkbox"> Try raw mouse input</label><p class="setting-note">Applies next time you capture the mouse. Falls back to standard input if unsupported.</p></div><div id="voiceChatSettings" class="setting"></div><div class="controls-list"><div><kbd>X (hold)</kbd><span>Push-to-talk · when Open mic is off</span></div><div><kbd>M</kbd><span>Players · voice mute &amp; volume</span></div><div><kbd>W A S D</kbd><span>Move</span></div><div><kbd>Mouse</kbd><span>Look · click to capture</span></div><div><kbd>Shift</kbd><span>Run</span></div><div><kbd>R</kbd><span>Open / close door</span></div><div><kbd>Q / E</kbd><span>Hold to lean left / right</span></div><div><kbd>C</kbd><span>Toggle crouch · rebind in Controls</span></div><div><kbd>Space</kbd><span>Jump</span></div><div><kbd>F</kbd><span>Flashlight / holster</span></div><div><kbd>Tab</kbd><span>Focus tablet while powered</span></div><div><kbd>Esc</kbd><span>Pause</span></div></div><p id="gameplaySettingsNote" class="setting-note">V opens or stows your tablet; its 15-second charge drains only while open. Tab focuses the map. Use inventory batteries on your tablet or flashlight. The entry door unlocks after 15 seconds and stays closed until you press R. Keep food, water and sleep supplied; an empty meter drains health. Beds take 40 seconds; R or Esc wakes you early without restoring rest. Search kitchens and side passages for food and water. Pocket shortcuts follow the items in slots 1–8. Use R to open or close doors; the starting room’s latch works from either side. The monitor beside AUX POWER shows the live view outside. Press C to crouch. Ctrl cannot be bound. Hold Q or E to lean; Space jumps. F switches your handheld flashlight.</p><button id="settingsDisclaimers" class="secondary">Disclaimers &amp; troubleshooting</button></div></div></section>
 <section id="deathScreen" class="screen death hidden"><div id="deathBackdrop"></div><video id="deathVideo" preload="auto" playsinline></video><div id="deathResult" class="death-result hidden"><p class="eyebrow">END OF ROUTE</p><h2>YOU DIED</h2><p id="deathScore">0 mazes cleared</p><p id="deathBest"></p><button id="retryButton" class="primary">Try again</button><button id="deathMenu" class="secondary">Main menu</button></div><button id="skipDeath" class="skip-death hidden">Skip</button></section>
-<div id="transition" class="transition hidden"><p id="transitionText">Somewhere else…</p></div>
+<div id="transition" class="transition hidden"><p id="transitionText">Somewhere else…</p><p id="transitionReward" class="hidden" style="margin:-8px 0 0;color:#f0b9c2;font-size:12px;letter-spacing:.12em"></p></div>
 <div id="touchControls" class="hidden"><div id="joystick"><span></span></div><div id="lookPad"></div><div class="touch-actions"><button id="touchInteract" aria-label="Open or close door">R</button><button id="touchLight" aria-label="Toggle flashlight">F</button><button id="touchRun">RUN</button><button id="touchLeanLeft" aria-label="Lean left">LEAN L</button><button id="touchCrouch" aria-label="Toggle crouch" aria-pressed="false">CROUCH</button><button id="touchLeanRight" aria-label="Lean right">LEAN R</button><button id="touchJump">JUMP</button></div></div>
 <style>
 #disclaimersScreen{z-index:260;background:rgba(5,10,7,.92)}#disclaimersScreen .panel{width:min(680px,92vw);max-height:88vh;overflow:auto;text-align:left;padding:28px}#disclaimersScreen h2{font-size:32px;margin:4px 0 18px}#disclaimersScreen .help-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}#disclaimersScreen #closeDisclaimers{width:auto;min-width:78px;flex:none;padding:10px 16px}#disclaimersScreen h3{font-size:15px;color:var(--acid);margin:20px 0 6px}#disclaimersScreen p{font-size:14px;line-height:1.55;color:#c8d1c3;margin:6px 0}#disclaimersScreen .help-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}#disclaimersScreen button{margin:0}#helpActionStatus{min-height:22px}#diagnosticsText{width:100%;min-height:150px;font:12px monospace;background:#0a110d;color:#d4f596}.mouse-options input[type=checkbox]{width:auto;accent-color:#d4f596}.mouse-options label{justify-content:flex-start;gap:10px}#settingsDisclaimers{margin-bottom:10px}.menu-actions{flex-wrap:wrap}
@@ -28031,37 +28031,37 @@ const CHANCE=.25,REVIVE_COST=30;
 const CATEGORIES=Object.freeze(['All','Supplies','Tools','Equipment','Clothing']);
 const entry=(sku,type,name,category,price,stock,fields,description)=>Object.freeze({sku,type,name,category,price,stock,count:fields?.count||1,fields:Object.freeze({...fields}),description});
 const CATALOG=Object.freeze([
- entry('water','water','Water bottle','Supplies',4,6,{},'A full bottle of water. The empty bottle can be refilled.'),
- entry('food','food','Sealed meal','Supplies',5,6,{},'A complete ration for the road.'),
- entry('almond-water','almond-water','Almond water','Supplies',12,3,{},'Restores water and stamina, heals 20 health, and clears berry effects.'),
- entry('battery','battery','Battery','Supplies',8,4,{},'One full recharge for a compatible device.'),
- entry('empty-bottle','empty-bottle','Empty bottle','Supplies',2,3,{},'A reusable bottle for water sources.'),
- entry('berry-red','berry-red','Red berries ×3','Supplies',5,3,{count:3},'Three red berries. Eat with care.'),
- entry('berry-blue','berry-blue','Blue berries ×3','Supplies',5,3,{count:3},'Three blue berries. Eat with care.'),
- entry('berry-green','berry-green','Green berries ×3','Supplies',5,3,{count:3},'Three green berries. Eat with care.'),
- entry('berry-gold','berry-gold','Gold berry','Supplies',25,1,{count:1},'A rare gold berry with a temporary movement boost.'),
- entry('antivenom','antivenom','Antivenom vial','Supplies',20,2,{},'A single dose that clears active snake venom.'),
- entry('towel','towel','Dry towel','Supplies',6,3,{wet:false},'Dry your skin or clothes. The towel becomes wet after use.'),
- entry('flashlight','flashlight','Flashlight','Tools',10,2,{charge:180},'A fully charged flashlight with 180 seconds of battery.'),
- entry('shake-flashlight','shake-flashlight','Shake flashlight','Tools',30,1,{charge:90},'Fully charged. Shake it to recharge without batteries.'),
- entry('bat','bat','Baseball bat','Tools',10,2,{},'A wooden bat for clearing ivy and fighting at close range.'),
- entry('axe','axe','Axe','Tools',20,1,{},'A heavy axe for close combat and breaking house doors.'),
- entry('alarmclock','alarmclock','Alarm clock','Tools',12,2,{},'A reusable distraction with a 30-second countdown.'),
- entry('shotgun','shotgun','Shotgun','Equipment',50,1,{ammo:0},'An unloaded shotgun. Shells are sold separately.'),
- entry('shells','shells','Shotgun shells ×2','Equipment',8,8,{count:2},'Two spare shells for your shotgun.'),
- entry('backpack','backpack','Backpack','Equipment',18,2,{color:2},'Eight extra inventory slots while worn.'),
- entry('disco-ball','disco-ball','Magic disco ball','Equipment',35,1,{charge:300},'A portable rainbow light with five minutes of charge.'),
- entry('light-orb','light-orb','Magic light orb','Equipment',40,1,{charge:300},'A portable glowing orb with five minutes of charge.'),
- entry('tablet','tablet','Spare map tablet','Equipment',100,1,{charge:15},'A fully charged route tablet.'),
- entry('phone','phone','Spare cell phone','Equipment',120,1,{charge:300},'A new, fully charged phone for messages and calls.'),
+ entry('water','water','Water bottle','Supplies',2,6,{},'A full bottle of water. The empty bottle can be refilled.'),
+ entry('food','food','Sealed meal','Supplies',3,6,{},'A complete ration for the road.'),
+ entry('almond-water','almond-water','Almond water','Supplies',8,3,{},'Restores water and stamina, heals 20 health, and clears berry effects.'),
+ entry('battery','battery','Battery','Supplies',2,4,{},'One full recharge for a compatible device.'),
+ entry('empty-bottle','empty-bottle','Empty bottle','Supplies',1,3,{},'A reusable bottle for water sources.'),
+ entry('berry-red','berry-red','Red berries ×3','Supplies',3,3,{count:3},'Three red berries. Eat with care.'),
+ entry('berry-blue','berry-blue','Blue berries ×3','Supplies',3,3,{count:3},'Three blue berries. Eat with care.'),
+ entry('berry-green','berry-green','Green berries ×3','Supplies',3,3,{count:3},'Three green berries. Eat with care.'),
+ entry('berry-gold','berry-gold','Gold berry','Supplies',15,1,{count:1},'A rare gold berry with a temporary movement boost.'),
+ entry('antivenom','antivenom','Antivenom vial','Supplies',8,2,{},'A single dose that clears active snake venom.'),
+ entry('towel','towel','Dry towel','Supplies',2,3,{wet:false},'Dry your skin or clothes. The towel becomes wet after use.'),
+ entry('flashlight','flashlight','Flashlight','Tools',5,2,{charge:180},'A fully charged flashlight with 180 seconds of battery.'),
+ entry('shake-flashlight','shake-flashlight','Shake flashlight','Tools',18,1,{charge:90},'Fully charged. Shake it to recharge without batteries.'),
+ entry('bat','bat','Baseball bat','Tools',6,2,{},'A wooden bat for clearing ivy and fighting at close range.'),
+ entry('axe','axe','Axe','Tools',12,1,{},'A heavy axe for close combat and breaking house doors.'),
+ entry('alarmclock','alarmclock','Alarm clock','Tools',6,2,{},'A reusable distraction with a 30-second countdown.'),
+ entry('shotgun','shotgun','Shotgun','Equipment',30,1,{ammo:0},'An unloaded shotgun. Shells are sold separately.'),
+ entry('shells','shells','Shotgun shells ×2','Equipment',4,8,{count:2},'Two spare shells for your shotgun.'),
+ entry('backpack','backpack','Backpack','Equipment',10,2,{color:2},'Eight extra inventory slots while worn.'),
+ entry('disco-ball','disco-ball','Magic disco ball','Equipment',20,1,{charge:300},'A portable rainbow light with five minutes of charge.'),
+ entry('light-orb','light-orb','Magic light orb','Equipment',24,1,{charge:300},'A portable glowing orb with five minutes of charge.'),
+ entry('tablet','tablet','Spare map tablet','Equipment',60,1,{charge:15},'A fully charged route tablet.'),
+ entry('phone','phone','Spare cell phone','Equipment',75,1,{charge:300},'A new, fully charged phone for messages and calls.'),
  entry('outfit-orange','outfit','Orange / teal outfit','Clothing',3,2,{palette:0,wet:false},'A standard orange and teal jester outfit.'),
  entry('outfit-purple','outfit','Purple / lime outfit','Clothing',3,2,{palette:1,wet:false},'A standard purple and lime jester outfit.'),
  entry('outfit-cyan','outfit','Cyan / pink outfit','Clothing',3,2,{palette:2,wet:false},'A standard cyan and pink jester outfit.'),
  entry('outfit-cream','outfit','Cream / green outfit','Clothing',3,2,{palette:3,wet:false},'A standard cream and green jester outfit.'),
  entry('outfit-red','outfit','Red / blue outfit','Clothing',3,2,{palette:4,wet:false},'A standard red and blue jester outfit.'),
- entry('outfit-gold','outfit','Legendary gold outfit','Clothing',60,1,{palette:4,style:'gold',wet:false},'A rare outfit with a polished gold finish.'),
- entry('outfit-chrome','outfit','Legendary chrome outfit','Clothing',75,1,{palette:4,style:'chrome',wet:false},'A rare outfit with a mirror-silver finish.'),
- entry('outfit-prism','outfit','Legendary prism outfit','Clothing',90,1,{palette:4,style:'prism',wet:false},'A rare outfit with violet and cyan gloss.')
+ entry('outfit-gold','outfit','Legendary gold outfit','Clothing',35,1,{palette:4,style:'gold',wet:false},'A rare outfit with a polished gold finish.'),
+ entry('outfit-chrome','outfit','Legendary chrome outfit','Clothing',45,1,{palette:4,style:'chrome',wet:false},'A rare outfit with a mirror-silver finish.'),
+ entry('outfit-prism','outfit','Legendary prism outfit','Clothing',55,1,{palette:4,style:'prism',wet:false},'A rare outfit with violet and cyan gloss.')
 ]);
 const BY_SKU=new Map(CATALOG.map(value=>[value.sku,value]));
 function get(sku){return BY_SKU.get(sku)||null;}
@@ -30254,6 +30254,7 @@ function updatePlayer(dt){
 }
 function escapeMaze(){
  if(state.mode!=='playing'||state.exit.phase!=='complete')return;
+ rubyAwardFloorClear();
  inventoryClose(false);state.score++;if(state.score>best){best=state.score;updateBest();}
  const token=++state.loadToken;state.mode='transition';resetMovementInput();state.player.speed=0;show('transition');$('transition').style.opacity='1';$('transitionText').textContent=`FLOOR ${state.score} CLEARED`;tablet.group.visible=false;actor.hide();goku.visible=false;
  state.transitionTimer=setTimeout(async()=>{
@@ -30504,7 +30505,7 @@ function bindUI(){
  for(const event of ['pointerup','pointercancel'])mapCanvas.addEventListener(event,()=>mapDrag=null);
  const context=document.modelContext;if(context?.registerTool){try{Promise.resolve(context.registerTool({name:'get_maze_status',title:'Read maze status',description:'Read the current maze, cleared count, phase, and tablet battery.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(input){if(!input||Object.keys(input).length)throw new Error('This tool takes no arguments.');return{phase:state.mode,maze:state.score+1,cleared:state.score,theme:state.env.theme.name,tabletSeconds:Math.ceil(tabletCharge()),hidden:state.player.hidden};}})).catch(()=>{});}catch(e){}}
  // Read-only performance / geometry diagnostics; player-free mode is a separate startup path.
- window.MazeDiagnostics={getStatus:()=>({build:'V7.42.1 · Stasis performance / Ruby map / Model-only censorship',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable,captureError:inputLockError||null,capturePending:!!inputLockAttempt,touchMode:touch,pointerLockAPI:typeof $('world').requestPointerLock==='function'},performance:{...clientFrames.status(),loading:loadingJob?{percent:Math.floor(loadingJob.percent),stage:loadingJob.label}:null,graphicsPreparation:state.graphicsWarmup?{milliseconds:state.graphicsWarmup.milliseconds,programs:state.graphicsWarmup.programs,maxBlockingMilliseconds:state.graphicsWarmup.maxBlockingMilliseconds,parallelShaders:state.graphicsWarmup.parallelShaders}:null,enemyNavigation:state.level?.enemyNavigationStats?{...state.level.enemyNavigationStats}:null,simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),safeRoomViews:{passes:safeRoomViews.passes,skipped:safeRoomViews.skipped,lastCostMs:safeRoomViews.lastCost},spectatorMap:!!state.spectatorMap,flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getSchoolStatus:schoolStatus,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
+ window.MazeDiagnostics={getStatus:()=>({build:'V7.42.2 · Ruby Rewards and Shop Rebalance',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable,captureError:inputLockError||null,capturePending:!!inputLockAttempt,touchMode:touch,pointerLockAPI:typeof $('world').requestPointerLock==='function'},performance:{...clientFrames.status(),loading:loadingJob?{percent:Math.floor(loadingJob.percent),stage:loadingJob.label}:null,graphicsPreparation:state.graphicsWarmup?{milliseconds:state.graphicsWarmup.milliseconds,programs:state.graphicsWarmup.programs,maxBlockingMilliseconds:state.graphicsWarmup.maxBlockingMilliseconds,parallelShaders:state.graphicsWarmup.parallelShaders}:null,enemyNavigation:state.level?.enemyNavigationStats?{...state.level.enemyNavigationStats}:null,simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),safeRoomViews:{passes:safeRoomViews.passes,skipped:safeRoomViews.skipped,lastCostMs:safeRoomViews.lastCost},spectatorMap:!!state.spectatorMap,flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getSchoolStatus:schoolStatus,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
 }
 function look(dx,dy){if(phoneUI.isOpen||state.spectatorMap)return;if(!Number.isFinite(dx)||!Number.isFinite(dy)||inventoryIsOpen()||survivalBlocked())return;const s=mouseLookScale();if(mp?.dead){if(coopLive()&&!mp.ending&&!mp.localPaused&&mp.spectatorView==='orbit'){mp.spectatorYaw=(Number.isFinite(mp.spectatorYaw)?mp.spectatorYaw:0)-dx*s;mp.spectatorPitch=C.clamp((Number.isFinite(mp.spectatorPitch)?mp.spectatorPitch:.12)-dy*s,-Math.PI/2,Math.PI/2);}return;}const p=state.player,inversion=MazeBerryGameplay.mouseMultiplier(p,state.time);p.yaw-=dx*s*inversion;p.pitch=C.clamp(p.pitch-dy*s*inversion,-1.43,1.25);}
 // Service passages occupy real half-cells; presentation and interaction use
@@ -31408,7 +31409,7 @@ function coopControl(event){
  else if(event.type==='house-door-break')coopHouseDoorBreak(event);
  else if(event.type==='world-state'&&event.epoch===mp.epoch)coopReceiveWorld(event);
  else if(event.type==='repair-map'&&event.epoch===mp.epoch){coopCancelLevelLoad();mp.epoch=null;coopStartClientLevel(event.spec,false);}
- else if(event.type==='map-error')coopMapError('Map verification failed. Everyone must load the same V7.42.0 Ruby Shop and Stasis Revival build.');
+ else if(event.type==='map-error')coopMapError('Map verification failed. Everyone must load the same V7.42.2 Ruby Rewards and Shop Rebalance build.');
  else if(event.type==='inventory-ack'&&event.epoch===mp.epoch&&!mp.net.isHost){mp.inventoryPending.delete(event.nonce);inventoryMessage=typeof event.message==='string'?event.message.slice(0,160):event.accepted?'':'That item changed, is out of reach, or there is no room.';inventoryUI?.refresh();rubyShopUI?.message(inventoryMessage);rubyShopUI?.refresh();}
  else if(event.type==='survival-ack'&&event.epoch===mp.epoch&&!mp.net.isHost){const pending=mp.survivalPending.get(event.nonce);mp.survivalPending.delete(event.nonce);if(!event.accepted){if(pending?.previous){Object.assign(state.player,pending.previous);state.flashlight=!!state.player.flashlight;}announce('That action is not available.',2);}inventoryUI?.refresh();}
  else if(event.type==='weapon-ack'&&event.epoch===mp.epoch&&!mp.net.isHost){const sample=MazeStateCodec.readWeapon(event.weapon);if(sample)sample.inventoryRevision=event.inventoryRevision;if(sample)coopReconcileWeapon(state.player,sample,mp.clock.age(event.time,performance.now()/1000),null,!event.accepted);}
@@ -31464,7 +31465,7 @@ function coopHostTick(dt){
  forestAfterAI(dt);spiritHostStep();syncClosetDoors();
  if(result.departed){audio.exit();show('transition');$('transition').style.opacity='0';$('transitionText').textContent=`FLOOR ${state.score+1} CLEARED`;}
  if(['rising','complete'].includes(state.exit.phase))for(const p of coopAlive()){p.y=state.exit.height;p.grounded=true;p.velocityY=0;}
- if(result.complete&&!mp.transitionUntil){state.score++;mp.transitionUntil=mp.time+.65;$('transitionText').textContent=`FLOOR ${state.score} CLEARED`;}
+ if(result.complete&&!mp.transitionUntil){rubyAwardFloorClear();state.score++;mp.transitionUntil=mp.time+.65;$('transitionText').textContent=`FLOOR ${state.score} CLEARED`;}
  if(!coopAlive().length&&!coopPendingAlive())coopEndRun();
 }
 function coopPredictTick(dt){
@@ -32649,8 +32650,8 @@ function schoolStatus(){return{mines:state.schoolHazards?.data?.mines.map(m=>({i
 
 
 // Ruby economy. Seeded fixtures and loot are built locally; only wallets,
-// finite stock and explicit new-life records travel over the reliable stream.
-const RUBY_LOOT_CHANCE=.06;
+// finite stock, clear receipts and new-life records travel over the reliable stream.
+const RUBY_LOOT_CHANCE=.10,RUBY_FLOOR_REWARD=5;
 let rubyWorld=null,rubyShopUI=null;
 const rubyOccupantPool=new Map();
 // Seeded extra loot shares the source's real support, never its occupied volume.
@@ -32761,6 +32762,27 @@ function rubySpawnPosition(source,random){
 function rubyHazards(){return{forest:state.forestHazards,garden:state.level?.garden,school:state.schoolHazards?.data};}
 function rubyLife(p){return Number.isSafeInteger(p?.life)&&p.life>=0?p.life:0;}
 function rubyDirty(){if(rubyWorld)rubyWorld.revision++;inventoryRevision++;interactionCache=null;}
+function rubyShowClearReward(){
+ const label=$('transitionReward');if(!label)return;
+ const id=mp?.net.id||'local',amount=rubyWorld?.clearReward?.credits.find(row=>row[0]===id)?.[1]||0;
+ label.textContent=amount?'+'+amount+' RUBIES · SURVIVED':'';show('transitionReward',amount>0);
+}
+function rubyAwardFloorClear(){
+ // Commit on the outgoing level before inventory carry and ready-set reset.
+ // A level-instance receipt prevents retries without rejecting a reused seed.
+ if(!rubyWorld||rubyWorld.level!==state.level||state.level.rubyFloorClear||state.mode!=='playing'||state.exit?.phase!=='complete'||!Number.isSafeInteger(state.score)||state.score<0||state.score>=Number.MAX_SAFE_INTEGER)return false;
+ if(mp&&(!mp.net.isHost||!mp.running||mp.loading||mp.ending||mp.ended||mp.left))return false;
+ const survivors=(mp?coopAlive():[state.player]).filter(p=>MazeCoopSimulation.alive(p)&&!p.spectator&&(p.survival?.health??100)>0);
+ const receipt={floor:state.score+1,credits:[]};state.level.rubyFloorClear=receipt;rubyWorld.clearReward=receipt;
+ for(const p of survivors){
+  const amount=Math.min(RUBY_FLOOR_REWARD,MI.MAX_RUBIES-MI.rubies(p));
+  if(amount>0&&MI.addRubies(p,amount)){receipt.credits.push([p.id||'local',amount]);inventoryStateChanged(p);}
+ }
+ rubyDirty();rubyShowClearReward();
+ // Existing inventory deltas carry the balances. The receipt is display-only;
+ // receiving it, loading a map or rejoining never adds currency on a client.
+ if(mp)coopSendWorld();return true;
+}
 function rubyFixtureVisibilityKeys(fixture){
  // These fixtures can straddle a tile boundary. Cache their complete static
  // footprint once so a hidden center tile cannot hide a visible part.
@@ -32779,7 +32801,7 @@ function rubyBuild(){
  const sites=MazeStasis.plan(level,{...options,count:4});
  const shopRoll=C.rng(C.hashSeed('ruby-shop-roll-v1:'+state.seed))()<MazeRubyShop.CHANCE;
  const shopSite=shopRoll?MazeStasis.findSafeSites(level,{...options,count:1,radius:1.30,reserved:sites,tag:'ruby-shop'})[0]||null:null;
- rubyWorld={level,revision:0,sentRevision:-1,capsules:[],shop:null,stock:MazeRubyShop.createStock(),revivals:new Map(),loot:[],shopRoll};
+ rubyWorld={level,revision:0,sentRevision:-1,capsules:[],shop:null,stock:MazeRubyShop.createStock(),revivals:new Map(),clearReward:level.rubyFloorClear||null,loot:[],shopRoll};rubyShowClearReward();
  level.stasisSites=[...sites,...(shopSite?[shopSite]:[])];level.rubyLayout={sites,shop:shopSite,loot:[]};
  for(const site of sites){const capsule=MazeStasis.create(T,site,{cost:MazeRubyShop.REVIVE_COST});capsule._subjectKey='';scene.add(capsule.group);applyServiceActorLight(capsule.group,site);magicLighting?.prepare(capsule.group);rubyWorld.capsules.push(capsule);level.roomColliders.push(...capsule.colliders);}
  if(shopSite){
@@ -32815,7 +32837,7 @@ function rubyBuild(){
 function rubyClean(){
  rubyCloseShop(false);
  if(rubyWorld){for(const capsule of rubyWorld.capsules){if(capsule.actor)capsule.setOccupant(null);capsule.dispose();}if(rubyWorld.shop){rubyWorld.shop.group.removeFromParent();rubyWorld.shop.group.userData.dispose?.();}}
- rubyWorld=null;
+ rubyWorld=null;rubyShowClearReward();
 }
 async function rubyPrepareOccupants(valid=()=>true){
  if(!mp||!rubyWorld)return;
@@ -32930,16 +32952,22 @@ function rubyApplyRevival(event){
 }
 function rubyWorldPacket(force=false){
  if(!rubyWorld)return null;if(!force&&rubyWorld.sentRevision===rubyWorld.revision)return null;rubyWorld.sentRevision=rubyWorld.revision;
- return{v:1,r:rubyWorld.revision,s:MazeRubyShop.CATALOG.map(e=>rubyWorld.stock[e.sku]),l:[...rubyWorld.revivals.values()].map(e=>[e.id,e.capsuleId,e.life,e.x,e.y,e.z,e.yaw,e.time,e.seq])};
+ return{v:1,r:rubyWorld.revision,s:MazeRubyShop.CATALOG.map(e=>rubyWorld.stock[e.sku]),l:[...rubyWorld.revivals.values()].map(e=>[e.id,e.capsuleId,e.life,e.x,e.y,e.z,e.yaw,e.time,e.seq]),...(rubyWorld.clearReward?{c:[rubyWorld.clearReward.floor,rubyWorld.clearReward.credits]}:{})};
 }
 function rubyParseWorld(packet){
  if(!rubyWorld||!packet||packet.v!==1||!Number.isSafeInteger(packet.r)||packet.r<0||!Array.isArray(packet.s)||packet.s.length!==MazeRubyShop.CATALOG.length||packet.s.some((n,i)=>!Number.isSafeInteger(n)||n<0||n>MazeRubyShop.CATALOG[i].stock)||!Array.isArray(packet.l)||packet.l.length>4)return null;
  const events=[],seen=new Set();for(const row of packet.l){if(!Array.isArray(row)||row.length!==9||seen.has(row[0]))return null;const event={type:'capsule-revived',epoch:mp?.epoch,id:row[0],capsuleId:row[1],life:row[2],x:row[3],y:row[4],z:row[5],yaw:row[6],time:row[7],seq:row[8]};if(!rubyValidRevival(event))return null;seen.add(event.id);events.push(event);}
- return{revision:packet.r,stock:Object.fromEntries(MazeRubyShop.CATALOG.map((e,i)=>[e.sku,packet.s[i]])),events};
+ let clearReward=null;
+ if(packet.c!==undefined){
+  const row=packet.c;if(!Array.isArray(row)||row.length!==2||!Number.isSafeInteger(row[0])||row[0]<1||!Array.isArray(row[1])||row[1].length>4)return null;
+  const ids=new Set(),credits=[];for(const credit of row[1]){if(!Array.isArray(credit)||credit.length!==2||typeof credit[0]!=='string'||!credit[0].length||credit[0].length>128||/[\x00-\x1f\x7f]/.test(credit[0])||ids.has(credit[0])||!Number.isSafeInteger(credit[1])||credit[1]<1||credit[1]>RUBY_FLOOR_REWARD)return null;ids.add(credit[0]);credits.push(credit.slice());}
+  clearReward={floor:row[0],credits};
+ }
+ return{revision:packet.r,stock:Object.fromEntries(MazeRubyShop.CATALOG.map((e,i)=>[e.sku,packet.s[i]])),events,clearReward};
 }
 function rubyApplyWorld(parsed){
  if(!parsed||!rubyWorld||parsed.revision<rubyWorld.revision)return;
- rubyWorld.stock=parsed.stock;rubyWorld.revision=parsed.revision;
+ rubyWorld.stock=parsed.stock;rubyWorld.revision=parsed.revision;rubyWorld.clearReward=parsed.clearReward;rubyShowClearReward();
  for(const event of parsed.events){rubyWorld.revivals.set(event.id,event);rubyApplyRevival(event);const p=mp?.players.get(event.id);if(p&&rubyLife(p)===event.life&&MazeCoopSimulation.alive(p)){const capsule=rubyWorld.capsules.find(c=>c.site.id===event.capsuleId);capsule?.open(event.time);}}rubySyncCapsules();rubyShopUI?.refresh();
 }
 function rubyRender(){
