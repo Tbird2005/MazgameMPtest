@@ -1053,7 +1053,7 @@ root.MazeSuburbCollision=Object.freeze({index,outsideHeight});
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze — Ruby Shop and Stasis Revival v7.42.0</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Maze — Stasis, Shop Map and Censor Fix v7.42.1</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
 <style id="maze-boot-style">html,body{margin:0;min-height:100%;background:#070d0e}
 #maze-boot{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:28px;color:#dce9e2;background:radial-gradient(ellipse at 48% 40%,#18333780,transparent 66%),repeating-linear-gradient(0deg,#91c5bc04 0 1px,transparent 1px 4px),#070d0e;font:14px/1.5 Arial,Helvetica,sans-serif;box-sizing:border-box;color-scheme:dark}
 #maze-boot *{box-sizing:border-box}#maze-boot-panel{width:min(430px,100%);border-top:1px solid #729b9670;padding-top:25px}#maze-boot-brand{margin:0 0 34px;color:#c9dcc2;letter-spacing:.19em;font-size:13px;font-weight:700}#maze-boot-brand b{float:right;color:#6f9792;font-size:11px;font-weight:400;letter-spacing:.08em}#maze-boot h1{margin:0 0 7px;font-size:24px;font-weight:400;letter-spacing:-.02em}#maze-boot-meta{min-height:22px;margin:0;color:#91b2ac;font-size:12px}#maze-boot-track{height:11px;margin:25px 0 11px;border:1px solid #4f716b;background:#050b0c;padding:2px;box-shadow:inset 0 1px 3px #0009}#maze-boot-fill{height:5px;width:0;background:#b7d9a1;box-shadow:0 0 10px #a9d49735}#maze-boot-bottom{display:flex;justify-content:space-between;gap:16px;color:#75928d;font-size:12px;font-variant-numeric:tabular-nums}#maze-boot-percent{color:#c3d9b9}#maze-boot-retry{margin-top:22px;padding:9px 18px;border:1px solid #7caaa2;background:#18332e;color:#daebdf;font:inherit;cursor:pointer}#maze-boot-retry[hidden]{display:none}#maze-boot-note{margin:25px 0 0;color:#5e7a76;font-size:11px}#maze-boot[data-error] #maze-boot-fill{background:#d4967f}</style><style id="maze-voice-style">
@@ -1279,11 +1279,11 @@ applied afterward. No procedural sinusoidal walk or view bob is used.
 <canvas id="world" aria-label="First-person 3D maze"></canvas><div id="vignette" aria-hidden="true"></div><div id="grain" aria-hidden="true"></div>
 <div id="loading" class="loading"><span class="load-mark"></span><p id="loadingText">Building the maze…</p></div>
 <main id="menu" class="screen menu hidden">
-<header class="brandline"><span class="brandmark" aria-hidden="true">▥</span><span>MAZE GAME <b>3D</b></span><span class="edition">RUBY SHOP & STASIS REVIVAL · V7.42.0</span></header>
+<header class="brandline"><span class="brandmark" aria-hidden="true">▥</span><span>MAZE GAME <b>3D</b></span><span class="edition">RUBY SHOP & STASIS REVIVAL · V7.42.1</span></header>
 <section class="menu-content"><p class="eyebrow">FIFTEEN SECONDS TO REMEMBER.</p><h1>Know the way.<br><em>Find your way out.</em></h1><p class="intro">Fifteen seconds of battery. A floor to survive.<br>Find the lift. Use its travel button to escape.</p>
 <aside id="photosensitivityWarning" class="photosensitivity-warning" role="note" aria-labelledby="photosensitivityTitle"><strong id="photosensitivityTitle">PHOTOSENSITIVITY / EPILEPSY WARNING</strong><span>Flashing lights, strong color effects and screen distortion may trigger seizures or discomfort in photosensitive players.</span></aside><div class="world-picker"><label for="themeSelect">NEXT ENVIRONMENT</label><select id="themeSelect"><option value="random">Random · a different place every maze</option><option value="garden">01 · Overgrown / open sky</option><option value="poolrooms">02 · Poolrooms / flooded tile</option><option value="school">03 · After Hours / school</option><option value="catacombs">04 · Below Ground / catacombs</option><option value="industrial">05 · Service Level / industrial</option><option value="hotel">06 · Last Guest / hotel</option><option value="forest">07 · Forest / misty trails</option><option value="backrooms">08 · Backrooms / yellow labyrinth</option><option value="suburb">09 · Hollow Pines / suburb</option></select></div>
 <button id="startButton" class="primary">Singleplayer <span>↵</span></button><div class="menu-actions"><button id="settingsButton" class="text-button">Settings & controls</button><button id="disclaimersButton" class="text-button">Disclaimers &amp; help</button><span id="menuBest">BEST · 0 CLEARED</span></div><p class="headphone-note"><span aria-hidden="true">◖◗</span> Headphones recommended · spatial audio</p></section>
-<footer class="menu-footer"><span id="themeCaption">OVERGROWN</span><span>1–4 players · Ruby Shop & Stasis Revival · v7.42.0</span><span id="assetStatus"></span></footer></main>
+<footer class="menu-footer"><span id="themeCaption">OVERGROWN</span><span>1–4 players · Ruby Shop & Stasis Revival · v7.42.1</span><span id="assetStatus"></span></footer></main>
 <div id="hud" class="hidden"><div class="hud-top"><span id="levelLabel">FLOOR 01</span><span id="themeLabel">OVERGROWN</span><button id="tabletButton" class="tablet-button hidden" title="Toggle tablet (V)">Focus tablet <kbd>Tab</kbd></button><button id="pauseButton" title="Pause (Esc)" aria-label="Pause">Ⅱ</button></div><div id="crosshair" aria-hidden="true"></div><div id="contextPrompt" class="context-prompt"></div><div id="statusLine" class="status-line"></div><div class="hud-bottom"><span id="objective">Find the exit</span><span id="controlHint">WASD · MOVE &nbsp; R · DOOR &nbsp; Q / E · LEAN &nbsp; F · LIGHT</span></div><div id="notice" role="status"></div></div>
 <section id="tabletFocus" class="tablet-focus hidden" aria-label="Tablet map focus view">
 <header class="tablet-focus-header"><div><p>ROUTE MEMORY</p><span>PORTABLE / LOCAL MAP</span></div><div class="tablet-power"><strong id="focusBattery">100%</strong><span id="focusTime">15 seconds</span><div class="tablet-power-track"><i id="focusCharge"></i></div></div><button id="closeTablet" class="tablet-close">Stow tablet <kbd>Tab</kbd></button></header>
@@ -17958,7 +17958,7 @@ class MazeSecurityCamera{
   this.position=new T.Vector3();this.direction=new T.Vector3();this.toScreen=new T.Vector3();this.viewerDirection=new T.Vector3();this.screenPosition=new T.Vector3();
   this.camera=new T.PerspectiveCamera(90,16/9,.06,25);this.camera.rotation.order='YXZ';
   this.camera.layers.enable(2); // Full character head/collar are visible only in third person.
-  this.target=new T.WebGLRenderTarget(256,144,{minFilter:T.LinearFilter,magFilter:T.LinearFilter,depthBuffer:true,stencilBuffer:false,generateMipmaps:false});
+  this.target=new T.WebGLRenderTarget(256,144,{minFilter:T.LinearFilter,magFilter:T.LinearFilter,depthBuffer:true,stencilBuffer:true,generateMipmaps:false});
   this.target.texture.name='Safe-room exterior CCTV';this.target.texture.generateMipmaps=false;
   this.buildHardware();
   const s=level.safe,cx=s.x*C.CELL+s.doorDx*2.3,cz=s.z*C.CELL+s.doorDz*2.3;
@@ -18049,7 +18049,7 @@ class MazeMirror {
   Object.assign(this,{renderer,scene,level,room});this.frames=0;this.nextFrame=0;this.watching=false;this.disposed=false;this.width=1.08;this.height=1.84;
   this.bufferSize=new T.Vector2();this.viewDirection=new T.Vector3();this.position=new T.Vector3();this.normal=new T.Vector3();this.delta=new T.Vector3();this.centerView=new T.Vector3();this.up=new T.Vector3();this.targetPoint=new T.Vector3();this.rotation=new T.Matrix4();this.textureMatrix=new T.Matrix4();this.projectionView=new T.Matrix4();this.frustum=new T.Frustum();this.bounds=new T.Box3();this.localBounds=new T.Box3(new T.Vector3(-.54,-.92,-.01),new T.Vector3(.54,.92,.01));this.sightPoint=new T.Vector3();this.sightSamples=[[0,0],[-.51,-.88],[.51,-.88],[-.51,.88],[.51,.88],[0,-.88],[0,.88],[-.51,0],[.51,0]];this.plane=new T.Plane();this.clip=new T.Vector4();this.q=new T.Vector4();
   this.camera=new T.PerspectiveCamera();this.camera.layers.enable(2);this.camera.near=.03;this.camera.far=30;
-  this.target=new T.WebGLRenderTarget(384,656,{minFilter:T.LinearFilter,magFilter:T.LinearFilter,depthBuffer:true,stencilBuffer:false,generateMipmaps:false});this.target.texture.name='Live entry-room mirror';this.target.texture.generateMipmaps=false;
+  this.target=new T.WebGLRenderTarget(384,656,{minFilter:T.LinearFilter,magFilter:T.LinearFilter,depthBuffer:true,stencilBuffer:true,generateMipmaps:false});this.target.texture.name='Live entry-room mirror';this.target.texture.generateMipmaps=false;
   this.frame=new T.Group();this.frame.name='Starting-room full-length mirror';this.frame.position.fromArray(room.mirrorPose?.position||[0,1.18,-1.711]);this.frame.rotation.y=room.mirrorPose?.yaw||0;room.group.add(this.frame);
   const steel=new T.MeshStandardMaterial({color:0xadb9b1,metalness:.82,roughness:.25}),dark=new T.MeshStandardMaterial({color:0x17221c,roughness:.72});
   const add=(x,y,z,w,h,d,m)=>{const o=new T.Mesh(new T.BoxGeometry(w,h,d),m);o.position.set(x,y,z);this.frame.add(o);};
@@ -19123,7 +19123,7 @@ global.MazeBakedAppearance={prepare,peek,preload,applyMipmaps,stats};
    black bar mesh outside the actor's gameplay model and hitboxes. */
 (function(global){
 'use strict';
-const T=global.THREE,records=new WeakMap(),liveRecords=new Set(),textures=new Map(),sfwSources=new WeakMap();let legendaryEnvironment=null,sfwTexturesEnabled=false,blackBarEnabled=false,blackBarSize=100,blackBarGeometryTemplate=null;
+const T=global.THREE,records=new WeakMap(),liveRecords=new Set(),textures=new Map(),sfwSources=new WeakMap(),censorOwners=new WeakMap(),censorRenderers=new WeakMap(),appearanceDisposals=new WeakSet(),censorIds=Array.from({length:255},(_,i)=>255-i);let legendaryEnvironment=null,sfwTexturesEnabled=false,blackBarEnabled=false,blackBarSize=100,blackBarGeometryTemplate=null;
 const hex=rgb=>'#'+rgb.map(v=>v.toString(16).padStart(2,'0')).join('');
 const palettes=[
  {name:'Tangerine / teal',a:[246,137,47],b:[31,190,167]},
@@ -19263,6 +19263,44 @@ function createSfwSetting({value=sfwTexturesEnabled,onChange}={}){
 }
 // The optional black bars are screen-facing covers, sized from the protected
 // vertices of this supplied body. It never adds boxes or changes anatomy.
+// Existing opaque draws leave the visible object's owner in the stencil
+// buffer: 0 is the world, 1..255 are live supplied-character records. This
+// permits a cover to ignore its own arms/body depth without seeing through
+// a wall, door, held prop, or a different player. No extra scene/depth pass.
+function installCensorRenderer(renderer){
+ if(!renderer?.renderBufferDirect)return false;if(censorRenderers.has(renderer))return censorRenderers.get(renderer).stencil;
+ const direct=renderer.renderBufferDirect,stencil=renderer.getContext().getContextAttributes()?.stencil===true;
+ censorRenderers.set(renderer,{direct,stencil});
+ renderer.renderBufferDirect=function(camera,scene,geometry,material,object,group){
+  const cover=object?.userData?.mazeBlackBarCensor===true;if(!blackBarEnabled&&!cover)return direct.call(this,camera,scene,geometry,material,object,group);
+  const target=this.getRenderTarget(),hasStencil=target?target.depthBuffer!==false&&target.stencilBuffer===true:stencil;
+  // A depth-only/shadow target must never acquire a projected body cover.
+  // Every world/preview target is created with stencil; fail closed on an
+  // unrelated target without it instead of leaking a cover over the world.
+  if(cover){if(!scene||!hasStencil||material?.isMeshDepthMaterial||material?.isMeshDistanceMaterial)return;return direct.call(this,camera,scene,geometry,material,object,group);}
+  if(!blackBarEnabled||!scene||!hasStencil||!material?.depthWrite||material.colorWrite===false||material.isMeshDepthMaterial||material.isMeshDistanceMaterial)return direct.call(this,camera,scene,geometry,material,object,group);
+  // Transparent glass/liquid blends over the already covered opaque actor.
+  // A transparent depth-writing draw can still stamp the final depth owner,
+  // but is never moved ahead of the normal transparent queue.
+  const owner=censorOwners.get(object),ref=owner?.censorId||0,write=material.stencilWrite,writeMask=material.stencilWriteMask,func=material.stencilFunc,funcRef=material.stencilRef,funcMask=material.stencilFuncMask,fail=material.stencilFail,zFail=material.stencilZFail,zPass=material.stencilZPass;
+  material.stencilWrite=true;material.stencilWriteMask=255;material.stencilFunc=T.AlwaysStencilFunc;material.stencilRef=ref;material.stencilFuncMask=255;material.stencilFail=T.KeepStencilOp;material.stencilZFail=T.KeepStencilOp;material.stencilZPass=T.ReplaceStencilOp;
+  try{return direct.call(this,camera,scene,geometry,material,object,group);}
+  finally{material.stencilWrite=write;material.stencilWriteMask=writeMask;material.stencilFunc=func;material.stencilRef=funcRef;material.stencilFuncMask=funcMask;material.stencilFail=fail;material.stencilZFail=zFail;material.stencilZPass=zPass;}
+ };
+ return stencil;
+}
+function registerCensorOwner(record){
+ if(record.censorId)return record.censorId;
+ // Gameplay, four pooled capsules and private previews are far below the
+ // stencil's 255 owners. Never wrap a live ID and alias another character.
+ const id=censorIds.pop();if(!id)return 0;record.censorId=id;
+ for(const part of record.meshes){for(let node=part.mesh;node;node=node.parent)if(node===record.actor.model){censorOwners.set(part.mesh,record);break;}}
+ return id;
+}
+function releaseCensorOwner(record){
+ for(const part of record.meshes)if(censorOwners.get(part.mesh)===record)censorOwners.delete(part.mesh);
+ if(record.censorId){censorIds.push(record.censorId);record.censorId=0;}
+}
 const BLACK_BAR_REGIONS=Object.freeze(['breast.L','breast.R','Ass L','Ass R','front-pelvis']);
 let blackBarSamplesTemplate=null;
 function blackBarSamples(body){
@@ -19312,25 +19350,30 @@ function blackBarMaterial(blackBar){
  // A basic, texture-free material cannot brighten with flashlights, wet skin,
  // legendary reflections or other scene lights. Retain the actor's terminal
  // fog coverage so these bars cannot reveal someone beyond the fog boundary.
- // The transparent render queue is the final mesh pass, but NoBlending and
- // opacity 1 make every covered pixel solid black. Disable both depth tests
- // and writes so a body/prop intersection cannot cut holes in the overlay.
- const material=new T.MeshBasicMaterial({color:0x000000,side:T.DoubleSide,transparent:true,opacity:1,blending:T.NoBlending,forceSinglePass:true,depthWrite:false,depthTest:false,toneMapped:false,fog:true});material.name='Local opaque black bar overlay';global.MazeActorFog?.material(material);
+ // Draw last among opaque surfaces and before transparent glass/liquid.
+ // Ignore the owner's depth, but cover ONLY its visible stencil pixels.
+ // Enlarging a bar therefore cannot spill onto walls or other characters.
+ const material=new T.MeshBasicMaterial({color:0x000000,side:T.DoubleSide,transparent:false,opacity:1,blending:T.NoBlending,forceSinglePass:true,depthWrite:false,depthTest:false,toneMapped:false,fog:true,stencilWrite:true,stencilWriteMask:0,stencilFunc:T.EqualStencilFunc,stencilRef:blackBar.ownerId,stencilFuncMask:255,stencilFail:T.KeepStencilOp,stencilZFail:T.KeepStencilOp,stencilZPass:T.KeepStencilOp});material.name='Local owner-masked black bars';global.MazeActorFog?.material(material);
  const before=material.onBeforeCompile,key=material.customProgramCacheKey;
  material.onBeforeCompile=function(shader,renderer){
   before.call(this,shader,renderer);shader.uniforms.mazeBlackBarRects=blackBar.uniforms.rects;shader.uniforms.mazeBlackBarDepths=blackBar.uniforms.depths;shader.uniforms.mazeBlackBarViewToLocal=blackBar.uniforms.viewToLocal;
   shader.vertexShader='attribute float mazeBlackBarRegion;\nuniform vec4 mazeBlackBarRects[5];\nuniform float mazeBlackBarDepths[5];\nuniform mat4 mazeBlackBarViewToLocal;\n'+shader.vertexShader;
   shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','int mazeRegion = int(mazeBlackBarRegion + 0.5);\nvec4 mazeRect = mazeBlackBarRects[mazeRegion];\nvec2 mazeXY = mix(mazeRect.xy, mazeRect.zw, position.xy * 0.5 + 0.5);\nvec3 transformed = (mazeBlackBarViewToLocal * vec4(mazeXY, mazeBlackBarDepths[mazeRegion], 1.0)).xyz;');
+  // A mirror uses an oblique near plane. Its visible owner pixels already
+  // prove that the body passed clipping, so do not let the nearer flat cover
+  // plane clip those same pixels a second time at the edge of the mirror.
+  shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\ngl_Position.z = 0.0;');
   // Keep the fog hook's distance discard/dither, without tinting the opaque
   // black censor itself with the fog colour.
   shader.fragmentShader=shader.fragmentShader.replace('#include <fog_fragment>','/* Black bars retain terminal fog coverage without colour mixing. */');
  };
- material.customProgramCacheKey=function(){return key.call(this)+'|flat-body-black-bars-overlay-v3';};return material;
+ material.customProgramCacheKey=function(){return key.call(this)+'|flat-body-black-bars-owner-v4';};return material;
 }
 function bindBlackBarProjection(mesh,blackBar){mesh.onBeforeRender=function(renderer,scene,camera){projectBlackBar(blackBar,this,renderer,camera);};return mesh;}
 function ensureBlackBar(record){
  if(record.blackBar)return record.blackBar;const part=record.materials.find(part=>part.bodyAtlas&&part.mesh.isSkinnedMesh);if(!part)return null;const resource=blackBarGeometry(part.mesh);if(!resource)return null;
- const blackBar={part,resource,point:new T.Vector3(),viewport:new T.Vector4(),bodyToView:new T.Matrix4(),uniforms:{rects:{value:Array.from({length:5},()=>new T.Vector4())},depths:{value:new Float32Array(5)},viewToLocal:{value:new T.Matrix4()}}};
+ const ownerId=registerCensorOwner(record);if(!ownerId)return null;
+ const blackBar={part,resource,ownerId,point:new T.Vector3(),viewport:new T.Vector4(),bodyToView:new T.Matrix4(),uniforms:{rects:{value:Array.from({length:5},()=>new T.Vector4())},depths:{value:new Float32Array(5)},viewToLocal:{value:new T.Matrix4()}}};
  const group=new T.Group();group.name='Local black bar nudity censor';group.userData.mazeBlackBarCensor=true;group.visible=false;const material=blackBarMaterial(blackBar),mesh=bindBlackBarProjection(new T.Mesh(resource.geometry,material),blackBar);mesh.name='Black bars / breasts, buttocks and front pelvis';mesh.userData.mazeBlackBarCensor=true;mesh.frustumCulled=false;mesh.castShadow=false;mesh.receiveShadow=false;mesh.layers.mask=part.mesh.layers.mask;
  // Three sorts group order before mesh order. Set both while retaining the
  // actor parent and its visibility/layers; the overlay never becomes a
@@ -19365,6 +19408,9 @@ function prewarmBlackBarRenderer(actor,renderer,scene,camera){
 }
 function createRecord(actor){
  const record={actor,meshes:[],materials:[],keys:new Set(),signature:null,base:4,worn:true,outfitPalette:4,outfitStyle:null,environment:null,inventoryKnown:false,reflectionLight:0,sfw:sfwTexturesEnabled};
+ // Direct disposal also releases ownership, even when a future preview
+ // caller omits the usual explicit appearance cleanup. Clearing twice is safe.
+ if(!appearanceDisposals.has(actor)&&typeof actor.dispose==='function'){const dispose=actor.dispose;actor.dispose=function(...args){clear(this);return dispose.apply(this,args);};appearanceDisposals.add(actor);}
  for(const mesh of actor.meshes||[]){
   const original=mesh.material,list=Array.isArray(original)?original:[original],name=meshName(mesh),relevant=list.some(materialKind);
   record.meshes.push({mesh,name,visible:mesh.visible,outfit:OUTFIT.has(name),original,owned:null});
@@ -19407,6 +19453,7 @@ function apply(actor,p={}){
 function clear(actor){
  global.MazeBackpackVisuals?.dispose(actor);
  const record=records.get(actor);if(!record)return;record.environment?.release();
+ releaseCensorOwner(record);
  if(record.blackBar){record.blackBar.group.removeFromParent();record.blackBar.material.dispose();if(record.blackBar.resource.owned)record.blackBar.resource.geometry.dispose();record.blackBar.group.clear();record.blackBar=null;}
  for(const part of record.meshes){if(part.outfit)part.mesh.visible=part.visible;if(part.owned){part.mesh.material=part.original;for(const material of part.owned)material.dispose();}}
  for(const key of record.keys){const entry=textures.get(key);if(entry&&--entry.refs<=0&&!entry.legendary&&!entry.keepWarm){entry.texture.dispose();textures.delete(key);}}
@@ -19604,7 +19651,7 @@ function disposeWarmup(group){
 }
 function inspect(actor){const r=records.get(actor);return r?{base:r.base,worn:r.worn,outfitPalette:r.outfitPalette,outfitStyle:r.outfitStyle,reflectionLight:r.reflectionLight,sfwTextures:r.sfw,blackBarCensoring:blackBarEnabled,blackBarSize,blackBarsVisible:!!r.blackBar?.group.visible,blackBarRegions:r.blackBar?BLACK_BAR_REGIONS.length:0,hidden:r.meshes.filter(m=>m.outfit&&!m.mesh.visible).map(m=>m.name),mapped:r.materials.map(m=>({mesh:m.name,kind:m.kind,outfit:m.outfit,covered:!!m.bodyAtlas&&sfwSources.has(m.material.map),color:m.material.color?.getHexString(),roughness:m.material.roughness,metalness:m.material.metalness,envMapIntensity:m.material.envMapIntensity,legendary:!!m.material.envMap&&m.material.envMap===r.environment?.texture}))}:null;}
 function cacheStats(){const sfw=[...textures.values()].filter(e=>e.sfw);return{variants:textures.size,legendary:[...textures.values()].filter(e=>e.legendary).length,palettes:[...textures.values()].filter(e=>e.keepWarm&&!e.sfw).length,cubemap:!!legendaryEnvironment,reflectionRefs:legendaryEnvironment?.refs||0,sfwTextures:sfw.length,sfwChangedPixels:sfw.reduce((n,e)=>n+e.changed,0),blackBarTextures:0,blackBarGeometries:blackBarGeometryTemplate?1:0,blackBarVertices:blackBarGeometryTemplate?.geometry.attributes.position.count||0,blackBarSampleVertices:blackBarSamplesTemplate?.samples.reduce((total,region)=>total+region.length,0)||0};}
-global.MazeAppearance={palettes,legendaryStyles,stylePalette,acquireLegendaryEnvironment,apply,clear,inspect,recolorPixels,prewarm,prewarmPalette,prewarmSfwTextures,prewarmAsync,prewarmPaletteAsync,prewarmSfwTexturesAsync,setSfwTextures,getSfwTextures:()=>sfwTexturesEnabled,createSfwSetting,prewarmBlackBarRenderer,setBlackBarCensoring,getBlackBarCensoring:()=>blackBarEnabled,setBlackBarSize,getBlackBarSize:()=>blackBarSize,createBlackBarSetting,hasLegendary,shadeLegendary,shadeDroppedLegendary,createWarmup,disposeWarmup,cacheStats};
+global.MazeAppearance={palettes,legendaryStyles,stylePalette,acquireLegendaryEnvironment,apply,clear,inspect,recolorPixels,prewarm,prewarmPalette,prewarmSfwTextures,prewarmAsync,prewarmPaletteAsync,prewarmSfwTexturesAsync,setSfwTextures,getSfwTextures:()=>sfwTexturesEnabled,createSfwSetting,installCensorRenderer,prewarmBlackBarRenderer,setBlackBarCensoring,getBlackBarCensoring:()=>blackBarEnabled,setBlackBarSize,getBlackBarSize:()=>blackBarSize,createBlackBarSetting,hasLegendary,shadeLegendary,shadeDroppedLegendary,createWarmup,disposeWarmup,cacheStats};
 })(window);
 
 </script><script>MazeBoot.advance(13490);</script>
@@ -20388,7 +20435,7 @@ class MazeLobbyStage{
  _mesh(geometry,material,x=0,y=0,z=0){this.geometry.add(geometry);this.materials.add(material);const mesh=new T.Mesh(geometry,material);mesh.position.set(x,y,z);this.scene.add(mesh);return mesh;}
  _surface(){
   this.scene=new T.Scene();this.scene.background=new T.Color(0x121b28);this.scene.fog=new T.Fog(0x121b28,18,42);this.camera=new T.PerspectiveCamera(40,1,.03,55);this.camera.layers.enable(2);
-  this.renderer=new T.WebGLRenderer({antialias:true,alpha:false,powerPreference:'low-power'});this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.15;this.renderer.setPixelRatio(Math.min(1.5,global.devicePixelRatio||1));
+  this.renderer=new T.WebGLRenderer({antialias:true,alpha:false,stencil:true,powerPreference:'low-power'});global.MazeAppearance?.installCensorRenderer(this.renderer);this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.toneMapping=T.ACESFilmicToneMapping;this.renderer.toneMappingExposure=1.15;this.renderer.setPixelRatio(Math.min(1.5,global.devicePixelRatio||1));
   const canvas=this.renderer.domElement;canvas.className='coop-lobby-canvas';canvas.setAttribute('aria-label','Animated 3D lobby showing each player’s current outfit');canvas.addEventListener('webglcontextlost',this._lost);this.host.prepend(canvas);
   const key=new T.DirectionalLight(0xfff1df,3.0);key.position.set(-3,6,-5);const fill=new T.DirectionalLight(0xc6ddf2,1.35);fill.position.set(4,3,-2);const rim=new T.DirectionalLight(0x96b9d8,1.8);rim.position.set(-1,4,4);this.scene.add(new T.HemisphereLight(0xe1e7ee,0x343b47,1.65),key,fill,rim);
   // A neutral elevator concourse belongs to the whole game, independent of
@@ -22082,7 +22129,7 @@ class MazeInventoryPreview{
  }
  _surface(){
   this.scene=new T.Scene();this.camera=new T.PerspectiveCamera(33,1,.03,30);this.camera.layers.enable(2);
-  this.renderer=new T.WebGLRenderer({antialias:true,alpha:true,powerPreference:'low-power'});this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.setClearColor(0x101614,0);this.renderer.setPixelRatio(Math.min(1.5,global.devicePixelRatio||1));
+  this.renderer=new T.WebGLRenderer({antialias:true,alpha:true,stencil:true,powerPreference:'low-power'});global.MazeAppearance?.installCensorRenderer(this.renderer);this.renderer.outputColorSpace=T.SRGBColorSpace;this.renderer.setClearColor(0x101614,0);this.renderer.setPixelRatio(Math.min(1.5,global.devicePixelRatio||1));
   // Successful shader log readbacks can synchronously stall older drivers.
   // The explicit validation mode retains Three's full diagnostics for QA.
   this.renderer.debug.checkShaderErrors=new URLSearchParams(global.location?.search||'').get('shader-checks')==='1';
@@ -25955,7 +26002,7 @@ function create(T,renderer,scene,camera){
   `});
  const geometry=new T.PlaneGeometry(2,2),quad=new T.Mesh(geometry,material),postScene=new T.Scene(),postCamera=new T.OrthographicCamera(-1,1,1,-1,0,1);quad.frustumCulled=false;postScene.name='Berry intoxication post effect';postScene.add(quad);
  function ensureTarget(){renderer.getDrawingBufferSize(size);const width=Math.max(1,Math.floor(size.x)),height=Math.max(1,Math.floor(size.y));
-  if(!target){target=new T.WebGLRenderTarget(width,height,{type:T.HalfFloatType,format:T.RGBAFormat,minFilter:T.LinearFilter,magFilter:T.LinearFilter,depthBuffer:true,stencilBuffer:false});target.texture.name='Berry effect / linear HDR world';target.texture.colorSpace=T.LinearSRGBColorSpace;target.texture.generateMipmaps=false;uniforms.uWorld.value=target.texture;resizes++;}
+  if(!target){target=new T.WebGLRenderTarget(width,height,{type:T.HalfFloatType,format:T.RGBAFormat,minFilter:T.LinearFilter,magFilter:T.LinearFilter,depthBuffer:true,stencilBuffer:true});target.texture.name='Berry effect / linear HDR world';target.texture.colorSpace=T.LinearSRGBColorSpace;target.texture.generateMipmaps=false;uniforms.uWorld.value=target.texture;resizes++;}
   else if(target.width!==width||target.height!==height){target.setSize(width,height);resizes++;}
   uniforms.uTexel.value.set(1/width,1/height);uniforms.uAspect.value=width/height;return target;
  }
@@ -28339,9 +28386,38 @@ function shared(T){
  let c=resources.get(T);if(c)return c;
  const geo={box:new T.BoxGeometry(1,1,1),cylinder:new T.CylinderGeometry(1,1,1,24),tube:new T.CylinderGeometry(1,1,1,32,1,true),sphere:new T.SphereGeometry(1,8,6),ring:new T.TorusGeometry(1,.034,6,32),back:new T.CylinderGeometry(1,1,1,20,1,true,Math.PI*.5,Math.PI),left:new T.CylinderGeometry(1,1,1,10,1,true,0,Math.PI*.5),right:new T.CylinderGeometry(1,1,1,10,1,true,Math.PI*1.5,Math.PI*.5)};
  const standard=(name,color,roughness,metalness=0,extra={})=>{const m=new T.MeshStandardMaterial({name,color,roughness,metalness,...extra});m.userData.stasisMaterial=true;return m;};
- const mats={metal:standard('Recovery capsule · brushed graphite',0x28343b,.40,.72),edge:standard('Recovery capsule · machined steel',0x728b96,.30,.80),rubber:standard('Recovery capsule · rubber seals',0x0c1418,.82),pale:standard('Recovery capsule · ceramic control housing',0xbbc8c4,.40,.16),glass:standard('Recovery capsule · clear curved pressure glass',0xb0ddd9,.12,.08,{transparent:true,opacity:.15,depthWrite:false,side:T.DoubleSide}),liquid:standard('Recovery capsule · pale suspended liquid',0x478e8d,.27,0,{transparent:true,opacity:.105,depthWrite:false,side:T.FrontSide}),cyan:standard('Recovery capsule · low power status strips',0x82c0b6,.44,.08,{emissive:0x57a59c,emissiveIntensity:.50}),ruby:standard('Recovery capsule · ruby power socket',0x7b1437,.21,.34,{emissive:0x4d0616,emissiveIntensity:.22}),bubble:standard('Recovery capsule · liquid bubbles',0xa0d0c9,.25,0,{transparent:true,opacity:.32,depthWrite:false})};
+ // Thin tinted glass needs one ordinary alpha pass. It has no transmission,
+ // refraction target, or full-scene reflection pass, even at the highest quality.
+ const mats={metal:standard('Recovery capsule · brushed graphite',0x28343b,.40,.72),edge:standard('Recovery capsule · machined steel',0x728b96,.30,.80),rubber:standard('Recovery capsule · rubber seals',0x0c1418,.82),pale:standard('Recovery capsule · ceramic control housing',0xbbc8c4,.40,.16),glass:standard('Recovery capsule · clear curved pressure glass',0xb0ddd9,.12,.08,{transparent:true,opacity:.15,depthWrite:false,side:T.DoubleSide,forceSinglePass:true}),liquid:standard('Recovery capsule · pale suspended liquid',0x478e8d,.27,0,{transparent:true,opacity:.105,depthWrite:false,side:T.FrontSide,forceSinglePass:true}),cyan:standard('Recovery capsule · low power status strips',0x82c0b6,.44,.08,{emissive:0x57a59c,emissiveIntensity:.50}),ruby:standard('Recovery capsule · ruby power socket',0x7b1437,.21,.34,{emissive:0x4d0616,emissiveIntensity:.22}),bubble:standard('Recovery capsule · liquid bubbles',0xa0d0c9,.25,0,{transparent:true,opacity:.32,depthWrite:false,forceSinglePass:true})};
  for(const m of Object.values(mats))root.MazeActorFog?.material(m);
- c={geo,mats};resources.set(T,c);return c;
+ c={geo,mats,merged:new Map()};resources.set(T,c);return c;
+}
+function mergeChassis(T,group,parts,cached){
+ const buckets=new Map();for(const part of parts){if(part.parent!==group||part.material.transparent)continue;const name=part.material.name;if(!buckets.has(name))buckets.set(name,[]);buckets.get(name).push(part);}
+ for(const[name,list]of buckets){if(list.length<2)continue;let geometry=cached.merged.get(name);
+  if(!geometry){const position=[],normal=[],uv=[],index=[],p=new T.Vector3(),n=new T.Vector3(),normalMatrix=new T.Matrix3();let offset=0;
+   for(const part of list){part.updateMatrix();normalMatrix.getNormalMatrix(part.matrix);const g=part.geometry,a=g.attributes;
+    for(let i=0;i<a.position.count;i++){p.fromBufferAttribute(a.position,i).applyMatrix4(part.matrix);n.fromBufferAttribute(a.normal,i).applyMatrix3(normalMatrix).normalize();position.push(p.x,p.y,p.z);normal.push(n.x,n.y,n.z);uv.push(a.uv.getX(i),a.uv.getY(i));}
+    if(g.index)for(let i=0;i<g.index.count;i++)index.push(offset+g.index.getX(i));else for(let i=0;i<a.position.count;i++)index.push(offset+i);offset+=a.position.count;
+   }
+   geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(position,3));geometry.setAttribute('normal',new T.Float32BufferAttribute(normal,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geometry.setIndex(index);geometry.computeBoundingBox();geometry.computeBoundingSphere();geometry.name=name+' · merged chassis';cached.merged.set(name,geometry);
+  }
+  const mesh=new T.Mesh(geometry,list[0].material);mesh.name=list[0].name;mesh.userData.stasisParts=list.map(part=>part.name);mesh.castShadow=false;mesh.receiveShadow=true;mesh.updateMatrix();mesh.matrixAutoUpdate=false;for(const part of list)part.removeFromParent();group.add(mesh);
+ }
+}
+function interactionShell(T,group,geometry,material){
+ // The renderer skips this non-renderable object. Box3 can read its ordinary
+ // geometry bounds, while picking solves one cylinder instead of traversing
+ // the complete tank and tens of thousands of hidden or visible skin vertices.
+ const shell=new T.Object3D();shell.name='Stasis chamber interaction shell';shell.visible=false;shell.geometry=geometry;shell.material=material;shell.position.y=HEIGHT/2;shell.scale.set(RADIUS,HEIGHT,RADIUS);shell.updateMatrix();shell.matrixAutoUpdate=false;shell.userData.stasisInteraction=true;group.add(shell);
+ const inverse=new T.Matrix4(),ray=new T.Ray(),point=new T.Vector3();
+ shell.raycast=function(raycaster,hits){
+  inverse.copy(this.matrixWorld).invert();ray.copy(raycaster.ray).applyMatrix4(inverse);const o=ray.origin,d=ray.direction,a=d.x*d.x+d.z*d.z,b=2*(o.x*d.x+o.z*d.z),c=o.x*o.x+o.z*o.z-1;let nearest=Infinity;
+  if(a>1e-12){const discriminant=b*b-4*a*c;if(discriminant>=0){const sqrt=Math.sqrt(discriminant);for(const t of[(-b-sqrt)/(2*a),(-b+sqrt)/(2*a)])if(t>=0&&Math.abs(o.y+t*d.y)<=.5&&t<nearest)nearest=t;}}
+  if(Math.abs(d.y)>1e-12)for(const y of[-.5,.5]){const t=(y-o.y)/d.y;if(t>=0&&(o.x+t*d.x)**2+(o.z+t*d.z)**2<=1&&t<nearest)nearest=t;}
+  if(!Number.isFinite(nearest))return;ray.at(nearest,point).applyMatrix4(this.matrixWorld);const distance=raycaster.ray.origin.distanceTo(point);if(distance<raycaster.near||distance>raycaster.far)return;hits.push({distance,point:point.clone(),object:this});
+ };
+ return shell;
 }
 function create(T,site,options={}){
  const cached=shared(T),geo=cached.geo,mats={},group=new T.Group();group.name='Stasis recovery chamber · '+site.slot;group.position.set(site.x,site.y,site.z);group.rotation.y=site.yaw;group.userData.stasisId=site.id;
@@ -28365,8 +28441,8 @@ function create(T,site,options={}){
  for(let n=0;n<3;n++){const line=mesh('Raised circulation plumbing',geo.cylinder,mats.edge,-.34+n*.34,.37,-.38,.042,.20,.042);line.rotation.z=n===1?0:.30*(n-1);}
  box('Rear service panel',mats.metal,0,1.26,-.645,.48,.92,.12);for(let n=0;n<7;n++)box('Service ventilation slot',mats.rubber,0,.95+n*.09,-.708,.33,.025,.015);
  box('Lower operator pedestal',mats.pale,0,.49,.641,.43,.35,.14);box('Ruby receiver',mats.ruby,0,.54,.721,.115,.13,.028);for(const sign of[-1,1])box('Payment status indicator',mats.cyan,sign*.13,.54,.717,.042,.042,.028);
- const bubbleGroup=new T.Group();bubbleGroup.name='Slow liquid circulation bubbles';liquidGroup.add(bubbleGroup);const bubbles=[],random=root.MazeCore.rng(root.MazeCore.hashSeed(site.id));
- for(let n=0;n<10;n++){const a=random()*Math.PI*2,r=.36+random()*.15,o=mesh('Small rising bubble',geo.sphere,mats.bubble,Math.sin(a)*r,.43+random()*1.72,Math.cos(a)*r,.012+random()*.014,.012+random()*.014,.012+random()*.014,bubbleGroup);bubbles.push({o,phase:random(),speed:.048+random()*.035});}
+ const bubbleGroup=new T.Group();bubbleGroup.name='Slow liquid circulation bubbles';liquidGroup.add(bubbleGroup);const bubbles=[],random=root.MazeCore.rng(root.MazeCore.hashSeed(site.id)),bubbleTransform=new T.Object3D(),bubbleMesh=new T.InstancedMesh(geo.sphere,mats.bubble,10);bubbleMesh.name='Small rising bubbles · one instanced draw';bubbleMesh.castShadow=false;bubbleMesh.receiveShadow=false;bubbleMesh.frustumCulled=false;bubbleMesh.instanceMatrix.setUsage(T.DynamicDrawUsage);bubbleGroup.add(bubbleMesh);
+ for(let n=0;n<10;n++){const a=random()*Math.PI*2,r=.36+random()*.15,x=Math.sin(a)*r,y=.43+random()*1.72,z=Math.cos(a)*r,sx=.012+random()*.014,sy=.012+random()*.014,sz=.012+random()*.014;const bubble={x,z,sx,sy,sz,phase:random(),speed:.048+random()*.035};bubbles.push(bubble);bubbleTransform.position.set(x,y,z);bubbleTransform.scale.set(sx,sy,sz);bubbleTransform.updateMatrix();bubbleMesh.setMatrixAt(n,bubbleTransform.matrix);}bubbleMesh.instanceMatrix.needsUpdate=true;
  const occupantAnchor=new T.Group();occupantAnchor.name='Suspended participant base model';group.add(occupantAnchor);
  let labelTexture=null,labelContext=null,labelCanvas=null,labelKey='';
  if(root.document?.createElement){labelCanvas=root.document.createElement('canvas');labelCanvas.width=384;labelCanvas.height=112;labelContext=labelCanvas.getContext('2d');if(labelContext){labelTexture=new T.CanvasTexture(labelCanvas);labelTexture.colorSpace=T.SRGBColorSpace;labelTexture.generateMipmaps=false;labelTexture.minFilter=T.LinearFilter;ownedTextures.push(labelTexture);}}
@@ -28374,16 +28450,16 @@ function create(T,site,options={}){
  const nameplate=box('Engraved participant identity plaque',plateMaterial,0,2.55,.706,.57,.169,.015);
  const polygon=[];for(let n=0;n<16;n++){const a=n*Math.PI/8;polygon.push({x:site.x+Math.sin(a)*RADIUS,z:site.z+Math.cos(a)*RADIUS});}
  const collider={...site.bounds,ownerKey:key(site.tx,site.tz),collisionPolygon:polygon,stasis:true,stasisId:site.id,survival:true,furniture:true,enemyPassThrough:false,standable:false,enabled:true};
- let disposed=false,occupied=false,openedAt=null,openAmount=0,rig=null,occupantPlayer=null;
+ let disposed=false,occupied=false,openedAt=null,openAmount=0,rig=null,occupantPlayer=null,bubbleTick=-1;
  const setLabel=(name='',cost=options.cost)=>{const label=String(name||'VACANT').slice(0,32),next=label+'|'+finite(cost,-1);if(next===labelKey)return;labelKey=next;nameplate.userData.subjectName=label;if(!labelContext)return;const c=labelContext;c.fillStyle='#d8e4dc';c.fillRect(0,0,384,112);c.fillStyle='#20342f';c.font='bold 22px sans-serif';c.fillText('RECOVERY '+String(site.slot+1).padStart(2,'0'),14,27);c.font='bold 28px sans-serif';let shown=label;while(shown.length>2&&c.measureText(shown).width>350)shown=shown.slice(0,-2)+'…';c.fillText(shown,14,65);c.font='16px sans-serif';c.fillText(Number.isFinite(cost)&&name?'REVIVE  ·  '+cost+' RUBIES':'LIFE SUPPORT  /  STANDBY',14,94);labelTexture.needsUpdate=true;};
  const setOccupied=value=>{const next=!!value,player=typeof value==='object'?value:null;occupied=next;if(next&&player)occupantPlayer=player;if(next){openedAt=null;openAmount=0;left.rotation.y=right.rotation.y=0;collider.enabled=true;}if(rig)rig.group.visible=next;liquidGroup.visible=next;setLabel(player?.name||(next?occupantPlayer?.name||'AWAITING RECOVERY':''));return next;};
  const open=time=>{openedAt=finite(time);occupied=false;collider.enabled=false;if(rig)rig.group.visible=false;setLabel('');return true;};
- const update=time=>{if(disposed)return;const t=finite(time);if(openedAt!==null){openAmount=clamp((t-openedAt)/OPEN_SECONDS,0,1);const s=openAmount*openAmount*(3-2*openAmount);left.rotation.y=s*Math.PI*.79;right.rotation.y=-s*Math.PI*.79;liquidGroup.visible=s<.92;liquidGroup.scale.y=Math.max(.03,1-s);liquidGroup.position.y=.33*s;}else if(occupied){liquidGroup.scale.y=1;liquidGroup.position.y=0;for(const b of bubbles)b.o.position.y=.43+((b.phase+t*b.speed)%1)*1.76;if(rig)occupantAnchor.position.y=Math.sin(t*.75+site.slot)*.023;}};
+ const update=time=>{if(disposed)return;const t=finite(time);if(openedAt!==null){if(openAmount>=1)return;openAmount=clamp((t-openedAt)/OPEN_SECONDS,0,1);const s=openAmount*openAmount*(3-2*openAmount);left.rotation.y=s*Math.PI*.79;right.rotation.y=-s*Math.PI*.79;liquidGroup.visible=s<.92;liquidGroup.scale.y=Math.max(.03,1-s);liquidGroup.position.y=.33*s;}else if(occupied){liquidGroup.scale.y=1;liquidGroup.position.y=0;const tick=Math.floor(t*24);if(tick!==bubbleTick){bubbleTick=tick;for(let i=0;i<bubbles.length;i++){const b=bubbles[i];bubbleTransform.position.set(b.x,.43+((b.phase+t*b.speed)%1)*1.76,b.z);bubbleTransform.scale.set(b.sx,b.sy,b.sz);bubbleTransform.updateMatrix();bubbleMesh.setMatrixAt(i,bubbleTransform.matrix);}bubbleMesh.instanceMatrix.needsUpdate=true;}if(rig)occupantAnchor.position.y=Math.sin(t*.75+site.slot)*.023;}};
  function setOccupant(actor,player={}){if(rig&&rig!==actor)rig.group.removeFromParent();rig=actor;occupantPlayer=player;if(!rig)return false;occupantAnchor.add(rig.group);poseOccupant(T,rig,player);rig.group.visible=occupied;setLabel(occupied?player.name||'AWAITING RECOVERY':'');return true;}
  async function loadOccupant(url,player={}){if(!root.MazePlayer)throw new Error('Player rig is unavailable');const actor=new root.MazePlayer(occupantAnchor);actor.group.visible=false;await actor.load(url);if(disposed){root.MazeAppearance?.clear(actor);actor.dispose();return null;}setOccupant(actor,player);return actor;}
  function releaseOccupant(){const old=rig;if(old){old.group.removeFromParent();root.MazeAppearance?.clear(old);old.dispose();}rig=null;return old;}
- setLabel('');setOccupied(false);group.updateMatrixWorld(true);for(const p of parts){p.updateMatrix();if(p.parent!==bubbleGroup)p.matrixAutoUpdate=false;}
- return{site,group,colliders:[collider],occupantAnchor,interactionRoots:[group],doorPos:new T.Vector3(site.x+Math.sin(site.yaw)*.73,site.y+1.25,site.z+Math.cos(site.yaw)*.73),setLabel,setOccupied,setOccupant,loadOccupant,releaseOccupant,open,update,get occupied(){return occupied;},get isOpen(){return openAmount>.98;},get opening(){return openedAt!==null&&openAmount<1;},get actor(){return rig;},get openAmount(){return openAmount;},dispose(){if(disposed)return;disposed=true;releaseOccupant();group.removeFromParent();group.clear();for(const m of ownedMaterials)m.dispose();for(const t of ownedTextures)t.dispose();}};
+ setLabel('');setOccupied(false);mergeChassis(T,group,parts,cached);const pickShell=interactionShell(T,group,geo.cylinder,mats.rubber);group.updateMatrixWorld(true);for(const p of parts){p.updateMatrix();p.matrixAutoUpdate=false;}
+ return{site,group,colliders:[collider],occupantAnchor,interactionRoots:[pickShell],doorPos:new T.Vector3(site.x+Math.sin(site.yaw)*.73,site.y+1.25,site.z+Math.cos(site.yaw)*.73),setLabel,setOccupied,setOccupant,loadOccupant,releaseOccupant,open,update,get occupied(){return occupied;},get isOpen(){return openAmount>.98;},get opening(){return openedAt!==null&&openAmount<1;},get actor(){return rig;},get openAmount(){return openAmount;},dispose(){if(disposed)return;disposed=true;releaseOccupant();bubbleMesh.dispose();group.removeFromParent();group.clear();for(const m of ownedMaterials)m.dispose();for(const t of ownedTextures)t.dispose();}};
 }
 function poseOccupant(T,rig,player={}){
  if(!rig?.ready||!rig.grips)return false;
@@ -28404,6 +28480,104 @@ function poseOccupant(T,rig,player={}){
 }
 root.MazeStasis=Object.freeze({VERSION,RADIUS,HEIGHT,WALK_CLEARANCE,OPEN_SECONDS,plan,findSafeSites,safeRelease,hazardBounds,protectedBounds,makePlacement,create,poseOccupant});
 })(typeof window!=='undefined'?window:globalThis);
+</script>
+<script id="maze-ruby-map">/* Public floor POIs shared by the held tablet, focused tablet and spectator
+   map. Read the realised layout; never reroll a shop or expose loose loot. */
+(function(root){
+'use strict';
+const COLORS=Object.freeze({shop:'#ed7498',stasis:'#92e6df',empty:'#778780'});
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const finiteSite=p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.z);
+function entries(level){
+ const layout=level?.rubyLayout;if(!layout)return [];
+ const out=[],seen=new Set();
+ for(const [index,site]of(Array.isArray(layout.sites)?layout.sites:[]).entries()){
+  if(!finiteSite(site))continue;const id=site.id??'stasis-'+index;if(seen.has(id))continue;seen.add(id);
+  const slot=Number.isInteger(site.slot)&&site.slot>=0&&site.slot<4?site.slot:index;
+  out.push({kind:'stasis',id,x:site.x,z:site.z,number:slot+1,color:COLORS.stasis});
+ }
+ if(finiteSite(layout.shop))out.push({kind:'ruby-shop',id:layout.shop.id||'ruby-shop',x:layout.shop.x,z:layout.shop.z,color:COLORS.shop});
+ return out;
+}
+function legend(level){
+ if(!level?.rubyLayout)return [];
+ const points=entries(level),shop=points.some(p=>p.kind==='ruby-shop'),capsules=points.filter(p=>p.kind==='stasis').length;
+ return[{kind:'ruby-shop',label:shop?'Ruby Exchange':'No shop this floor',color:shop?COLORS.shop:COLORS.empty,present:shop},
+  ...(capsules?[{kind:'stasis',label:'Stasis chambers',color:COLORS.stasis,present:true}]:[])];
+}
+function label(kind,level){return legend(level).find(e=>e.kind===kind)?.label||({'ruby-shop':'Ruby Exchange',stasis:'Stasis chambers'})[kind]||kind;}
+function project(level,point,ox,oz,scale,cell=4){
+ const b=level?.bounds;if(!b||!finiteSite(point)||!Number.isFinite(scale)||scale<=0||!Number.isFinite(cell)||cell<=0)return null;
+ return{x:ox+(point.x/cell-b.minX+.5)*scale,y:oz+(point.z/cell-b.minZ+.5)*scale};
+}
+function drawSymbol(ctx,kind,x,y,r,present=true){
+ ctx.save();ctx.translate(x,y);ctx.scale(r,r);ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=.14;
+ const color=present?(kind==='ruby-shop'?COLORS.shop:COLORS.stasis):COLORS.empty;ctx.fillStyle=color;ctx.strokeStyle='#f7fff7';ctx.beginPath();
+ if(kind==='ruby-shop'){
+  ctx.moveTo(-.80,-.25);ctx.lineTo(-.42,-.70);ctx.lineTo(.42,-.70);ctx.lineTo(.80,-.25);ctx.lineTo(0,.73);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle=present?'#592a40':'#35423c';ctx.lineWidth=.11;ctx.beginPath();ctx.moveTo(-.77,-.23);ctx.lineTo(.77,-.23);ctx.moveTo(-.39,-.66);ctx.lineTo(-.22,-.23);ctx.lineTo(0,.68);ctx.lineTo(.22,-.23);ctx.lineTo(.39,-.66);ctx.stroke();
+  if(!present){ctx.strokeStyle='#d5e1d8';ctx.lineWidth=.18;ctx.beginPath();ctx.moveTo(-.74,.66);ctx.lineTo(.76,-.73);ctx.stroke();}
+ }else if(kind==='stasis'){
+  ctx.fillStyle='#163d39';ctx.strokeStyle=color;ctx.lineWidth=.16;ctx.moveTo(-.44,-.39);ctx.quadraticCurveTo(-.44,-.77,0,-.77);ctx.quadraticCurveTo(.44,-.77,.44,-.39);ctx.lineTo(.44,.48);ctx.quadraticCurveTo(.44,.73,0,.73);ctx.quadraticCurveTo(-.44,.73,-.44,.48);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle='#f0fffb';ctx.lineWidth=.12;ctx.beginPath();ctx.moveTo(-.35,-.44);ctx.lineTo(.35,-.44);ctx.moveTo(-.36,.47);ctx.lineTo(.36,.47);ctx.moveTo(-.13,.04);ctx.lineTo(.14,.04);ctx.moveTo(0,-.11);ctx.lineTo(0,.20);ctx.stroke();
+ }
+ ctx.restore();
+}
+function draw(ctx,level,ox,oz,scale,options={}){
+ const points=entries(level),viewport=options.viewport,cell=options.cell||4,drawn=[];
+ for(const point of points){
+  const p=project(level,point,ox,oz,scale,cell);if(!p)continue;
+  const shop=point.kind==='ruby-shop',r=shop?clamp(scale*.85,10,25):clamp(scale*.65,7,20);
+  if(viewport&&(p.x+r<viewport.x||p.x-r>viewport.x+viewport.width||p.y+r<viewport.y||p.y-r>viewport.y+viewport.height))continue;
+  ctx.save();ctx.fillStyle='#091610';ctx.strokeStyle=point.color;ctx.lineWidth=shop?2.1:1.6;ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fill();ctx.stroke();
+  drawSymbol(ctx,point.kind,p.x,p.y,r*.82);
+  if(!shop){
+   const br=clamp(r*.38,4.8,7.5),bx=p.x+r*.72,by=p.y+r*.70;
+   ctx.fillStyle='#091610';ctx.strokeStyle=COLORS.stasis;ctx.lineWidth=1;ctx.beginPath();ctx.arc(bx,by,br,0,Math.PI*2);ctx.fill();ctx.stroke();
+   ctx.fillStyle='#effffb';ctx.font='700 '+Math.round(br*1.55)+'px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String(point.number),bx,by+.25);
+  }else if(options.labels!==false){
+   const text='RUBY EXCHANGE';ctx.font='700 12px Arial';ctx.textAlign='center';ctx.textBaseline='alphabetic';const width=Math.ceil(ctx.measureText(text).width)+14,height=21;
+   let left=p.x-width/2,top=p.y-r-height-5;
+   if(viewport){left=clamp(left,viewport.x+3,Math.max(viewport.x+3,viewport.x+viewport.width-width-3));if(top<viewport.y+3)top=p.y+r+5;top=clamp(top,viewport.y+3,Math.max(viewport.y+3,viewport.y+viewport.height-height-3));}
+   ctx.fillStyle='#180e16';ctx.fillRect(left,top,width,height);ctx.strokeStyle=COLORS.shop;ctx.lineWidth=1;ctx.strokeRect(left,top,width,height);ctx.fillStyle='#ffeef4';ctx.fillText(text,left+width/2,top+14.5);
+  }
+  ctx.restore();drawn.push({...point,mapX:p.x,mapY:p.y,radius:r});
+ }
+ return drawn;
+}
+const ICON_PATHS=Object.freeze({
+ 'ruby-shop':'M3 9l4-5h10l4 5-9 12Z M3 9h18M7 4l3 5 2 12 2-12 3-5',
+ stasis:'M7 7q0-5 5-5t5 5v12q0 3-5 3t-5-3ZM7 7h10M7 18h10M10 12h4M12 10v4'
+});
+function refreshLegend(element,level,mapCanvas){
+ if(!element)return;const doc=element.ownerDocument||root.document;if(!doc)return;
+ const info=legend(level),current=new Map(Array.from(element.querySelectorAll('[data-ruby-poi]')).map(e=>[e.dataset.rubyPoi,e]));
+ for(const entry of info){
+  let node=current.get(entry.kind);
+  if(!node){
+   node=doc.createElement('span');node.dataset.rubyPoi=entry.kind;
+   const icon=doc.createElement('i');icon.setAttribute('aria-hidden','true');icon.style.cssText='width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #d5e7da66;border-radius:3px;background:#091610';
+   icon.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="'+ICON_PATHS[entry.kind]+'"/></svg>';
+   node.append(icon,doc.createTextNode(''));element.append(node);
+  }
+  node.style.display='';node.style.opacity=entry.present?'1':'.68';node.querySelector('i').style.color=entry.color;
+  const text=Array.from(node.childNodes).find(n=>n.nodeType===3);if(text)text.textContent=' '+entry.label.toUpperCase();
+  node.title=entry.kind==='ruby-shop'?(entry.present?'Crimson diamond: buy supplies with rubies.':'No Ruby Exchange spawned on this floor.'): 'Numbered aqua capsules: revive a fallen teammate for 30 rubies.';
+  current.delete(entry.kind);
+ }
+ for(const node of current.values())node.remove();
+ element.style.flexWrap='wrap';
+ if(mapCanvas){
+  // The room legend owns the base description. Replace only our appended
+  // suffix so repeated refreshes or a new floor never duplicate stale POIs.
+  const previous=mapCanvas.dataset.rubyPoiDescription||'',currentLabel=mapCanvas.getAttribute('aria-label')||'';
+  const base=previous&&currentLabel.endsWith(previous)?currentLabel.slice(0,-previous.length):currentLabel;
+  const suffix=info.length?' '+(info.find(e=>e.kind==='ruby-shop').present?'Crimson diamond: Ruby Exchange.':'No Ruby Exchange on this floor.')+(info.some(e=>e.kind==='stasis')?' Numbered aqua capsules: stasis chambers.':''):'';
+  mapCanvas.dataset.rubyPoiDescription=suffix;mapCanvas.setAttribute('aria-label',base+suffix);
+ }
+}
+root.MazeRubyMap=Object.freeze({COLORS,entries,legend,label,project,drawSymbol,draw,refreshLegend});
+})(window);
 </script>
 <script id="maze-school-overhaul">/* After the Last Bell: seeded pressure mines, permanent floor breaches, and
    short local presentation for authoritative instant-transmission events. */
@@ -29662,7 +29836,7 @@ function init(){
  try{
   window.MazeCommonMaterialHooks?.install(T,{actor:true});
   window.MazeBakedAppearance?.preload();
-  renderer=new T.WebGLRenderer({canvas:$('world'),antialias:false,alpha:false,powerPreference:'high-performance'});renderer.mazeUnifiedOutput=true;renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.03;renderer.shadowMap.type=T.PCFSoftShadowMap;
+  renderer=new T.WebGLRenderer({canvas:$('world'),antialias:false,alpha:false,stencil:true,powerPreference:'high-performance'});MazeAppearance.installCensorRenderer(renderer);renderer.mazeUnifiedOutput=true;renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.03;renderer.shadowMap.type=T.PCFSoftShadowMap;
   // Driver info-log reads force synchronous shader completion on some PCs.
   // Keep full diagnostics available for shader validation, outside normal play.
   renderer.debug.checkShaderErrors=new URLSearchParams(location.search).get('shader-checks')==='1';
@@ -29811,13 +29985,16 @@ function drawTabletRoomMarkers(ctx,level,ox,oz,scale){
 function drawTabletLegend(ctx){
  ctx.save();ctx.font='700 15px Arial';ctx.textAlign='left';
  const entries=(state.theme==='forest'||state.theme==='suburb')?['you','exit','house']:state.theme==='backrooms'?['you','exit','manila','service','closet','pit']:['you','exit','closet','service','kitchen','dormitory'];
- for(const [index,kind] of entries.entries()){
-  const x=38+(index%3)*319,y=entries.length>3?554+Math.floor(index/3)*28:568,label=themedMapLabel(kind).toUpperCase();
-  if(tabletRoomColors[kind]){ctx.fillStyle=tabletRoomColors[kind];ctx.fillRect(x-10,y-10,20,20);drawTabletRoomSymbol(ctx,kind,x,y,10);}
+ const all=entries.map(kind=>({kind,label:themedMapLabel(kind),present:true})).concat(MazeRubyMap.legend(state.level)),columns=all.length>6?4:3,columnWidth=columns===4?239.25:319;
+ for(const [index,entry] of all.entries()){
+  const {kind,present}=entry;
+  const x=38+(index%columns)*columnWidth,y=all.length>columns?554+Math.floor(index/columns)*28:568,label=entry.label.toUpperCase();
+  if(kind==='ruby-shop'||kind==='stasis')MazeRubyMap.drawSymbol(ctx,kind,x,y,10,present);
+  else if(tabletRoomColors[kind]){ctx.fillStyle=tabletRoomColors[kind];ctx.fillRect(x-10,y-10,20,20);drawTabletRoomSymbol(ctx,kind,x,y,10);}
   else if(kind==='you'){ctx.fillStyle=mapColors.you;ctx.fillText('▲',x-9,y+6);}
   else if(kind==='pit'){ctx.fillStyle='#e6a979';ctx.fillText('×',x-9,y+6);}
   else{ctx.fillStyle=kind==='service'?'#ad8f61':mapColors[kind];ctx.fillRect(x-8,y-(kind==='service'?3:8),18,kind==='service'?6:16);}
-  ctx.fillStyle='#eff9e8';ctx.fillText(label,x+20,y+6,285);
+  ctx.fillStyle='#eff9e8';ctx.fillText(label,x+20,y+6,columnWidth-34);
  }
  ctx.restore();
 }
@@ -29848,6 +30025,7 @@ function refreshTabletRoomLegend(){
   }
  }
  $('tabletMap').setAttribute('aria-label',state.theme==='backrooms'?'Backrooms map. Magenta: you. Yellow: elevator. Orange: Manila Room. Dark outlined openings: lethal pits. Narrow strips between openings are walkable.':'Maze map. Magenta arrow: you. Yellow: elevator. Amber: '+themedMapLabel('closet')+'. Tan: '+themedMapLabel('service')+'. Teal: '+themedMapLabel('kitchen')+'. Burgundy: '+themedMapLabel('dormitory')+(state.theme==='suburb'?'. Gold house: suburban home.':'. Gold house: forest shelter.'));
+ MazeRubyMap.refreshLegend(legend,state.level,$('tabletMap'));
 }
 
 function drawTabletBackroomsGeometry(ctx,level,ox,oz,scale){
@@ -29875,6 +30053,7 @@ function drawMap(ctx,x0,y0,w,h,view={zoom:1,panX:0,panY:0}){
  for(const cell of m.maintenance?.cells||[]){const x=ox+((cell.x-1)/C.CELL-b.minX+.5)*scale,z=oz+((cell.z-1)/C.CELL-b.minZ+.5)*scale;ctx.fillStyle='#ad8f61';ctx.fillRect(x,z,Math.max(.7,scale*.5-gap*.45),Math.max(.7,scale*.5-gap*.45));}
  for(const door of m.maintenance?.doors||[]){const x=ox+(door.x/C.CELL-b.minX+.5)*scale,z=oz+(door.z/C.CELL-b.minZ+.5)*scale;ctx.strokeStyle='#f4d6a0';ctx.lineWidth=Math.max(1,scale*.065);ctx.beginPath();ctx.moveTo(x-door.dz*scale*.22,z+door.dx*scale*.22);ctx.lineTo(x+door.dz*scale*.22,z-door.dx*scale*.22);ctx.stroke();}
  drawTabletRoomMarkers(ctx,m,ox,oz,scale);
+ MazeRubyMap.draw(ctx,m,ox,oz,scale,{cell:C.CELL,viewport:{x:x0,y:y0,width:w,height:h}});
  const ex=ox+(m.exit.x-b.minX+.5)*scale,ez=oz+(m.exit.z-b.minZ+.5)*scale,er=Math.max(5,scale*.58);
  ctx.strokeStyle='#fff1a8';ctx.lineWidth=2;ctx.strokeRect(ex-er,ez-er,er*2,er*2);
  const marker=state.spectatorMap?spectatorMapMarker():{...state.player,label:'YOU'},sx=ox+(marker.x/C.CELL-b.minX+.5)*scale,sz=oz+(marker.z/C.CELL-b.minZ+.5)*scale,r=C.clamp(scale*.7,8,17);
@@ -30325,7 +30504,7 @@ function bindUI(){
  for(const event of ['pointerup','pointercancel'])mapCanvas.addEventListener(event,()=>mapDrag=null);
  const context=document.modelContext;if(context?.registerTool){try{Promise.resolve(context.registerTool({name:'get_maze_status',title:'Read maze status',description:'Read the current maze, cleared count, phase, and tablet battery.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(input){if(!input||Object.keys(input).length)throw new Error('This tool takes no arguments.');return{phase:state.mode,maze:state.score+1,cleared:state.score,theme:state.env.theme.name,tabletSeconds:Math.ceil(tabletCharge()),hidden:state.player.hidden};}})).catch(()=>{});}catch(e){}}
  // Read-only performance / geometry diagnostics; player-free mode is a separate startup path.
- window.MazeDiagnostics={getStatus:()=>({build:'V7.42.0 · Rubies / Ruby Exchange / Stasis Revival',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable,captureError:inputLockError||null,capturePending:!!inputLockAttempt,touchMode:touch,pointerLockAPI:typeof $('world').requestPointerLock==='function'},performance:{...clientFrames.status(),loading:loadingJob?{percent:Math.floor(loadingJob.percent),stage:loadingJob.label}:null,graphicsPreparation:state.graphicsWarmup?{milliseconds:state.graphicsWarmup.milliseconds,programs:state.graphicsWarmup.programs,maxBlockingMilliseconds:state.graphicsWarmup.maxBlockingMilliseconds,parallelShaders:state.graphicsWarmup.parallelShaders}:null,enemyNavigation:state.level?.enemyNavigationStats?{...state.level.enemyNavigationStats}:null,simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),safeRoomViews:{passes:safeRoomViews.passes,skipped:safeRoomViews.skipped,lastCostMs:safeRoomViews.lastCost},spectatorMap:!!state.spectatorMap,flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getSchoolStatus:schoolStatus,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
+ window.MazeDiagnostics={getStatus:()=>({build:'V7.42.1 · Stasis performance / Ruby map / Model-only censorship',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable,captureError:inputLockError||null,capturePending:!!inputLockAttempt,touchMode:touch,pointerLockAPI:typeof $('world').requestPointerLock==='function'},performance:{...clientFrames.status(),loading:loadingJob?{percent:Math.floor(loadingJob.percent),stage:loadingJob.label}:null,graphicsPreparation:state.graphicsWarmup?{milliseconds:state.graphicsWarmup.milliseconds,programs:state.graphicsWarmup.programs,maxBlockingMilliseconds:state.graphicsWarmup.maxBlockingMilliseconds,parallelShaders:state.graphicsWarmup.parallelShaders}:null,enemyNavigation:state.level?.enemyNavigationStats?{...state.level.enemyNavigationStats}:null,simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),safeRoomViews:{passes:safeRoomViews.passes,skipped:safeRoomViews.skipped,lastCostMs:safeRoomViews.lastCost},spectatorMap:!!state.spectatorMap,flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getSchoolStatus:schoolStatus,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
 }
 function look(dx,dy){if(phoneUI.isOpen||state.spectatorMap)return;if(!Number.isFinite(dx)||!Number.isFinite(dy)||inventoryIsOpen()||survivalBlocked())return;const s=mouseLookScale();if(mp?.dead){if(coopLive()&&!mp.ending&&!mp.localPaused&&mp.spectatorView==='orbit'){mp.spectatorYaw=(Number.isFinite(mp.spectatorYaw)?mp.spectatorYaw:0)-dx*s;mp.spectatorPitch=C.clamp((Number.isFinite(mp.spectatorPitch)?mp.spectatorPitch:.12)-dy*s,-Math.PI/2,Math.PI/2);}return;}const p=state.player,inversion=MazeBerryGameplay.mouseMultiplier(p,state.time);p.yaw-=dx*s*inversion;p.pitch=C.clamp(p.pitch-dy*s*inversion,-1.43,1.25);}
 // Service passages occupy real half-cells; presentation and interaction use
@@ -32582,6 +32761,18 @@ function rubySpawnPosition(source,random){
 function rubyHazards(){return{forest:state.forestHazards,garden:state.level?.garden,school:state.schoolHazards?.data};}
 function rubyLife(p){return Number.isSafeInteger(p?.life)&&p.life>=0?p.life:0;}
 function rubyDirty(){if(rubyWorld)rubyWorld.revision++;inventoryRevision++;interactionCache=null;}
+function rubyFixtureVisibilityKeys(fixture){
+ // These fixtures can straddle a tile boundary. Cache their complete static
+ // footprint once so a hidden center tile cannot hide a visible part.
+ const keys=new Set(),epsilon=1e-6;
+ for(const box of fixture.colliders||[]){
+  if(![box.minX,box.maxX,box.minZ,box.maxZ].every(Number.isFinite)||box.minX>box.maxX||box.minZ>box.maxZ)continue;
+  const insetX=Math.min(epsilon,(box.maxX-box.minX)/4),insetZ=Math.min(epsilon,(box.maxZ-box.minZ)/4);
+  for(let z=C.tileAt(box.minZ+insetZ);z<=C.tileAt(box.maxZ-insetZ);z++)for(let x=C.tileAt(box.minX+insetX);x<=C.tileAt(box.maxX-insetX);x++)keys.add(C.key(x,z));
+ }
+ if(!keys.size){const point=fixture.site||fixture;keys.add(C.key(C.tileAt(point.x),C.tileAt(point.z)));}
+ return [...keys];
+}
 function rubyBuild(){
  if(!window.MazeStasis||!window.MazeRubyShop)return;
  const level=state.level,options={colliders:level.roomColliders,doors:state.serviceDoors,hazards:rubyHazards(),floorAt:survivalPhysicalFloorAt};
@@ -32599,6 +32790,8 @@ function rubyBuild(){
   rubyWorld.shop={...shopSite,group,colliders:[collider],doorPos:new T.Vector3(shopSite.x+s*.67,shopSite.y+1.1,shopSite.z+c*.67)};
   scene.add(group);level.roomColliders.push(collider);applyServiceActorLight(group,shopSite);magicLighting?.prepare(group);
  }
+ rubyWorld.fixtures=[...rubyWorld.capsules,...(rubyWorld.shop?[rubyWorld.shop]:[])];
+ for(const fixture of rubyWorld.fixtures)fixture._visibilityKeys=rubyFixtureVisibilityKeys(fixture);
  C.indexRoomColliders(level);
  // Each original spawn has its own stream. Adding a new loot source cannot
  // reroll another cupboard, and dynamic drops never create extra currency.
@@ -32617,6 +32810,7 @@ function rubyBuild(){
  }
  if(rubyWorld.loot.length){inventoryRevision++;inventoryDropRevision++;}
  rubySyncCapsules();
+ refreshTabletRoomLegend();state.tabletTick=0;state.tabletView.dirty=true;
 }
 function rubyClean(){
  rubyCloseShop(false);
@@ -32750,8 +32944,9 @@ function rubyApplyWorld(parsed){
 }
 function rubyRender(){
  if(!rubyWorld)return;rubySyncCapsules();
- for(const fixture of [...rubyWorld.capsules,...(rubyWorld.shop?[rubyWorld.shop]:[])]){
-  const point=fixture.site||fixture,brightness=state.lights.get(C.key(C.tileAt(point.x),C.tileAt(point.z)))||0,visible=brightness>0||!!mp?.dead&&!!mp.spectatorNight;
+ for(const fixture of rubyWorld.fixtures){
+  let brightness=0;for(const key of fixture._visibilityKeys)brightness=Math.max(brightness,state.lights.get(key)||0);
+  const visible=brightness>0||!!mp?.dead&&!!mp.spectatorNight;
   fixture.group.visible=visible;if(visible){shadeGroup(fixture.group,brightness||1);fixture.update?.(state.time);}
  }
  if(state.rubyShopOpen){if(!rubyShopState().available)rubyCloseShop();else{const key=[state.player.inventory?.revision,rubyWorld.revision,mp?.inventoryPending.size].join('|');if(rubyWorld.uiKey!==key){rubyWorld.uiKey=key;rubyShopUI?.refresh();}}}
