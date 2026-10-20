@@ -3044,6 +3044,16 @@ html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout] #fieldStatu
   position: relative !important; inset: auto !important; transform: none !important;
   width: 100% !important; margin: 0 !important; padding: 8px 10px !important;
 }
+/* The scaled stage anchors this fixed alert independently of the status column. */
+html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout] #fieldStatusHUD #forestHazardHUD[data-alert=trapped] {
+  position: fixed !important; inset: 50% auto auto 50% !important;
+  transform: translate(-50%,-50%) !important;
+  width: min(380px,calc(100% - 32px)) !important; padding: 12px 16px !important;
+  text-align: center !important; font-size: 13px !important;
+}
+html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout] #fieldStatusHUD #forestHazardHUD[data-alert=trapped]>strong {
+  font-size: 11px !important;
+}
 html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout] #fieldStatusHUD #notice {
   padding: 8px 10px; font-size: 11px; line-height: 1.4; white-space: normal;
 }
@@ -37745,7 +37755,7 @@ function forestRender(dt){
  if(!visible){forestHideHUD();return;}forestHUD.root.style.display='block';forestHUD.root.dataset.alert=info.trapped?'trapped':'bleeding';
  const titleText=info.trapped?'TRAPPED':'BLEEDING',bodyText=info.trapped?info.text:'Blood loss · '+Math.max(0,Math.ceil(p.bleedingUntil-state.time))+'s remaining';
  if(forestHUD.title.textContent!==titleText)forestHUD.title.textContent=titleText;if(forestHUD.text.textContent!==bodyText)forestHUD.text.textContent=bodyText;forestHUD.track.style.display=info.trapped?'block':'none';forestHUD.bar.style.width=Math.round(info.progress*100)+'%';
- // The warning is docked above the survival needs, clear of central notices.
+ // Trap instructions take the center while the ordinary interaction prompt is suppressed.
  if(info.trapped){$('contextPrompt').textContent='';$('contextPrompt').classList.remove('pickup-target');}
 }
 
