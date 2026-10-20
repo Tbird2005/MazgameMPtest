@@ -1286,7 +1286,7 @@ root.MazeSuburbCollision=Object.freeze({index,outsideHeight});
 })(typeof window!=='undefined'?window:globalThis);
 
 </script>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MAZE — Field Edition</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>MAZE — Field Edition</title><meta name="description" content="Explore eight shifting environments, gather supplies, call the elevator, and find your way out."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23090c0b' d='M0 0h32v32H0z'/%3E%3Cpath fill='none' stroke='%23d4f596' stroke-width='3' d='M5 28V5h22v22H13V13h7v7'/%3E%3C/svg%3E">
 <style id="maze-boot-style">html,body{margin:0;min-height:100%;background:#070d0e}
 #maze-boot{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;padding:28px;color:#dce9e2;background:radial-gradient(ellipse at 48% 40%,#18333780,transparent 66%),repeating-linear-gradient(0deg,#91c5bc04 0 1px,transparent 1px 4px),#070d0e;font:14px/1.5 Arial,Helvetica,sans-serif;box-sizing:border-box;color-scheme:dark}
 #maze-boot *{box-sizing:border-box}#maze-boot-panel{width:min(430px,100%);border-top:1px solid #729b9670;padding-top:25px}#maze-boot-brand{margin:0 0 34px;color:#c9dcc2;letter-spacing:.19em;font-size:13px;font-weight:700}#maze-boot-brand b{float:right;color:#6f9792;font-size:11px;font-weight:400;letter-spacing:.08em}#maze-boot h1{margin:0 0 7px;font-size:24px;font-weight:400;letter-spacing:-.02em}#maze-boot-meta{min-height:22px;margin:0;color:#91b2ac;font-size:12px}#maze-boot-track{height:11px;margin:25px 0 11px;border:1px solid #4f716b;background:#050b0c;padding:2px;box-shadow:inset 0 1px 3px #0009}#maze-boot-fill{height:5px;width:0;background:#b7d9a1;box-shadow:0 0 10px #a9d49735}#maze-boot-bottom{display:flex;justify-content:space-between;gap:16px;color:#75928d;font-size:12px;font-variant-numeric:tabular-nums}#maze-boot-percent{color:#c3d9b9}#maze-boot-retry{margin-top:22px;padding:9px 18px;border:1px solid #7caaa2;background:#18332e;color:#daebdf;font:inherit;cursor:pointer}#maze-boot-retry[hidden]{display:none}#maze-boot-note{margin:25px 0 0;color:#5e7a76;font-size:11px}#maze-boot[data-error] #maze-boot-fill{background:#d4967f}</style><style id="maze-voice-style">
@@ -1561,6 +1561,7 @@ html.maze-field #fieldTooltip{max-width:min(350px,calc(100vw - 24px));max-height
       return true;
     }
     function show(node,kind='pointer'){
+      if(window.MazeInput?.lastDevice?.()==='touch'){hide();return;}
       const source=node?.closest?.(selector);
       if(!source||!currentText(source)){hide();return;}
       if(node===owner&&source===textNode){mode=kind;paint(kind==='focus');return;}
@@ -3380,7 +3381,490 @@ html.maze-field #maze-boot {
 @media (max-height:560px) {
   html.maze-field #maze-boot { padding: 20px 32px; }
 }
-</style></head><body><section id="maze-boot" role="status" aria-live="polite" aria-label="Loading Maze Game 3D"><div id="maze-boot-panel"><p id="maze-boot-brand">MAZE GAME / 3D <b>INITIALIZING</b></p><h1 id="maze-boot-title">Receiving game data</h1><p id="maze-boot-meta">Loading game data</p><div id="maze-boot-track" role="progressbar" aria-label="Game data received" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="maze-boot-fill"></div></div><div id="maze-boot-bottom"><span id="maze-boot-eta">Estimating remaining time…</span><span id="maze-boot-percent">0%</span></div><aside class="field-loading-tip" role="note" aria-label="Gameplay tip" aria-live="off"><span class="field-loading-tip-label">FIELD NOTE</span><p id="mazeBootTipText" class="field-loading-tip-text"></p></aside><button id="maze-boot-retry" type="button" hidden>Reload game</button><p id="maze-boot-note"></p></div></section><script>(function(w,d){
+</style><style id="maze-phone-support">/* Phone layout only. The current materials, artwork, icons and desktop UI remain shared. */
+:root {
+  --phone-inset-top: env(safe-area-inset-top, 0px);
+  --phone-inset-right: env(safe-area-inset-right, 0px);
+  --phone-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --phone-inset-left: env(safe-area-inset-left, 0px);
+}
+html.maze-field #mazeUIStage[data-layout^=touch] {
+  --phone-edge: 16px;
+  --phone-top: max(12px, var(--phone-safe-top, 0px));
+  --phone-bottom: max(20px, var(--phone-safe-bottom, 0px));
+  --phone-left: max(var(--phone-edge), var(--phone-safe-left, 0px));
+  --phone-right: max(var(--phone-edge), var(--phone-safe-right, 0px));
+}
+html.maze-field #mazeUIStage[data-layout^=touch] :is(button,select,input,textarea) { -webkit-tap-highlight-color: transparent; }
+html.maze-field #mazeUIStage[data-layout^=touch] :is(input:not([type=range]):not([type=checkbox]),select,textarea) { font-size: 16px !important; }
+html.maze-field #mazeUIStage[data-layout^=touch] :is(#touchLeanLeft,#touchLeanRight,#touchRun,#touchLight,#touchShotgun,#touchFire) { display: none !important; }
+html.maze-field #mazeUIStage[data-layout^=touch] #touchControls { touch-action: none; }
+/* Existing HUD buttons must receive taps above the camera gesture surface. */
+html.maze-field #mazeUIStage[data-layout^=touch] #hud { z-index: 6; }
+html.maze-field #mazeUIStage[data-layout^=touch] #lookPad {
+  position: absolute; inset: 0 0 0 38%; width: auto; height: auto;
+  background: none; border: 0; z-index: 0; touch-action: none;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] #joystick {
+  left: var(--phone-left); bottom: var(--phone-bottom); z-index: 2;
+  width: 120px; height: 120px;
+  border: 1px solid #bccb9659; background: radial-gradient(circle,#a7b17a09 0 44%,#101a12aa 45% 100%);
+  box-shadow: inset 0 0 0 10px #a5ad7910,0 3px 15px #0003;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] #joystick span {
+  left: 38px; top: 38px; width: 42px; height: 42px;
+  border: 1px solid #e1d2a281; background: linear-gradient(#9da47770,#586b4170); box-shadow: 0 2px 5px #0007;
+  pointer-events: none;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] #touchControls.is-phone-sprinting #joystick { border-color: #d9bd7e; box-shadow: inset 0 0 0 10px #d2b77a16,0 0 12px #bda96c19; }
+html.maze-field #mazeUIStage[data-layout^=touch] .touch-actions {
+  position: absolute; inset: auto var(--phone-right) var(--phone-bottom) auto; z-index: 3;
+  display: grid; grid-template-columns: repeat(2,64px); grid-template-rows: 68px 54px;
+  gap: 10px; width: 138px; pointer-events: none;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] .touch-actions button {
+  position: relative; inset: auto; width: 100%; height: 100%; min-width: 0; min-height: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  padding: 6px 3px; border-radius: 3px; border: 1px solid #bccb9666;
+  background: var(--field-grain),linear-gradient(#34402bd9,#142016df);
+  color: #e9e7ce; box-shadow: inset 0 1px #e6e3bc18,0 3px 12px #0005;
+  font: 650 10px/1.2 Bahnschrift,'Arial Narrow',sans-serif; letter-spacing: .05em;
+  touch-action: none; pointer-events: auto;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] .touch-actions button:active,
+html.maze-field #mazeUIStage[data-layout^=touch] .touch-actions button.is-phone-pressed,
+html.maze-field #mazeUIStage[data-layout^=touch] .touch-actions button[aria-pressed=true] {
+  border-color: #d9bd7e; background: var(--field-grain),#5b6540e8; color: #fff0c6; transform: translateY(1px);
+}
+html.maze-field #mazeUIStage[data-layout^=touch] .touch-actions button.is-phone-charging { border-color: #e0ca8a; box-shadow: inset 0 0 0 2px #b7bb7155,0 0 14px #d0b87930; }
+html.maze-field #mazeUIStage[data-layout^=touch] .touch-actions button:disabled { opacity: .36; }
+html.maze-field #mazeUIStage[data-layout^=touch] #touchControls button[hidden] { display: none !important; }
+html.maze-field #mazeUIStage[data-layout^=touch] .touch-actions #touchInteract { grid-column: 1; grid-row: 1; border-color: #d1ba7d88; }
+html.maze-field #mazeUIStage[data-layout^=touch] .touch-actions #touchUse { grid-column: 2; grid-row: 1; }
+html.maze-field #mazeUIStage[data-layout^=touch] .touch-actions #touchCrouch { grid-column: 1; grid-row: 2; }
+html.maze-field #mazeUIStage[data-layout^=touch] .touch-actions #touchJump { grid-column: 2; grid-row: 2; width: 100%; height: 100%; border-radius: 3px; }
+html.maze-field #mazeUIStage[data-layout^=touch] .touch-actions svg { width: 23px; height: 23px; pointer-events: none; }
+html.maze-field #mazeUIStage[data-layout^=touch] :is(.touch-actions,#touchInventory) svg {
+  flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] .phone-action-label { display: block; max-width: 100%; overflow-wrap: anywhere; }
+html.maze-field #mazeUIStage[data-layout^=touch] .phone-action-hint { display: block; max-width: 100%; font: 500 8px/1.15 Bahnschrift,sans-serif; color: #b7c29f; letter-spacing: .015em; overflow-wrap: anywhere; }
+html.maze-field #mazeUIStage[data-layout^=touch] #touchInventory {
+  position: absolute; inset: var(--phone-top) calc(var(--phone-right) + 64px) auto auto; z-index: 4;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  width: 64px; height: 54px; min-height: 54px; padding: 6px; border: 1px solid #bccb9659; border-radius: 2px;
+  background: var(--field-grain),#1c291ce6; color: #e4e5ca; font: 600 9px Bahnschrift,sans-serif;
+  touch-action: manipulation; pointer-events: auto;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] #touchInventory svg { width: 22px; height: 22px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #pauseButton {
+  position: fixed; inset: var(--phone-top) var(--phone-right) auto auto; z-index: 6;
+  width: 54px; height: 54px; min-height: 54px; margin: 0; padding: 10px; pointer-events: auto;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] #tabletButton {
+  position: fixed; inset: calc(var(--phone-top) + 64px) var(--phone-right) auto auto;
+  min-height: 44px; height: auto; padding: 8px 12px; font-size: 11px;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] :is(#tabletButton,#contextPrompt,#startButton,.inventory-close,.inventory-footer,.tablet-close) :is(kbd,.field-glyph,.field-menu-key),
+html.maze-field #mazeUIStage[data-layout^=touch] :is(.field-sleep-wake-keys,#controlHint) { display: none; }
+html.maze-field #mazeUIStage[data-layout^=touch] .hud-top { pointer-events: none; }
+
+/* Keep five live readings, in the clear band above portrait controls. */
+html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout^=touch] #hud #survivalHUD {
+  --vital-row-left: var(--phone-left); --vital-row-bottom: calc(var(--phone-bottom) + 148px);
+  --vital-row-height: 72px; --vital-thermal-height: 22px; --vital-value-height: 42px;
+  --vital-number-size: 20px; --vital-icon-size: 16px; --vital-label-size: 7px;
+  --vital-cell-gap: 3px; --vital-cell-end: 2px; --vital-group-gap: 12px;
+  width: calc(100% - var(--phone-left) - var(--phone-right)); padding: 0;
+}
+html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout^=touch] #fieldPlayerHUD {
+  left: var(--phone-left); top: var(--phone-top); width: 176px;
+}
+html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout^=touch] #fieldStatusHUD {
+  right: var(--phone-right); top: calc(var(--phone-top) + 116px); width: 164px;
+}
+html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout^=touch] #hud #contextPrompt {
+  inset: auto auto calc(var(--phone-bottom) + 232px) 50%;
+  max-width: calc(100% - 32px); width: max-content; transform: translateX(-50%); font-size: 12px;
+}
+html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout^=touch] #hud #fieldCountdown { top: 39%; }
+html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout=touch-landscape] #hud #survivalHUD {
+  --vital-row-left: calc(var(--phone-left) + 140px); --vital-row-bottom: var(--phone-bottom);
+  --vital-number-size: 21px; --vital-icon-size: 17px;
+  width: calc(100% - var(--phone-left) - var(--phone-right) - 304px);
+}
+html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout=touch-landscape] #fieldPlayerHUD { width: 200px; }
+html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout=touch-landscape] #fieldStatusHUD { width: 194px; }
+html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout=touch-landscape] #hud #contextPrompt {
+  inset: auto auto calc(var(--phone-bottom) + 128px) 50%; max-width: 350px;
+}
+html.maze-field body:not(.maze-spectating) #mazeUIStage[data-layout=touch-landscape] #hud #fieldCountdown { top: var(--phone-top); width: 258px; }
+
+/* Scroll the content, retain the current title art and a reachable close button. */
+html.maze-field #mazeUIStage[data-layout^=touch] #menu {
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
+  padding: max(24px,var(--phone-top)) max(26px,var(--phone-right)) max(20px,var(--phone-bottom)) max(26px,var(--phone-left));
+}
+html.maze-field #mazeUIStage[data-layout^=touch] #menu .menu-content { flex-shrink: 0; padding-block: 24px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #menu :is(.menu-actions button,.coop-menu-button,#themeSelect) { min-height: 46px; }
+html.maze-field #mazeUIStage[data-layout^=touch] :is(#pauseScreen,#settingsScreen,#disclaimersScreen,.coop-overlay,.survival-corpse-overlay) {
+  padding: max(10px,var(--phone-top)) var(--phone-right) max(10px,var(--phone-bottom)) var(--phone-left);
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] #pauseScreen { place-items: center start; }
+html.maze-field #mazeUIStage[data-layout^=touch] #pauseScreen .panel { width: min(320px,100%); max-height: none; }
+html.maze-field #mazeUIStage[data-layout^=touch] #pauseScreen :is(.primary,.secondary,.text-button) { min-height: 46px; }
+html.maze-field #mazeUIStage[data-layout^=touch] :is(#settingsScreen,#disclaimersScreen) .panel {
+  width: min(820px,100%); max-height: calc(100 * var(--maze-ui-vh) - var(--phone-top) - var(--phone-bottom));
+}
+html.maze-field #mazeUIStage[data-layout^=touch] :is(#settingsScreen,#disclaimersScreen) .menu-panel-content {
+  min-height: 0; max-height: none; overflow-y: auto; touch-action: pan-y;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] :is(#settingsScreen,#disclaimersScreen) .menu-panel-heading { padding: 14px 16px; gap: 12px; }
+html.maze-field #mazeUIStage[data-layout^=touch] :is(#closeSettings,#closeDisclaimers,.coop-close,.coop-small-button,.coop-join-button) { min-height: 44px; }
+html.maze-field #mazeUIStage[data-layout^=touch] .field-settings-tabs { padding-inline: 8px; }
+html.maze-field #mazeUIStage[data-layout^=touch] .field-settings-tabs button { flex: 1; min-width: 0; min-height: 44px; padding: 10px 8px; }
+html.maze-field #mazeUIStage[data-layout^=touch] .setting input[type=range] { min-height: 30px; background: transparent; touch-action: pan-y; }
+html.maze-field #mazeUIStage[data-layout^=touch] .setting input[type=range]::-webkit-slider-thumb { width: 22px; height: 28px; }
+html.maze-field #mazeUIStage[data-layout^=touch] .setting input[type=range]::-moz-range-thumb { width: 22px; height: 28px; }
+html.maze-field #mazeUIStage[data-layout^=touch] .coop-panel {
+  max-height: calc(100 * var(--maze-ui-vh) - var(--phone-top) - var(--phone-bottom)); padding: 20px; touch-action: pan-y;
+}
+
+/* Taps select and operate items. The pack can be panned from any slot. */
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen:not(.is-preview-expanded) {
+  padding: var(--phone-top) var(--phone-right) var(--phone-bottom) var(--phone-left);
+  overflow: hidden; grid-template-columns: minmax(0,1fr); grid-template-rows: minmax(0,1fr);
+}
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen:not(.is-preview-expanded) .inventory-panel {
+  display: flex; flex-direction: column; width: min(1060px,100%); max-width: 100%; min-height: 0;
+  max-height: calc(100 * var(--maze-ui-vh) - var(--phone-top) - var(--phone-bottom)); overflow: hidden;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen:not(.is-preview-expanded) .inventory-header { flex: 0 0 auto; padding: 12px 14px; gap: 10px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-header h2 { font-size: 24px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-header .aero-overline { margin-bottom: 4px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen:not(.is-preview-expanded) .inventory-body {
+  flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto;
+  overscroll-behavior: contain; touch-action: pan-y; padding: 12px; gap: 14px; scroll-padding-block: 12px 110px;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen :is(.inventory-slot,.inventory-slot *) { touch-action: pan-y; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-slot { height: 86px; min-width: 0; scroll-margin-block: 10px 110px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-item-icon { height: 48px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-item-name { font-size: 10px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen :is(.inventory-close,.inventory-action,.inventory-item-actions button,.inventory-context-action,.inventory-rotate-button) {
+  min-height: 44px; padding: 9px 12px; touch-action: manipulation;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-rotate-button { min-width: 44px; padding: 8px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-close { min-width: 68px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-preview-expand { width: 44px; height: 44px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-item-actions {
+  position: sticky; bottom: -12px; z-index: 6; display: flex; flex-wrap: wrap;
+  gap: 6px; margin: 6px -4px 0; padding: 9px 4px; border-top: 1px solid var(--field-line);
+  background: var(--field-grain),#182119;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-item-actions button { flex: 1 1 100px; font-size: 11px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-item-actions:empty { display: none; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-footer { flex: 0 0 auto; padding: 7px 12px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-footer:empty { display: none; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-drop-zone { display: none; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-detail-origin { max-height: none; overflow: visible; overflow-wrap: anywhere; font-size: 11px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-backpack { min-width: 0; }
+html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-ruby-controls :is(button,input) { min-height: 44px !important; }
+html.maze-field #mazeUIStage[data-layout=touch] #inventoryScreen:not(.is-preview-expanded) .inventory-body { grid-template-columns: minmax(0,1fr); }
+html.maze-field #mazeUIStage[data-layout=touch] #inventoryScreen:not(.is-preview-expanded) .inventory-dressing { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px 10px; }
+html.maze-field #mazeUIStage[data-layout=touch] #inventoryScreen:not(.is-preview-expanded) .inventory-preview { min-height: 160px; height: 170px; }
+html.maze-field #mazeUIStage[data-layout=touch] #inventoryScreen .inventory-equipment { min-width: 0; gap: 8px; }
+html.maze-field #mazeUIStage[data-layout=touch] #inventoryScreen .inventory-rotate { gap: 4px; }
+html.maze-field #mazeUIStage[data-layout=touch] #inventoryScreen .inventory-rotate>span { display: none; }
+html.maze-field #mazeUIStage[data-layout=touch] #inventoryScreen .inventory-ruby-wallet { gap: 8px !important; }
+html.maze-field #mazeUIStage[data-layout=touch] #inventoryScreen .inventory-ruby-controls { width: 100%; }
+html.maze-field #mazeUIStage[data-layout=touch] #inventoryScreen .inventory-status-effects { grid-column: 1 / -1; }
+html.maze-field #mazeUIStage[data-layout=touch-landscape] #inventoryScreen:not(.is-preview-expanded) .inventory-body { grid-template-columns: minmax(175px,.7fr) minmax(340px,1.3fr); }
+html.maze-field #mazeUIStage[data-layout=touch-landscape] #inventoryScreen:not(.is-preview-expanded) .inventory-preview { height: 180px; min-height: 140px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #survivalCorpse .survival-corpse-panel { max-height: calc(100 * var(--maze-ui-vh) - var(--phone-top) - var(--phone-bottom)); overflow: auto; touch-action: pan-y; }
+html.maze-field #mazeUIStage[data-layout^=touch] #survivalCorpse button { min-height: 44px; }
+
+/* Map and spectator actions already have real buttons; enlarge those hit areas. */
+html.maze-field #mazeUIStage[data-layout^=touch] #tabletFocus {
+  padding: 10px; border-width: 6px; border-radius: 5px;
+  padding-top: max(10px,var(--phone-top)); padding-bottom: max(10px,var(--phone-bottom));
+}
+html.maze-field #mazeUIStage[data-layout^=touch] .tablet-focus-header { display: flex; flex-wrap: wrap; gap: 10px; padding: 0 0 10px; flex-shrink: 0; }
+html.maze-field #mazeUIStage[data-layout^=touch] .tablet-focus-header>div:first-child { flex: 1; min-width: 130px; }
+html.maze-field #mazeUIStage[data-layout^=touch] .tablet-focus-header p { font-size: 14px; }
+html.maze-field #mazeUIStage[data-layout^=touch] .tablet-power { margin-left: auto; }
+html.maze-field #mazeUIStage[data-layout^=touch] :is(.tablet-close,.map-zoom-controls button) { min-width: 44px; min-height: 44px; padding: 9px 12px; }
+html.maze-field #mazeUIStage[data-layout^=touch] .tablet-map-area { flex: 1; min-height: 80px; touch-action: none; }
+html.maze-field #mazeUIStage[data-layout^=touch] .tablet-focus-footer { padding: 9px 0 0; gap: 6px; }
+html.maze-field #mazeUIStage[data-layout^=touch] .tablet-focus-footer>p { display: none; }
+html.maze-field #mazeUIStage[data-layout^=touch] .coop-spectator.field-spectator-dock {
+  bottom: var(--phone-bottom); width: calc(100% - var(--phone-left) - var(--phone-right));
+  max-height: calc(100 * var(--maze-ui-vh) - var(--phone-top) - var(--phone-bottom) - 90px); overflow-y: auto; touch-action: pan-y;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] .field-spectator-dock :is(.coop-spectate-button,.coop-spectator-toggle) { min-width: 44px; min-height: 48px; }
+html.maze-field #mazeUIStage[data-layout^=touch] .field-spectator-dock .field-glyph { display: none; }
+html.maze-field #mazeUIStage[data-layout^=touch] .field-spectator-dock .coop-spectator-note { display: none; }
+html.maze-field #mazeUIStage[data-layout^=touch] .field-spec-main { grid-template-columns: minmax(180px,1fr) auto; gap: 12px; padding: 10px 12px; }
+html.maze-field #mazeUIStage[data-layout^=touch] .field-spec-control-copy { white-space: normal; }
+html.maze-field #mazeUIStage[data-layout=touch] .field-spec-main { grid-template-columns: minmax(0,1fr); gap: 8px; }
+html.maze-field #mazeUIStage[data-layout=touch] .field-spectator-dock .coop-spectator-options { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
+html.maze-field #mazeUIStage[data-layout^=touch] #touchControls.phone-spectating :is(#joystick,.touch-actions,#touchInventory) { display: none !important; }
+html.maze-field #mazeUIStage[data-layout^=touch] #touchControls.phone-spectating #lookPad { inset: 0; width: 100%; height: 100%; }
+html.maze-field:not(.maze-hud-hidden) body.maze-spectating #mazeUIStage[data-layout^=touch]:not(:has(:is(#pauseScreen,#settingsScreen,#disclaimersScreen,#inventoryScreen,#tabletFocus):not(.hidden))) #touchControls.phone-spectating:not(.hidden) { display: block !important; }
+
+html.maze-field #mazeUIStage[data-layout^=touch] .maze-phone-panel {
+  max-width: calc(100% - var(--phone-left) - var(--phone-right));
+  max-height: calc(100 * var(--maze-ui-vh) - var(--phone-top) - var(--phone-bottom)); overflow-y: auto; overscroll-behavior: contain;
+}
+html.maze-field #mazeUIStage[data-layout^=touch] .maze-phone-panel button { min-height: 44px; }
+html.maze-field #mazeUIStage[data-layout^=touch] #rubyShopScreen :is(.ruby-shop-buy,.ruby-shop-close,.ruby-shop-tab) { min-height: 44px; }
+html.maze-field #mazeUIStage[data-layout^=touch] :is(.coop-player-list,.maze-connection-help) { max-width: calc(100% - 24px); max-height: calc(100 * var(--maze-ui-vh) - 32px); overflow: auto; }
+html.maze-field #mazeUIStage[data-layout^=touch] .coop-player-table { min-width: 0; width: 100%; }
+
+@container maze-ui (max-height:520px) {
+  html.maze-field #mazeUIStage[data-layout^=touch] #menu { padding-block: 16px; }
+  html.maze-field #mazeUIStage[data-layout^=touch] #menu .menu-content { margin-block: 18px; padding-block: 0; width: 350px; }
+  html.maze-field #mazeUIStage[data-layout^=touch] #menu h1 { font-size: 72px; }
+  html.maze-field #mazeUIStage[data-layout^=touch] #menu .field-title { margin-bottom: 20px; }
+  html.maze-field #mazeUIStage[data-layout^=touch] #pauseScreen { place-items: start; }
+  html.maze-field #mazeUIStage[data-layout^=touch] #pauseScreen h2 { font-size: 46px; margin-bottom: 16px; }
+  html.maze-field #mazeUIStage[data-layout^=touch] #inventoryScreen .inventory-footer { display: none; }
+}
+</style><script>(function (global) {
+  'use strict';
+
+  const installations = new WeakMap();
+
+  function install(options = {}) {
+    const root = options.root;
+    if (!root || typeof root.querySelector !== 'function') throw new TypeError('Phone controls require a root element.');
+    installations.get(root)?.destroy();
+
+    const doc = root.ownerDocument;
+    const win = doc.defaultView || global;
+    const controls = new Map();
+    for (const [id, kind] of [
+      ['joystick', 'move'], ['lookPad', 'look'], ['touchInteract', 'interact'],
+      ['touchUse', 'use'], ['touchInventory', 'inventory'],
+      ['touchJump', 'jump'], ['touchCrouch', 'crouch']
+    ]) {
+      const node = root.querySelector('#' + id);
+      if (node) controls.set(node, kind);
+    }
+    const pointers = new Map();
+    const removers = [];
+    let destroyed = false;
+    let resetting = false;
+    let sprinting = false;
+
+    const call = (name, ...args) => options[name]?.(...args);
+    const touchPointer = event => event.pointerType === 'touch' || event.pointerType === 'pen';
+    const visible = node => !!node?.isConnected && !doc.hidden &&
+      !node.closest('[hidden],.hidden,[inert]') &&
+      win.getComputedStyle(node).display !== 'none' &&
+      win.getComputedStyle(node).visibility !== 'hidden';
+    const available = (kind, node = root) => !destroyed && visible(root) && visible(node) &&
+      (kind === 'look' ? options.canLook?.() === true : options.canMove?.() === true);
+    const scale = () => {
+      const value = Number(global.MazeViewport?.scale);
+      return Number.isFinite(value) && value > 0 ? value : 1;
+    };
+    const listen = (target, name, fn, config) => {
+      target.addEventListener(name, fn, config);
+      removers.push(() => target.removeEventListener(name, fn, config));
+    };
+    const consume = event => {
+      if (event.cancelable) event.preventDefault();
+      event.stopPropagation();
+    };
+    const setPressed = (node, pressed) => {
+      node.classList.toggle('is-phone-pressed', pressed);
+    };
+    const restoreStick = node => {
+      if (node?.firstElementChild) node.firstElementChild.style.transform = '';
+      root.classList.remove('is-phone-sprinting');
+      sprinting = false;
+      call('onMove', 0, 0, false);
+    };
+
+    function updateStick(record, event) {
+      const bounds = record.node.getBoundingClientRect();
+      const radius = Math.max(1, Math.min(bounds.width, bounds.height) * .36);
+      const rawX = (event.clientX - bounds.left - bounds.width / 2) / radius;
+      const rawY = (event.clientY - bounds.top - bounds.height / 2) / radius;
+      const distance = Math.hypot(rawX, rawY);
+      const amount = Math.min(1, distance);
+      const deadzone = .12;
+      const magnitude = Math.max(0, (amount - deadzone) / (1 - deadzone));
+      const x = distance ? rawX / distance * magnitude : 0;
+      const y = distance ? rawY / distance * magnitude : 0;
+      // Full forward travel sprints; easing the stick back does not chatter.
+      // Sideways and backwards movement never starts or retains sprint.
+      sprinting = y < -.15 && (sprinting ? amount >= .72 : amount >= .9);
+      root.classList.toggle('is-phone-sprinting', sprinting);
+      if (record.node.firstElementChild) {
+        const travel = Math.min(bounds.width, bounds.height) * .29 / scale();
+        record.node.firstElementChild.style.transform = `translate(${x * travel}px,${y * travel}px)`;
+      }
+      call('onMove', x, y, sprinting);
+    }
+
+    function finish(record, activate) {
+      if (pointers.get(record.id) !== record) return;
+      pointers.delete(record.id);
+      if (record.timer !== undefined) win.clearTimeout(record.timer);
+      setPressed(record.node, false);
+      record.node.classList.remove('is-phone-charging');
+      try {
+        if (record.node.hasPointerCapture?.(record.id)) record.node.releasePointerCapture(record.id);
+      } catch (_) {}
+      if (record.kind === 'move') restoreStick(record.node);
+      if (record.kind === 'interact') call('onInteract', false);
+      if (record.charging) call('onCharge', false);
+      if (!activate || !available(record.kind, record.node)) return;
+      if (record.kind === 'interact') call('onInteractTap');
+      else if (record.kind === 'use' && !record.charging) call('onUse');
+      else if (record.kind === 'inventory') call('onInventory');
+      else if (record.kind === 'jump') call('onJump');
+      else if (record.kind === 'crouch') call('onCrouch');
+    }
+
+    function onDown(event) {
+      if (!touchPointer(event) || event.button > 0 || pointers.has(event.pointerId)) return;
+      const node = event.target.closest?.('#joystick,#lookPad,#touchInteract,#touchUse,#touchInventory,#touchJump,#touchCrouch');
+      const kind = controls.get(node);
+      if (!kind || !available(kind, node)) return;
+      // Each control owns one finger, while other controls remain independent.
+      if ([...pointers.values()].some(record => record.node === node)) return;
+      consume(event);
+      const record = { id: event.pointerId, kind, node, x: event.clientX, y: event.clientY, charging: false };
+      pointers.set(record.id, record);
+      setPressed(node, true);
+      try { node.setPointerCapture(event.pointerId); } catch (_) {}
+      if (kind === 'move') updateStick(record, event);
+      else if (kind === 'interact') call('onInteract', true);
+      else if (kind === 'use') {
+        record.timer = win.setTimeout(() => {
+          record.timer = undefined;
+          if (pointers.get(record.id) !== record) return;
+          if (!available(kind, node)) { finish(record, false); return; }
+          if (options.canCharge?.() !== true) return;
+          record.charging = true;
+          node.classList.add('is-phone-charging');
+          call('onCharge', true);
+        }, 250);
+      }
+    }
+
+    function onMove(event) {
+      const record = pointers.get(event.pointerId);
+      if (!record) return;
+      consume(event);
+      if (!available(record.kind, record.node)) { finish(record, false); return; }
+      if (record.kind === 'move') updateStick(record, event);
+      else if (record.kind === 'look') {
+        const factor = scale();
+        const dx = (event.clientX - record.x) / factor;
+        const dy = (event.clientY - record.y) / factor;
+        record.x = event.clientX; record.y = event.clientY;
+        if (Number.isFinite(dx) && Number.isFinite(dy)) call('onLook', dx, dy);
+      } else {
+        const bounds = record.node.getBoundingClientRect();
+        if (event.clientX < bounds.left - 8 || event.clientX > bounds.right + 8 ||
+            event.clientY < bounds.top - 8 || event.clientY > bounds.bottom + 8) finish(record, false);
+      }
+    }
+
+    function onUp(event) {
+      const record = pointers.get(event.pointerId);
+      if (!record) return;
+      consume(event);
+      const bounds = record.node.getBoundingClientRect();
+      const inside = record.kind === 'move' || record.kind === 'look' ||
+        (event.clientX >= bounds.left - 8 && event.clientX <= bounds.right + 8 &&
+         event.clientY >= bounds.top - 8 && event.clientY <= bounds.bottom + 8);
+      finish(record, inside);
+    }
+
+    function onCancel(event) {
+      const record = pointers.get(event.pointerId);
+      if (record) finish(record, false);
+    }
+
+    function reset() {
+      if (resetting) return;
+      resetting = true;
+      try {
+        for (const record of [...pointers.values()]) finish(record, false);
+        const stick = [...controls].find(([, kind]) => kind === 'move')?.[0];
+        restoreStick(stick);
+        call('onInteract', false);
+        call('onCharge', false);
+      } finally { resetting = false; }
+    }
+
+    function onVisibility() { if (doc.hidden) reset(); }
+    function onRootChange() {
+      // Spectators can look while movement is disabled. Retire only fingers
+      // whose own action became unavailable when the HUD changed.
+      for (const record of [...pointers.values()]) {
+        if (!available(record.kind, record.node)) finish(record, false);
+      }
+    }
+    // A click synthesized after touch release must never repeat a gameplay action.
+    function onClick(event) {
+      const node = event.target.closest?.('#joystick,#lookPad,#touchInteract,#touchUse,#touchInventory,#touchJump,#touchCrouch');
+      if (controls.has(node)) consume(event);
+    }
+
+    listen(root, 'pointerdown', onDown, { passive: false });
+    listen(root, 'click', onClick, true);
+    listen(root, 'contextmenu', event => consume(event));
+    listen(win, 'pointermove', onMove, { capture: true, passive: false });
+    listen(win, 'pointerup', onUp, { capture: true, passive: false });
+    listen(win, 'pointercancel', onCancel, true);
+    listen(root, 'lostpointercapture', onCancel, true);
+    listen(win, 'blur', reset);
+    listen(win, 'resize', reset);
+    listen(win, 'orientationchange', reset);
+    listen(win, 'mazeviewportchange', reset);
+    listen(doc, 'visibilitychange', onVisibility);
+    const observer = typeof win.MutationObserver === 'function' ? new win.MutationObserver(onRootChange) : null;
+    observer?.observe(root, { attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+
+    const api = {
+      reset,
+      destroy() {
+        if (destroyed) return;
+        reset();
+        destroyed = true;
+        observer?.disconnect();
+        for (const remove of removers) remove();
+        if (installations.get(root) === api) installations.delete(root);
+      }
+    };
+    installations.set(root, api);
+    return api;
+  }
+
+  global.MazePhoneControls = Object.freeze({ install });
+})(window);
+
+(function(root){
+'use strict';
+root.MazePhoneMap={install(canvas,{ready,pan,zoom}){
+ const pointers=new Map();
+ const geometry=()=>{const p=[...pointers.values()];return p.length===1?{x:p[0].x,y:p[0].y,d:0}:{x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2,d:Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)};};
+ const reset=()=>{const ids=[...pointers.keys()];pointers.clear();for(const id of ids)if(canvas.hasPointerCapture(id))try{canvas.releasePointerCapture(id);}catch(_){}};
+ canvas.addEventListener('pointerdown',e=>{if(!ready()||e.pointerType==='mouse'&&e.button!==0||pointers.size>=2)return;e.preventDefault();pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});try{canvas.setPointerCapture(e.pointerId);}catch(_){}});
+ canvas.addEventListener('pointermove',e=>{if(!pointers.has(e.pointerId))return;if(!ready()){reset();return;}e.preventDefault();const before=geometry();pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});const after=geometry();pan(after.x-before.x,after.y-before.y);if(before.d>4&&after.d>4)zoom(after.d/before.d,{clientX:after.x,clientY:after.y});});
+ const release=e=>{pointers.delete(e.pointerId);if(canvas.hasPointerCapture(e.pointerId))try{canvas.releasePointerCapture(e.pointerId);}catch(_){}};
+ for(const type of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(type,release);
+ root.addEventListener('blur',reset);root.addEventListener('resize',reset);document.addEventListener('visibilitychange',()=>{if(document.hidden)reset();});
+ return{reset};
+}};
+})(window);
+</script></head><body><section id="maze-boot" role="status" aria-live="polite" aria-label="Loading Maze Game 3D"><div id="maze-boot-panel"><p id="maze-boot-brand">MAZE GAME / 3D <b>INITIALIZING</b></p><h1 id="maze-boot-title">Receiving game data</h1><p id="maze-boot-meta">Loading game data</p><div id="maze-boot-track" role="progressbar" aria-label="Game data received" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="maze-boot-fill"></div></div><div id="maze-boot-bottom"><span id="maze-boot-eta">Estimating remaining time…</span><span id="maze-boot-percent">0%</span></div><aside class="field-loading-tip" role="note" aria-label="Gameplay tip" aria-live="off"><span class="field-loading-tip-label">FIELD NOTE</span><p id="mazeBootTipText" class="field-loading-tip-text"></p></aside><button id="maze-boot-retry" type="button" hidden>Reload game</button><p id="maze-boot-note"></p></div></section><script>(function(w,d){
 'use strict';
 const total=21422386,start=performance.now(),parts=Object.create(null),byId=id=>d.getElementById(id),root=byId('maze-boot');
 let bytes=0,done=false,failed=false,received=false,initialized=false,last=0,watch=null,timer=null;
@@ -3584,7 +4068,7 @@ applied afterward. No procedural sinusoidal walk or view bob is used.
 <section id="settingsScreen" class="screen panel-screen hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="panel settings"><header class="menu-panel-heading"><div class="menu-panel-heading-copy"><p class="eyebrow">OPTIONS</p><h2 id="settingsTitle">SETTINGS</h2></div><button id="closeSettings" class="secondary">Close settings</button></header><div class="menu-panel-content"><div class="setting"><label for="volume">Sound volume <output id="volumeOut">70%</output></label><input id="volume" type="range" min="0" max="100" value="70"></div><div class="setting"><label for="sensitivity">Mouse sensitivity <output id="sensitivityOut">1.00×</output></label><input id="sensitivity" type="range" min="10" max="100" value="50"></div><div class="setting"><label for="quality">Graphics</label><select id="quality"><option value="high" selected>High · shadows & full resolution</option><option value="balanced">Balanced · adaptive resolution</option><option value="low">Performance · reduced resolution</option></select></div><div class="setting mouse-options"><label><input id="mouseProtection" type="checkbox" checked> Mouse snap protection</label><p class="setting-note">Rejects unusually large individual mouse events. Turn off if it interrupts intentional fast flicks.</p><label><input id="rawMouse" type="checkbox"> Try raw mouse input</label><p class="setting-note">Applies next time you capture the mouse. Falls back to standard input if unsupported.</p></div><div id="voiceChatSettings" class="setting"></div><div class="controls-list"><div><kbd>X (hold)</kbd><span>Push-to-talk · when Open mic is off</span></div><div><kbd>M</kbd><span>Players · voice mute &amp; volume</span></div><div><kbd>W A S D</kbd><span>Move</span></div><div><kbd>Mouse</kbd><span>Look · click to capture</span></div><div><kbd>Shift</kbd><span>Run</span></div><div><kbd>R</kbd><span>Open / close door</span></div><div><kbd>Q / E</kbd><span>Hold to lean left / right</span></div><div><kbd>C</kbd><span>Toggle crouch · rebind in Controls</span></div><div><kbd>Space</kbd><span>Jump</span></div><div><kbd>F</kbd><span>Flashlight / holster</span></div><div><kbd>Tab</kbd><span>Focus tablet while powered</span></div><div><kbd>Esc</kbd><span>Pause</span></div></div><p id="gameplaySettingsNote" class="setting-note">V opens or stows your tablet; its 15-second charge drains only while open. Tab focuses the map. Use inventory batteries on your tablet or flashlight. The entry door unlocks after 15 seconds and stays closed until you press R. Keep food, water and sleep supplied; an empty meter drains health. Beds take 40 seconds; R or Esc wakes you early without restoring rest. Search kitchens and side passages for food and water. Pocket shortcuts follow the items in slots 1–8. Use R to open or close doors; the starting room’s latch works from either side. The monitor beside AUX POWER shows the live view outside. Press C to crouch. Ctrl cannot be bound. Hold Q or E to lean; Space jumps. F switches your handheld flashlight.</p><button id="settingsDisclaimers" class="secondary">Disclaimers &amp; troubleshooting</button></div></div></section>
 <section id="deathScreen" class="screen death hidden"><div id="deathBackdrop"></div><video id="deathVideo" preload="auto" playsinline></video><div id="deathResult" class="death-result hidden"><p class="eyebrow">END OF ROUTE</p><h2>YOU DIED</h2><p id="deathScore">0 mazes cleared</p><p id="deathBest"></p><button id="retryButton" class="primary">Try again</button><button id="deathMenu" class="secondary">Main menu</button></div><button id="skipDeath" class="skip-death hidden">Skip</button></section>
 <div id="transition" class="transition hidden"><p id="transitionText">Somewhere else…</p><p id="transitionReward" class="hidden" style="margin:-8px 0 0;color:#f0b9c2;font-size:12px;letter-spacing:.12em"></p></div>
-<div id="touchControls" class="hidden"><div id="joystick"><span></span></div><div id="lookPad"></div><div class="touch-actions"><button id="touchInteract" aria-label="Open or close door">R</button><button id="touchLight" aria-label="Toggle flashlight">F</button><button id="touchRun">RUN</button><button id="touchLeanLeft" aria-label="Lean left">LEAN L</button><button id="touchCrouch" aria-label="Toggle crouch" aria-pressed="false">CROUCH</button><button id="touchLeanRight" aria-label="Lean right">LEAN R</button><button id="touchJump">JUMP</button></div></div>
+<div id="touchControls" class="hidden"><button id="touchInventory" aria-label="Inventory"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6V4c0-2 8-2 8 0v2M6 6h12l2 5v10H4V11ZM8 13h8v5H8ZM7 9v2m10-2v2"/></svg><span>Pack</span></button><div id="joystick"><span></span></div><div id="lookPad"></div><div class="touch-actions"><button id="touchInteract" aria-label="Interact"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 12V5a2 2 0 0 1 4 0v6-7a2 2 0 0 1 4 0v8-5a2 2 0 0 1 4 0v8c0 4-2 6-6 6h-1c-2 0-4-1-5-3l-4-5a2 2 0 0 1 3-2l1 1"/></svg><span class="phone-action-label">Interact</span></button><button id="touchUse" hidden aria-label="Use held item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7Z"/></svg><span class="phone-action-label">Use</span><small class="phone-action-hint"></small></button><button id="touchLight" aria-label="Toggle flashlight">F</button><button id="touchRun">RUN</button><button id="touchLeanLeft" aria-label="Lean left">LEAN L</button><button id="touchCrouch" aria-label="Toggle crouch" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM14 8l-6 5 8 3-5 5m-3-8-3 6m7-9 4 3h4"/></svg><span>Crouch</span></button><button id="touchLeanRight" aria-label="Lean right">LEAN R</button><button id="touchJump" aria-label="Jump"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V4m-6 6 6-6 6 6M5 21h14"/></svg><span>Jump</span></button></div></div>
 <style>
 #disclaimersScreen{z-index:260;background:rgba(5,10,7,.92)}#disclaimersScreen .panel{width:min(680px,92vw);max-height:88vh;overflow:auto;text-align:left;padding:28px}#disclaimersScreen h2{font-size:32px;margin:4px 0 18px}#disclaimersScreen .help-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}#disclaimersScreen #closeDisclaimers{width:auto;min-width:78px;flex:none;padding:10px 16px}#disclaimersScreen h3{font-size:15px;color:var(--acid);margin:20px 0 6px}#disclaimersScreen p{font-size:14px;line-height:1.55;color:#c8d1c3;margin:6px 0}#disclaimersScreen .help-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}#disclaimersScreen button{margin:0}#helpActionStatus{min-height:22px}#diagnosticsText{width:100%;min-height:150px;font:12px monospace;background:#0a110d;color:#d4f596}.mouse-options input[type=checkbox]{width:auto;accent-color:#d4f596}.mouse-options label{justify-content:flex-start;gap:10px}#settingsDisclaimers{margin-bottom:10px}.menu-actions{flex-wrap:wrap}
 #settingsScreen .panel,#disclaimersScreen .panel{display:flex;flex-direction:column;min-height:0;max-height:calc(100 * var(--maze-ui-vh) - 48px);overflow:hidden;padding:0}
@@ -26268,6 +26752,7 @@ global.MazeInventoryPreview=MazeInventoryPreview;
     }
     _hideContext() { this.context.classList.add('hidden'); this.contextToken = null; }
     _pointerDown(e, address, button) {
+      if(e.pointerType==='touch'||e.pointerType==='pen')return; // Tap-select/tap-place; swiping scrolls the bag.
       if (e.button !== 0 || e.isPrimary === false || !this.isOpen || this.previewExpanded || this.pointerCarry) return;
       this.refresh();
       const token = this._token(address);
@@ -26503,7 +26988,7 @@ global.MazeInventoryPreview=MazeInventoryPreview;
         bat: 'Equip, then swing with the primary action.',
         axe: '15 damage · Causes bleeding · Breaks house doors.',
         tablet: Math.ceil(item?.charge || 0) + 's · Equip to read the map.',
-        battery: 'Drag onto a device to recharge it.',
+        battery: window.MazeInput?.lastDevice()==='touch'?'Tap the battery, then a device to recharge it.':'Drag onto a device to recharge it.',
         phone: 'Equip to use.'
       };
       return isBerry(item.type)?'+5 hunger · +4 thirst · Unpredictable effects for 30s.':detail[item.type]||'Equip or move to another slot.';
@@ -28655,13 +29140,22 @@ root.MazeSurvivalUI=MazeSurvivalUI;
   const untouched = new Set(['world', 'vignette', 'grain', 'maze-boot']);
   const excludedTags = new Set(['SCRIPT', 'STYLE', 'LINK', 'META', 'CANVAS', 'AUDIO']);
   const layout = { scale: 1, width: 1280, height: 720, viewportWidth: 1280, viewportHeight: 720, dpr: 1 };
+  let phonePortrait=null,phoneOrientationWidth=0;
   function update() {
-    const w = Math.max(1, global.innerWidth || doc.documentElement.clientWidth), h = Math.max(1, global.innerHeight || doc.documentElement.clientHeight);
+    const phone = global.MazeInput ? global.MazeInput.lastDevice()==='touch' : coarse.matches&&!global.matchMedia('(any-pointer: fine)').matches;
+    const view=phone?global.visualViewport:null;
+    const w=Math.max(1,view?.width||global.innerWidth||doc.documentElement.clientWidth),h=Math.max(1,view?.height||global.innerHeight||doc.documentElement.clientHeight);
     // Desktop always keeps the same layout at the same aspect ratio. Touch
     // devices keep the compact layout and usable touch targets in portrait.
-    const touchDevice = global.MazeInput ? global.MazeInput.lastDevice() === 'touch' : coarse.matches && !global.matchMedia('(any-pointer: fine)').matches, portraitTouch = touchDevice && w < h;
+    const editing=/^(INPUT|TEXTAREA|SELECT)$/.test(doc.activeElement?.tagName)||doc.activeElement?.isContentEditable;
+    const touchDevice=phone;
+    if(phonePortrait===null||!editing||Math.abs(w-phoneOrientationWidth)>80){phonePortrait=(global.innerWidth||w)<(global.innerHeight||h);phoneOrientationWidth=w;}
+    const portraitTouch=touchDevice&&phonePortrait;
     const designW = touchDevice ? (portraitTouch ? 390 : 800) : 1280, designH = touchDevice ? (portraitTouch ? 720 : 420) : 720;
-    const scale = Math.min(w / designW, h / designH), width = w / scale, height = h / scale;
+    const scale = touchDevice&&(portraitTouch||editing)?w/designW:Math.min(w/designW,h/designH),width=w/scale,height=h/scale;
+    stage.style.left=(view?.offsetLeft||0)+'px';stage.style.top=(view?.offsetTop||0)+'px';
+    const safe=phone?getComputedStyle(doc.documentElement):null;
+    for(const edge of ['top','right','bottom','left'])stage.style.setProperty('--phone-safe-'+edge,((parseFloat(safe?.getPropertyValue('--phone-inset-'+edge))||0)/scale)+'px');
     const changed = Math.abs(layout.scale - scale) > .000001 || Math.abs(layout.width - width) > .001 || Math.abs(layout.height - height) > .001 || layout.dpr !== global.devicePixelRatio;
     Object.assign(layout, { scale, width, height, viewportWidth: w, viewportHeight: h, dpr: global.devicePixelRatio || 1 });
     stage.style.width = width + 'px'; stage.style.height = height + 'px';
@@ -28700,6 +29194,8 @@ root.MazeSurvivalUI=MazeSurvivalUI;
   // current. No animation-frame polling or observer feedback loops are needed.
   global.addEventListener('resize', update);
   global.visualViewport?.addEventListener('resize', update);
+  global.visualViewport?.addEventListener('scroll', update);
+  doc.addEventListener('focusin',update);doc.addEventListener('focusout',update);
   coarse.addEventListener?.('change', update);
   global.addEventListener('maze-input-device', update);
   let resolution;
@@ -34160,6 +34656,34 @@ function inputMenuRoot(){
 
 function inputWorldReady(){return ['planning','playing'].includes(state.mode)&&(!mp||coopLive())&&!mp?.ending;}
 function inputCanCapture(){return !state.spectatorMap&&!document.hidden&&!inventoryIsOpen()&&!survivalBlocked()&&!mp?.voiceListOpen&&!inputMenuRoot()&&inputWorldReady();}
+// Inside the existing game closure: use the game's own actions and authority checks.
+function phoneCanMove(){return touch&&!document.hidden&&active()&&!mp?.localPaused&&!mapViewOpen()&&!inventoryIsOpen()&&!survivalBlocked()&&!inputMenuRoot()&&!mp?.dead;}
+function phoneCanLook(){return phoneCanMove()||touch&&!document.hidden&&!!mp?.dead&&coopLive()&&!mp.localPaused&&!mp.ending&&!state.spectatorMap&&!phoneUI.isOpen&&!inputMenuRoot()&&(mp.spectatorView==='orbit'||!!spiritOwnOrb());}
+function phoneSync(){
+ if(!phoneControls)return;
+ const moving=phoneCanMove(),looking=phoneCanLook(),spectating=touch&&!!mp?.dead&&looking;
+ if((phoneMoveActive&&!moving)||(phoneLookActive&&!looking))phoneControls.reset();
+ phoneMoveActive=moving;phoneLookActive=looking;
+ const host=$('touchControls');host.classList.toggle('phone-spectating',spectating);
+ if(!touch||!moving)return;
+ const p=state.player,bottle=MI.bottle(p),torch=!!MazeFieldItems.activeTorch(p);
+ const label=MazeMagicLights.effectiveHeld(p)?'Place':p.phoneEquipped?'Phone':p.tabletEquipped?(tabletCharge()>0?'Map':'Recharge'):p.clockEquipped?'Place':p.foodEquipped?(MI.food(p)?.type==='antivenom'?'Treat':'Eat'):p.bottleEquipped?(bottle?.type==='empty-bottle'?'Fill':'Drink'):p.shotgunEquipped?'Fire':p.batEquipped?'Swing':flashlightHeld(p)?'Light':'';
+ const hint=torch?'Hold to charge':'';
+ const signature=label+'|'+hint;if(signature!==phoneUseSignature){phoneUseSignature=signature;const button=$('touchUse');button.hidden=!label;button.querySelector('.phone-action-label').textContent=label;button.querySelector('.phone-action-hint').textContent=hint;button.setAttribute('aria-label',label+(hint?', '+hint:''));}
+ const trapped=!!p.bearTrapId,interactLabel=trapped?'Hold':'Interact',interactButton=$('touchInteract');
+ if(interactButton.querySelector('.phone-action-label').textContent!==interactLabel){interactButton.querySelector('.phone-action-label').textContent=interactLabel;interactButton.setAttribute('aria-label',trapped?'Hold to escape trap':'Interact');}
+}
+function phoneInstall(){
+ phoneControls=MazePhoneControls.install({root:$('touchControls'),canMove:phoneCanMove,canLook:phoneCanLook,
+  onMove:(x,y,run)=>{joystick.x=x;joystick.y=y;touchRun=run;touchLean=0;},
+  onLook:(x,y)=>{if(mp?.dead&&spiritOwnOrb()){const s=mouseLookScale();mp.spectatorYaw=(mp.spectatorYaw||0)-x*1.6*s;mp.spectatorPitch=C.clamp((mp.spectatorPitch||0)-y*1.6*s,-Math.PI/2,Math.PI/2);}else look(x*1.6,y*1.6);},
+  onInteract:held=>touchInteractHeld=held,onInteractTap:()=>interact(),onUse:()=>{if(state.player.tabletEquipped&&tabletCharge()>0)setTabletFocus(true);else inputPrimary('touch');},
+  onCharge:held=>touchChargeHeld=held,canCharge:()=>!!MazeFieldItems.activeTorch(state.player),
+  onInventory:()=>{resetMovementInput();inventoryToggle();},onJump:()=>requestJump(),onCrouch:()=>toggleCrouch()
+ });
+ inputResetTouch=()=>phoneControls.reset();
+}
+
 function inputSyncDevice(){
  const next=MazeInput.lastDevice()==='touch';
  if(touch!==next){touch=next;inputResetTouch();}
@@ -34170,11 +34694,12 @@ function inputSyncDevice(){
 function inputUpdateCaptureHint(){
  if(!inputResumeButton)return;
  state.locked=document.pointerLockElement===$('world');const ready=inputCanCapture()&&!state.tabletFocus;
- show('touchControls',touch&&ready&&!mp?.dead);
+ show('touchControls',touch&&(ready&&!mp?.dead||!!mp?.dead&&phoneCanLook()));
  inputResumeButton.hidden=state.locked||!ready||touch||MazeInput.lastDevice()==='gamepad';
  const caption=inputLockError?'Mouse capture unavailable — click to retry':'Click to resume mouse look';
  if(inputResumeButton.textContent!==caption)inputResumeButton.textContent=caption;
  inputResumeButton.title=inputLockError?'Browser mouse-capture error: '+inputLockError+'. Open the game directly and allow mouse capture.':'';
+ phoneSync();
 }
 function requestLock(){
  const canvas=$('world');state.locked=document.pointerLockElement===canvas;
@@ -34399,7 +34924,7 @@ function inputFrame(now){
  if(!document.hidden&&(typeof document.hasFocus!=='function'||document.hasFocus())&&active()&&!mapViewOpen()&&!inventoryIsOpen()&&!survivalBlocked()&&!MazeInput.isCapturing()&&!inputWheelOpen()){
   const x=MazeInput.value('lookRight')-MazeInput.value('lookLeft'),y=(MazeInput.value('lookDown')-MazeInput.value('lookUp'))*MazeInput.invertY(),s=mouseLookScale();
   if(x||y)look(x*MazeInput.lookRate()*dt/s,y*MazeInput.lookRate()*dt/s);
-  if(!mp?.dead&&(MazeInput.down('secondary')||MazeInput.down('tabletFocus'))&&(state.locked||touch||MazeInput.lastDevice()==='gamepad')&&MazeFieldItems.activeTorch(state.player)&&bottleUseReady(state.player))fieldShakeRequest();
+  if(!mp?.dead&&(MazeInput.down('secondary')||MazeInput.down('tabletFocus')||touchChargeHeld)&&(state.locked||touch||MazeInput.lastDevice()==='gamepad')&&MazeFieldItems.activeTorch(state.player)&&bottleUseReady(state.player))fieldShakeRequest();
   if(mp?.dead){const zoom=MazeInput.value('primary')-MazeInput.value('tabletFocus');if(zoom)coopSpectatorZoom(Math.exp(zoom*dt*2));}
  }
  inputUpdateCaptureHint();queueMicrotask(inputRefreshHints);
@@ -34408,7 +34933,7 @@ function inputRefreshStaticLabels(){
  const label=action=>MazeInput.label(action);
  $('pauseButton').title='Pause ('+label('pause')+')';$('tabletButton').title='Toggle tablet ('+label('tablet')+')';
  for(const element of [$('tabletButton')?.querySelector('kbd'),$('closeTablet')?.querySelector('kbd')])if(element)element.innerHTML=inputActionHTML(state.spectatorMap&&MazeInput.lastDevice()==='gamepad'?'tablet':'tabletFocus');
- const footer=$('tabletFocus')?.querySelector('.tablet-focus-footer p');if(footer){const pad=MazeInput.lastDevice()==='gamepad';footer.innerHTML=inputHintGroup('forward','PAN')+(pad?(state.spectatorMap?'<span class="maze-control-group">'+inputActionHTML('tabletFocus','pad')+inputActionHTML('primary','pad')+'<span>ZOOM</span></span>':''):'<span class="maze-control-group">'+inputInlineButtonHTML('Mouse wheel')+'<span>ZOOM</span></span>')+inputHintGroup(state.spectatorMap&&pad?'tablet':'tabletFocus','RETURN');}
+ const footer=$('tabletFocus')?.querySelector('.tablet-focus-footer p');if(footer){const pad=MazeInput.lastDevice()==='gamepad';footer.innerHTML=MazeInput.lastDevice()==='touch'?'Drag to pan · Pinch to zoom':inputHintGroup('forward','PAN')+(pad?(state.spectatorMap?'<span class="maze-control-group">'+inputActionHTML('tabletFocus','pad')+inputActionHTML('primary','pad')+'<span>ZOOM</span></span>':''):'<span class="maze-control-group">'+inputInlineButtonHTML('Mouse wheel')+'<span>ZOOM</span></span>')+inputHintGroup(state.spectatorMap&&pad?'tablet':'tabletFocus','RETURN');}
  inventoryUI?.refresh();inputRefreshHints();
 }
 function inputInit(){
@@ -34814,13 +35339,13 @@ function syncClosetDoors(){
 }
 
 
-function resetMovementInput(){window.MazeInput?.releaseGameplay();state.keys.clear();state.crouchToggle=false;state.jumpQueued=false;joystick.x=joystick.y=0;touchRun=false;touchLean=0;}
+function resetMovementInput(){window.MazeInput?.releaseGameplay();phoneControls?.reset();state.keys.clear();state.crouchToggle=false;state.jumpQueued=false;joystick.x=joystick.y=0;touchRun=false;touchLean=0;}
 function requestJump(){if(active()&&!state.player.bearTrapId&&!state.tabletFocus&&!inventoryIsOpen()&&!survivalBlocked())state.jumpQueued=true;}
 function toggleCrouch(){if(active()&&!state.tabletFocus&&!inventoryIsOpen()&&!survivalBlocked())state.crouchToggle=!state.crouchToggle;}
 function updatePlayer(dt){
  const p=state.player,boost=MazeBerryGameplay.speedMultiplier(p,state.time);MazeStamina.init(p);p.staminaRecovering=false;if(p.sleeping){p.speed=0;state.jumpQueued=false;return;}p.speed=0;p.hidden=false;
  if(!inventoryIsOpen()&&!state.rubyShopOpen&&!inputWheelOpen())p.crouched=!state.tabletFocus&&(state.crouchToggle||MazeInput.down('crouchHold'));
- p.interactHeld=!state.rubyShopOpen&&!state.tabletFocus&&!inventoryIsOpen()&&!survivalBlocked()&&!inputWheelOpen()&&MazeInput.down('interact');p.interactInputTime=state.time;
+ p.interactHeld=!state.rubyShopOpen&&!state.tabletFocus&&!inventoryIsOpen()&&!survivalBlocked()&&!inputWheelOpen()&&(MazeInput.down('interact')||touchInteractHeld);p.interactInputTime=state.time;
  if(p.bearTrapId){p.x=p.bearTrapX;p.y=p.bearTrapY;p.z=p.bearTrapZ;p.grounded=true;p.velocityY=0;p.speed=0;state.jumpQueued=false;MazeStamina.step(p,{grounded:true,canSprint:false},dt);return;}
  if(MazeCoopSimulation.stepElevatorPassenger(state.level,p,{forward:inputWheelOpen()?0:MazeInput.value('forward')-MazeInput.value('backward')-joystick.y,right:inputWheelOpen()?0:MazeInput.value('right')-MazeInput.value('left')+joystick.x,run:!inputWheelOpen()&&(MazeInput.down('sprint')||touchRun),crouched:p.crouched,lean:inputWheelOpen()?0:C.clamp(MazeInput.value('leanRight')-MazeInput.value('leanLeft')+touchLean,-1,1)},dt,{exit:state.exit,blocked:state.rubyShopOpen||phoneUI.isOpen||state.tabletFocus||inventoryIsOpen()||!!survivalLootId||inputWheelOpen()})){state.jumpQueued=false;return;}
  C.preparePlayerSupport(state.level,p);
@@ -35101,7 +35626,7 @@ function bindDisclaimers(){
  });
 }
 
-let settingsFrom='menu';const joystick={x:0,y:0};let touchRun=false,touchLean=0;
+let settingsFrom='menu';const joystick={x:0,y:0};let touchRun=false,touchLean=0,touchInteractHeld=false,touchChargeHeld=false,phoneControls=null,phoneMoveActive=false,phoneLookActive=false,phoneUseSignature='';
 function openSettings(){if(state.player.sleeping)return;survivalCloseLoot(false);inventoryClose(false);resetMovementInput();exitLock();if(mp?.ending)return;const soloDead=!mp&&['dead','survival-dead'].includes(state.mode);$('settingsScreen').style.zIndex=soloDead?'120':'';if(mp&&coopLive()){mp.localPaused=true;settingsFrom='mp';show('pauseScreen',false);show('settingsScreen');$('settingsScreen').querySelector('.menu-panel-content').scrollTop=0;$('closeSettings').focus({preventScroll:true});return;}settingsFrom=soloDead?state.mode:state.mode==='paused'?'paused':'menu';if(!soloDead)state.mode='settings';show('pauseScreen',false);show('settingsScreen');$('settingsScreen').querySelector('.menu-panel-content').scrollTop=0;$('closeSettings').focus({preventScroll:true});}
 function bindUI(){
  bindDisclaimers();
@@ -35126,33 +35651,12 @@ function bindUI(){
  document.addEventListener('keydown',event=>{if(event.defaultPrevented||MazeInput.isCapturing()||MazeInput.isTextTarget(event.target)||event.target?.closest?.('button,a'))return;if(event.code==='Enter'&&state.mode==='menu'){event.preventDefault();startRun();}});
  addEventListener('blur',()=>{mouseGuard.reset();resetMovementInput();if(active())pause();});document.addEventListener('visibilitychange',()=>{if(document.hidden&&active())pause();});
  $('world').addEventListener('contextmenu',e=>e.preventDefault());$('world').addEventListener('webglcontextlost',e=>{e.preventDefault();pause();fatal(new Error('The graphics context was interrupted. Reload to start a new run.'));});
- const touchPointer=e=>e.pointerType==='touch'||e.pointerType==='pen';
- const touchReady=()=>touch&&active()&&!mapViewOpen()&&!inventoryIsOpen()&&!survivalBlocked()&&!inputMenuRoot()&&!mp?.dead;
- $('touchInteract').onclick=()=>{if(touchReady())interact();};$('touchLight').onclick=()=>{if(touchReady())toggleFlashlight();};
- $('touchRun').onpointerdown=e=>{if(!touchPointer(e)||!touchReady())return;e.preventDefault();$('touchRun').setPointerCapture(e.pointerId);touchRun=true;};
- for(const type of ['pointerup','pointercancel','lostpointercapture'])$('touchRun').addEventListener(type,()=>touchRun=false);
- $('touchCrouch').onclick=()=>{if(touchReady())toggleCrouch();};$('touchJump').onpointerdown=e=>{if(!touchPointer(e)||!touchReady())return;e.preventDefault();requestJump();};
- for(const [id,direction]of [['touchLeanLeft',-1],['touchLeanRight',1]]){const button=$(id);button.onpointerdown=e=>{if(!touchPointer(e)||!touchReady())return;e.preventDefault();button.setPointerCapture(e.pointerId);touchLean=direction;};for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,()=>{if(touchLean===direction)touchLean=0;});}
- const stick=$('joystick');let sid=null;
- function clearStick(e){if(e&&e.pointerId!==sid)return;const old=sid;sid=null;joystick.x=joystick.y=0;stick.firstElementChild.style.transform='';if(old!==null&&stick.hasPointerCapture(old))try{stick.releasePointerCapture(old);}catch(_){}}
- stick.addEventListener('pointerdown',e=>{if(!touchPointer(e)||!touchReady()||sid!==null)return;e.preventDefault();sid=e.pointerId;stick.setPointerCapture(sid);updateStick(e);});
- stick.addEventListener('pointermove',e=>{if(touchPointer(e)&&e.pointerId===sid&&touchReady())updateStick(e);});
- for(const type of ['pointerup','pointercancel','lostpointercapture'])stick.addEventListener(type,clearStick);
- function updateStick(e){const r=stick.getBoundingClientRect(),x=(e.clientX-r.left-r.width/2)/(40*(window.MazeViewport?.scale||1)),y=(e.clientY-r.top-r.height/2)/(40*(window.MazeViewport?.scale||1)),n=Math.max(1,Math.hypot(x,y));joystick.x=x/n;joystick.y=y/n;stick.firstElementChild.style.transform=`translate(${joystick.x*32}px,${joystick.y*32}px)`;}
- const pad=$('lookPad');let lid=null,lx=0,ly=0;
- function clearLook(e){if(e&&e.pointerId!==lid)return;const old=lid;lid=null;if(old!==null&&pad.hasPointerCapture(old))try{pad.releasePointerCapture(old);}catch(_){}}
- pad.addEventListener('pointerdown',e=>{if(!touchPointer(e)||!touchReady()||lid!==null)return;e.preventDefault();lid=e.pointerId;lx=e.clientX;ly=e.clientY;pad.setPointerCapture(lid);});
- pad.addEventListener('pointermove',e=>{if(!touchPointer(e)||e.pointerId!==lid||!touchReady())return;look((e.clientX-lx)*1.6,(e.clientY-ly)*1.6);lx=e.clientX;ly=e.clientY;});
- for(const type of ['pointerup','pointercancel','lostpointercapture'])pad.addEventListener(type,clearLook);
- inputResetTouch=()=>{clearStick();clearLook();touchRun=false;touchLean=0;};
- addEventListener('blur',inputResetTouch);document.addEventListener('visibilitychange',()=>{if(document.hidden)inputResetTouch();});
+ phoneInstall();
  $('tabletButton').onclick=()=>tabletRequest({op:'toggle'});$('closeTablet').onclick=tabletStowFocused;$('mapZoomIn').onclick=()=>zoomTablet(1.35);$('mapZoomOut').onclick=()=>zoomTablet(1/1.35);$('mapFit').onclick=resetMapView;
  document.addEventListener('wheel',coopSpectatorWheel,{passive:false});
  document.addEventListener('wheel',event=>{if(event.ctrlKey||event.metaKey||!mapViewOpen())return;event.preventDefault();const scroll=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?innerHeight:1);zoomTablet(Math.exp(-scroll*.0015),event);},{passive:false});
- const mapCanvas=$('tabletMap');let mapDrag=null;
- mapCanvas.addEventListener('pointerdown',event=>{if(!mapViewOpen()||state.locked)return;mapDrag={id:event.pointerId,x:event.clientX,y:event.clientY};mapCanvas.setPointerCapture(event.pointerId);});
- mapCanvas.addEventListener('pointermove',event=>{if(!mapDrag||mapDrag.id!==event.pointerId||!mapViewOpen())return;const v=state.tabletView;v.panX+=event.clientX-mapDrag.x;v.panY+=event.clientY-mapDrag.y;mapDrag.x=event.clientX;mapDrag.y=event.clientY;clampMapPan();v.dirty=true;});
- for(const event of ['pointerup','pointercancel'])mapCanvas.addEventListener(event,()=>mapDrag=null);
+ const mapCanvas=$('tabletMap');
+ MazePhoneMap.install(mapCanvas,{ready:()=>mapViewOpen()&&!state.locked,pan:(x,y)=>{state.tabletView.panX+=x;state.tabletView.panY+=y;clampMapPan();state.tabletView.dirty=true;},zoom:zoomTablet});
  const context=document.modelContext;if(context?.registerTool){try{Promise.resolve(context.registerTool({name:'get_maze_status',title:'Read maze status',description:'Read the current maze, cleared count, phase, and tablet battery.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(input){if(!input||Object.keys(input).length)throw new Error('This tool takes no arguments.');return{phase:state.mode,maze:state.score+1,cleared:state.score,theme:state.env.theme.name,tabletSeconds:Math.ceil(tabletCharge()),hidden:state.player.hidden};}})).catch(()=>{});}catch(e){}}
  // Read-only performance / geometry diagnostics; player-free mode is a separate startup path.
  window.MazeDiagnostics={getStatus:()=>({build:'V7.44 · Field UI, Spectator and Spawn History',input:MazeInput.getStatus(),mouseCaptured:document.pointerLockElement===$('world'),mouse:{...mouseGuard.status(),protection:settings.mouseProtection,inputMode:inputMouseMode,rawUnavailable:inputRawUnavailable,captureError:inputLockError||null,capturePending:!!inputLockAttempt,touchMode:touch,pointerLockAPI:typeof $('world').requestPointerLock==='function'},performance:{...clientFrames.status(),loading:loadingJob?{percent:Math.floor(loadingJob.percent),stage:loadingJob.label}:null,graphicsPreparation:state.graphicsWarmup?{milliseconds:state.graphicsWarmup.milliseconds,programs:state.graphicsWarmup.programs,maxBlockingMilliseconds:state.graphicsWarmup.maxBlockingMilliseconds,parallelShaders:state.graphicsWarmup.parallelShaders}:null,enemyNavigation:state.level?.enemyNavigationStats?{...state.level.enemyNavigationStats}:null,simulationBacklogMs:Math.round((mp?.accumulator||0)*1000)},multiplayer:mp?{host:mp.net.isHost,room:mp.room?.name,epoch:mp.epoch,alive:coopAlive().length,players:coopTeam().map(p=>({id:p.id,name:p.name,alive:p.alive,connected:p.connected,pingMs:p.pingMs,input:mp.net.isHost?mp.commands.status(p.id,p.pingMs):null,x:p.x,y:p.y,z:p.z})),dead:mp.dead,spectated:mp.spectated,loading:mp.loading,loadingPlayers:coopTeam().filter(p=>p.loading).map(p=>p.id),network:mp.net.getStats(),voice:coopVoice?.getDiagnostics(),pendingInputs:mp.prediction.pending,corrections:mp.netCorrections,world:mp.world?.checksum()}:null,mode:state.mode,seed:state.seed,theme:state.theme,prefabs:state.level.prefabCount,tiles:state.level.tiles.length,closets:state.closets.length,worldOnly,playerLoaded:actor.ready,gokuLoaded:gokuActor.ready,renderRatio:state.renderRatio,quality:settings.quality,elevator:state.exit?.getStatus(),safeRoomTiles:state.level.safe.cells.length,closetDoors:state.closets.reduce((n,c)=>n+c.doors.length,0),maintenance:{cells:state.level.maintenance?.cells.length||0,doors:state.serviceDoors.length,routes:state.level.maintenance?.routes.length||0,inside:!!serviceCellAt(state.player)},wristBraceletTrianglesRemoved:actor.wristBraceletsRemoved||0,security:security?.getStatus(),mirror:mirror?.getStatus(),safeRoomViews:{passes:safeRoomViews.passes,skipped:safeRoomViews.skipped,lastCostMs:safeRoomViews.lastCost},spectatorMap:!!state.spectatorMap,flashlightEquipped:!!torch.group.visible,stealth:{awareness:state.enemy?.awareness||0,exposure:state.enemy?.exposure||0},animationTracks:actor.ready?{before:actor.animationTracksBefore,after:actor.animationTracksAfter}:null,audio:audio.getDiagnostics?.(),tabletFocus:state.tabletFocus,enemyState:state.enemy?.state,chasing:!!state.enemy?.chasing,pursuitActive:!!state.enemy?.pursuitActive,waterHeight:survivalWaterFloorAt(state.player),render:renderer.info.render,environment:state.env.stats,activeEnvironment:state.env.getRenderStats()}),getLevel:()=>state.level,getSchoolStatus:schoolStatus,getForestStatus:()=>({timeOfDay:state.level.forest?.timeOfDay||null,wardrobes:(state.wardrobes||[]).map(w=>({id:w.p.id,open:w.openAmount()})),houses:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').map(r=>({id:r.id,locked:!!r.door.doorLocked,broken:!!r.door.doorBroken})),traps:state.forestHazards?.traps.map(t=>({id:t.id,x:t.x,y:t.y,z:t.z,state:t.state,owner:t.owner})),clocks:state.alarmClocks?.encode(),player:{x:state.player.x,y:state.player.y,z:state.player.z,bearTrapId:state.player.bearTrapId,bleedingUntil:state.player.bleedingUntil,health:state.player.survival?.health},enemy:{x:state.enemy.x,z:state.enemy.z,state:state.enemy.state,alarmAngry:!!state.enemy.alarmAngry,searchUntil:state.enemy.searchPlan?.until},houseCount:(state.level.survivalRooms||[]).filter(r=>r.kind==='house').length}),getFootstepSurface:point=>state.footstepSurfaces?.describeAt(point||state.player)};
@@ -36096,7 +36600,7 @@ function coopControl(event){
 }
 function coopInput(){
  const p=state.player,inventoryOpen=inventoryIsOpen(),blocked=state.rubyShopOpen||phoneUI.isOpen||p.sleeping||mp.dead||mp.localPaused||mp.loading||mp.ended||inventoryOpen||inputWheelOpen();
- const input={epoch:mp.epoch,seq:++mp.seq,forward:blocked?0:MazeInput.value('forward')-MazeInput.value('backward')-joystick.y,right:blocked?0:MazeInput.value('right')-MazeInput.value('left')+joystick.x,run:!blocked&&(MazeInput.down('sprint')||touchRun),crouched:inventoryOpen||phoneUI.isOpen?!!p.crouched:!blocked&&(state.crouchToggle||MazeInput.down('crouchHold')),lean:inventoryOpen?p.lean:blocked?0:C.clamp(MazeInput.value('leanRight')-MazeInput.value('leanLeft')+touchLean,-1,1),jump:!blocked&&!p.bearTrapId&&state.jumpQueued,interactHeld:!blocked&&!state.tabletFocus&&MazeInput.down('interact'),yaw:p.yaw,pitch:p.pitch,flashlight:state.flashlight,flashlightHeld:flashlightHeld(p),focus:state.tabletFocus};state.jumpQueued=false;return input;
+ const input={epoch:mp.epoch,seq:++mp.seq,forward:blocked?0:MazeInput.value('forward')-MazeInput.value('backward')-joystick.y,right:blocked?0:MazeInput.value('right')-MazeInput.value('left')+joystick.x,run:!blocked&&(MazeInput.down('sprint')||touchRun),crouched:inventoryOpen||phoneUI.isOpen?!!p.crouched:!blocked&&(state.crouchToggle||MazeInput.down('crouchHold')),lean:inventoryOpen?p.lean:blocked?0:C.clamp(MazeInput.value('leanRight')-MazeInput.value('leanLeft')+touchLean,-1,1),jump:!blocked&&!p.bearTrapId&&state.jumpQueued,interactHeld:!blocked&&!state.tabletFocus&&(MazeInput.down('interact')||touchInteractHeld),yaw:p.yaw,pitch:p.pitch,flashlight:state.flashlight,flashlightHeld:flashlightHeld(p),focus:state.tabletFocus};state.jumpQueued=false;return input;
 }
 function coopContext(prediction=false){return{phase:state.mode==='planning'?'planning':'playing',time:mp.time,planRemaining:state.planRemaining,enemy:prediction?null:state.enemy,closets:state.closets,exit:state.exit};}
 function coopAdvance(elapsed){
