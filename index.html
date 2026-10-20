@@ -22401,7 +22401,7 @@ class MazeWorldSync{
    if(!dynamic)item.staticBounds.push([i,c.minX,c.maxX,c.minZ,c.maxZ,threshold?null:c.enabled!==false]);
    else if(!c.elevatorGate&&!c.serviceLeaf&&!c.closetDoorLeaf)item.fixedEnabled.push([i,c.enabled!==false]);
   });});
-  this.revision=0;this.hash=0;this.rows=null;this.play=null;this.lastFull=-Infinity;this.lastCheckpoint=-Infinity;this.semantic=null;this.needsRepair=false;this.predictedDoors=new Map();this.predictionClock=0;
+  this.revision=0;this.hash=0;this.rows=null;this.play=null;this.lastFull=-Infinity;this.lastCheckpoint=-Infinity;this.semantic=null;this.needsRepair=false;this.predictedDoors=new Map();this.predictionClock=0;this.movingRows=new Set();
  }
  _read(item,out=[]){
   const s=item.prop.snapshot(true);
@@ -22459,7 +22459,9 @@ class MazeWorldSync{
   if(packet.f){if(!Array.isArray(packet.f)||packet.f.length!==this.items.length)return fail('invalid-world-layout');candidate=packet.f.map(r=>Array.isArray(r)?r.slice():r);indices=this.items.map((_,i)=>i);}
   else{
    if(!Array.isArray(packet.d)||packet.d.length>this.items.length)return fail('invalid-world-delta');
-   candidate=this.rows.map(r=>r.slice());indices=[];
+   // Authoritative rows are immutable after acceptance. Changed rows below own
+    // fresh arrays; keep full validation and checksum before committing.
+    candidate=this.rows.slice();indices=[];
    for(const entry of packet.d){if(!Array.isArray(entry)||!Number.isInteger(entry[0])||entry[0]<0||entry[0]>=candidate.length||indices.includes(entry[0]))return fail('invalid-world-delta');indices.push(entry[0]);candidate[entry[0]]=entry.slice(1);}
   }
   if(!candidate.every((row,i)=>this._valid(row,this.items[i])))return fail('invalid-world-values');
@@ -22475,7 +22477,7 @@ class MazeWorldSync{
   if(hashNumbers(candidate)!==packet.h)return fail('world-checksum-mismatch');
   this.rows=candidate;this.revision=packet.n;this.hash=packet.h;this.needsRepair=false;
   if(!this.play)this.play=candidate.map(row=>this._decode(row));
-  for(const i of indices){this.predictedDoors.delete(i);this.play[i]=this._decode(candidate[i]);this._advanceModel(this.items[i],this.play[i],clamp(age+(ages.get(i)||0),0,2));this._restoreStatic(this.items[i]);this._apply(i);}
+  for(const i of indices){this.predictedDoors.delete(i);this.play[i]=this._decode(candidate[i]);this._advanceModel(this.items[i],this.play[i],clamp(age+(ages.get(i)||0),0,2));this._restoreStatic(this.items[i]);this._apply(i);this._trackMoving(i);}
   return{ok:true,full:!!packet.f,rows:indices.length};
  }
  _decode(row){const state=row.slice();if(row.length===2)state[0]/=MAX;else{state[1]/=MAX;state[2]/=1000;}return state;}
@@ -22512,10 +22514,20 @@ class MazeWorldSync{
   if(!this.play)return false;const index=this.items.findIndex(item=>item.type===3&&item.prop===prop);if(index<0)return false;
   const item=this.items[index];if(!prop.setOpen(!prop.wantsOpen(),opener))return false;
   const previous=this.predictedDoors.get(index),rollback=previous?.rollback||this.play[index].slice(),row=this._decode(this._read(item));this.play[index]=row;
-  this.predictedDoors.set(index,{rollback,expires:this.predictionClock+1.8,age:previous?.age||0});this._apply(index);return true;
+  this.predictedDoors.set(index,{rollback,expires:this.predictionClock+1.8,age:previous?.age||0});this._apply(index);this._trackMoving(index);return true;
  }
- advance(dt){if(!this.play||!Number.isFinite(dt)||dt<=0)return;dt=Math.min(2,dt);this.predictionClock+=dt;for(const[index,pending]of this.predictedDoors){this._advanceModel(this.items[index],pending.rollback,dt);pending.age+=dt;if(this.predictionClock>=pending.expires){this.play[index]=pending.rollback;this.predictedDoors.delete(index);this._apply(index);}}
-for(let i=0;i<this.items.length;i++){const item=this.items[i],model=this.play[i],flags=model[1],progress=item.type!==2?quant(model[0]):0,moving=item.type!==2?!(flags&4)&&(item.type!==0||(flags&2))&&(progress!==((flags&1)?MAX:0)||item.type===3&&!!(flags&16)):[1,2,3,5,6,7].includes(model[0]);if(moving){this._advanceModel(item,model,dt);this._apply(i);}}}
+  _playMoving(index){
+   const item=this.items[index],model=this.play[index],flags=model[1],progress=item.type!==2?quant(model[0]):0;
+   return item.type!==2?!(flags&4)&&(item.type!==0||(flags&2))&&(progress!==((flags&1)?MAX:0)||item.type===3&&!!(flags&16)):[1,2,3,5,6,7].includes(model[0]);
+  }
+  _trackMoving(index){if(this._playMoving(index))this.movingRows.add(index);else this.movingRows.delete(index);}
+  advance(dt){
+   if(!this.play||!Number.isFinite(dt)||dt<=0)return;dt=Math.min(2,dt);this.predictionClock+=dt;
+   for(const[index,pending]of this.predictedDoors){this._advanceModel(this.items[index],pending.rollback,dt);pending.age+=dt;if(this.predictionClock>=pending.expires){this.play[index]=pending.rollback;this.predictedDoors.delete(index);this._apply(index);this._trackMoving(index);}}
+   // Packet application and prediction are the only writers of playback rows.
+   // Closed, open and blocked doors need no per-frame work until those change.
+   for(const i of this.movingRows){this._advanceModel(this.items[i],this.play[i],dt);this._apply(i);this._trackMoving(i);}
+  }
  _restoreStatic(item){for(const [index,minX,maxX,minZ,maxZ,enabled]of item.staticBounds){const c=item.prop.colliders[index];Object.assign(c,{minX,maxX,minZ,maxZ});if(enabled!==null)c.enabled=enabled;}for(const [index,enabled]of item.fixedEnabled)item.prop.colliders[index].enabled=enabled;}
  audit(){
   if(!this.play)return{ok:true,repaired:false,rows:[]};
@@ -23764,8 +23776,8 @@ function value(action){return Math.max(held.get(action)?.size?1:0,padValues.get(
  // Keyboard Shift stays hold-to-sprint. Only the mapped controller sprint
  // action is latched in toggle mode; all gameplay paths read this function.
  function sprintDown(){return !!held.get('sprint')?.size||(options.controllerSprintToggle?controllerSprintLatched:(padValues.get('sprint')||0)>.001);}
-function emit(action,source){const pressed=value(action)>.001;if(pressed===!!sent.get(action))return;sent.set(action,pressed);root.dispatchEvent(new CustomEvent('maze-input-action',{detail:{action,pressed,source,value:value(action)}}));}
-function canHandle(action,event,source){return config.canHandle?.(action,event,source)===true;}
+function emit(action,source){const pressed=value(action)>.001;if(pressed===!!sent.get(action))return false;sent.set(action,pressed);root.dispatchEvent(new CustomEvent('maze-input-action',{detail:{action,pressed,source,value:value(action)}}));return true;}
+function canHandle(action,event,source,knownMenu){return config.canHandle?.(action,event,source,knownMenu)===true;}
 function releaseAction(action,source){held.delete(action);padValues.delete(action);emit(action,source);}
 function releaseGameplay(){controllerSprintLatched=false;for(const [id]of definitions)if(id!=='voice'){const token=bindings[id].pad;if((padValues.get(id)||0)>.001&&token)blockedPad.add(token);releaseAction(id,'reset');}}
 function releaseAll(){controllerSprintLatched=false;for(const [id]of definitions)releaseAction(id,'reset');previousPadTokens.clear();blockedPad.clear();menuButtons.clear();menuDirection=0;}
@@ -24065,6 +24077,9 @@ function poll(dt=.016){
  const menuPanel=config.menuRoot?.()||null,menu=!!menuPanel,consumed=new Set(),menuActions=new Set(menu?config.menuActions?.(menuPanel)||[]:[]),menuMode=menu?config.menuMode?.(menuPanel)||'modal':'';
   syncMenuPanel(menuPanel,pad,previousDevice!=='gamepad'&&lastDevice==='gamepad'&&!menuPanelActive&&['map','spectator'].includes(menuMode));
  if(menuSelect&&(menuSelect.panel!==menuPanel||!visible(menuSelect.select)))closeMenuSelect(false);
+ // Focus/device callbacks above may change a panel. During the action loop,
+ // only emitted edges run application callbacks; refresh after each edge.
+ let currentMenuPanel=config.menuRoot?.()||null;
   // Do not carry a latched run across pause, inventory, or any menu.
   if(menu)controllerSprintLatched=false;
  // A remapped token can become unbound during a swap. Retire its capture
@@ -24079,14 +24094,14 @@ function poll(dt=.016){
   const menuSafe=['voice','pause','inventory','players','toggleHUD'].includes(id)||menuActions.has(id);
    const adjustable=document.activeElement?.matches?.('input[type="range"],input[type="number"]');
    const navigationToken=menu&&(token==='PadButton0'||token==='PadButton1'&&menuMode!=='spectator'||menuMode!=='spectator'&&/^PadButton1[2-5]$/.test(token||'')||menuMode!=='map'&&/^PadAxis[01][+-]$/.test(token||'')||adjustable&&/^PadButton[67]$/.test(token||''));
-   if(!canHandle(id,null,'gamepad')||isEditingText(document.activeElement)&&(!menu||!menuSafe)||menu&&(!menuSafe||navigationToken)||(config.menuRoot?.()||null)!==menuPanel&&id!=='voice')v=0;
+   if(!canHandle(id,null,'gamepad',currentMenuPanel)||isEditingText(document.activeElement)&&(!menu||!menuSafe)||menu&&(!menuSafe||navigationToken)||currentMenuPanel!==menuPanel&&id!=='voice')v=0;
   if(id==='sprint'&&options.controllerSprintToggle&&v&&token&&newTokens.includes(token)){
     // Use the physical press edge, not poll frames: one L3 press = one toggle.
     controllerSprintLatched=!controllerSprintLatched;
    }
-   if(v){padValues.set(id,v);if(menu&&token)consumed.add(token);}else padValues.delete(id);emit(id,'gamepad');
+   if(v){padValues.set(id,v);if(menu&&token)consumed.add(token);}else padValues.delete(id);if(emit(id,'gamepad'))currentMenuPanel=config.menuRoot?.()||null;
  }
- if(menuPanel&&config.menuRoot?.()===menuPanel)menuNavigate(pad,dt,menuPanel,consumed);
+ if(menuPanel&&currentMenuPanel===menuPanel)menuNavigate(pad,dt,menuPanel,consumed);
  else{menuDirection=0;menuButtons=new Set(Array.from(pad.buttons||[]).map((b,i)=>buttonValue(b)>.6?i:-1).filter(i=>i>=0));}
   syncMenuPanel(config.menuRoot?.()||null,pad);
  previousPadTokens.clear();for(const t of tokens)previousPadTokens.add(t);
@@ -29241,23 +29256,31 @@ class MazeFlashlightOcclusion {
  setDroppedSources(sources){this.droppedSources=Array.isArray(sources)?sources:[];}
  _syncDroppedLights(state,camera){
   if(camera)camera.getWorldPosition(this.dropViewPosition);else this.dropViewPosition.set(state.player?.x||0,(state.player?.y||0)+1.5,state.player?.z||0);
-  const candidates=[];
+  const selected=this.dropSelectedSources||(this.dropSelectedSources=[]),distances=this.dropSelectedDistances||(this.dropSelectedDistances=[]),limit=this.droppedPool.length;
+  selected.length=distances.length=0;let available=0;
   for(const source of this.droppedSources){
-   const p=source.position,d=source.direction;if(source.enabled===false||!source.id||!p||!d||![p.x,p.y,p.z,d.x,d.y,d.z,source.intensity,source.distance].every(Number.isFinite)||source.intensity<=0||source.distance<=0||d.x*d.x+d.y*d.y+d.z*d.z<1e-8)continue;
+   const p=source.position,d=source.direction;if(source.enabled===false||!source.id||!p||!d||!Number.isFinite(p.x)||!Number.isFinite(p.y)||!Number.isFinite(p.z)||!Number.isFinite(d.x)||!Number.isFinite(d.y)||!Number.isFinite(d.z)||!Number.isFinite(source.intensity)||!Number.isFinite(source.distance)||source.intensity<=0||source.distance<=0||d.x*d.x+d.y*d.y+d.z*d.z<1e-8)continue;
    const distance=(p.x-this.dropViewPosition.x)**2+(p.y-this.dropViewPosition.y)**2+(p.z-this.dropViewPosition.z)**2;
-   if(distance>(source.distance+4)**2)continue;candidates.push({source,distance});
+   if(distance>(source.distance+4)**2)continue;available++;if(!limit)continue;
+   // Same distance / locale-ID order as the original stable sort; retain only
+   // the four pooled beams. Every source is still validated on every pass.
+   let i=selected.length;
+   if(i===limit){if((distance-distances[i-1]||String(source.id).localeCompare(String(selected[i-1].id)))>=0)continue;i--;}
+   while(i>0&&(distance-distances[i-1]||String(source.id).localeCompare(String(selected[i-1].id)))<0){
+    if(i<limit){selected[i]=selected[i-1];distances[i]=distances[i-1];}i--;
+   }
+   selected[i]=source;distances[i]=distance;
   }
-  candidates.sort((a,b)=>a.distance-b.distance||String(a.source.id).localeCompare(String(b.source.id)));
-  const selected=candidates.slice(0,this.droppedPool.length),wanted=new Map(selected.map(entry=>[entry.source.id,entry.source]));
+  const wanted=this.dropWantedSources||(this.dropWantedSources=new Map());wanted.clear();for(const source of selected)wanted.set(source.id,source);
   for(const slot of this.droppedPool)if(!wanted.has(slot.id)){slot.id=null;slot.light.intensity=0;slot.light.userData.mazeDropId=null;}
-  for(const {source}of selected){
+  for(const source of selected){
    const slot=this.droppedPool.find(s=>s.id===source.id)||this.droppedPool.find(s=>s.id===null);if(!slot)continue;
    const light=slot.light;slot.id=source.id;light.userData.mazeDropId=source.id;light.position.copy(source.position);
    this.direction.set(source.direction.x,source.direction.y,source.direction.z).normalize();slot.target.position.copy(light.position).addScaledVector(this.direction,4);
    light.intensity=Math.max(0,Math.min(60,source.intensity));light.distance=Math.max(.5,Math.min(80,source.distance));light.angle=Number.isFinite(source.angle)?Math.max(.10,Math.min(1.2,source.angle)):.56;light.penumbra=Number.isFinite(source.penumbra)?Math.max(0,Math.min(1,source.penumbra)):.65;light.color.set(source.color??0xe9f1d2);
    MazeFlashlightOcclusion.setSourceAnchor(light,source.anchor||source.position);slot.target.updateMatrixWorld();
   }
-  this.stats.droppedAvailable=candidates.length;this.stats.droppedActive=selected.length;
+  this.stats.droppedAvailable=available;this.stats.droppedActive=selected.length;
  }
  _protectSource(light){
   const anchor=light.userData.mazeSourceAnchor;if(!anchor)return true;
@@ -29271,7 +29294,8 @@ class MazeFlashlightOcclusion {
    const minY=b.minY??0,maxY=b.maxY??3.6;
    if(ax>minX+1e-5&&ax<maxX-1e-5&&az>minZ+1e-5&&az<maxZ-1e-5&&start.y>minY+1e-5&&start.y<maxY-1e-5){embedded=true;return;}
    let near=0,far=fraction;
-   for(const [origin,direction,lo,hi]of [[ax,dx,minX-pad,maxX+pad],[start.y,delta.y,minY-pad,maxY+pad],[az,dz,minZ-pad,maxZ+pad]]){
+   for(let axis=0;axis<3;axis++){
+    const origin=axis===0?ax:axis===1?start.y:az,direction=axis===0?dx:axis===1?delta.y:dz,lo=(axis===0?minX:axis===1?minY:minZ)-pad,hi=(axis===0?maxX:axis===1?maxY:maxZ)+pad;
     if(Math.abs(direction)<1e-9){if(origin<lo||origin>hi)return;}
     else{let a=(lo-origin)/direction,b=(hi-origin)/direction;if(a>b)[a,b]=[b,a];near=Math.max(near,a);far=Math.min(far,b);if(near>far)return;}
    }
@@ -29322,6 +29346,7 @@ class MazeFlashlightOcclusion {
   this.forestBatches.length=0;this.forestIndex.clear();for(const k of['forestCapacity','forestBatches','forestInstances','forestDraws','forestTriangles'])this.stats[k]=0;
  }
  _clearFurniture(){
+  this.furnitureMatrixSynced?.clear();
   this.dynamicCandidates=null;
   // Only wrappers belong to this pass; the visible world owns its geometry.
   for(const row of this.furnitureRows){this.proxy.remove(row.mesh);if(row.ownedGeometry)row.mesh.geometry.dispose();}
@@ -29363,7 +29388,7 @@ class MazeFlashlightOcclusion {
   const world=state.survivalWorld||null;let changed=world!==this.furnitureWorld;if(changed)this._buildFurniture(world);
   // Static beds and counters need no per-frame matrix walk. Animated cabinet
   // and wardrobe roots include every hinge, also after a network snapshot.
-  const synced=new Set(),sync=o=>{if(!o||synced.has(o))return;sync(o.parent);o.updateWorldMatrix(false,false);synced.add(o);};
+  const synced=this.furnitureMatrixSynced||(this.furnitureMatrixSynced=new Set());synced.clear();const sync=o=>{if(!o||synced.has(o))return;sync(o.parent);o.updateWorldMatrix(false,false);synced.add(o);};
   for(const row of this.furnitureRows){
    // Pit destruction is semantic world state. A normal camera hiding an
    // off-screen room must not also remove its architectural light occlusion.
@@ -29501,8 +29526,16 @@ class MazeFlashlightOcclusion {
  }
  _syncWaterLights(state,lights){
   const materials=state.env?.waterMaterials;if(!materials?.length)return;const uniforms=materials[0].uniforms;
-  const active=lights.filter(light=>light.visible&&light.intensity>0&&light.shadow.map).map(light=>({light,distance:light.getWorldPosition(new T.Vector3()).distanceToSquared(this.dropViewPosition)})).sort((a,b)=>a.distance-b.distance).slice(0,4);
-  for(let i=0;i<4;i++){const light=active[i]?.light,color=uniforms.uFlashColor.value[i];if(!light){color.set(0,0,0,0);continue;}
+  const active=this.waterSelectedLights||(this.waterSelectedLights=[]),distances=this.waterSelectedDistances||(this.waterSelectedDistances=[]);active.length=distances.length=0;
+  for(const light of lights){
+   if(!(light.visible&&light.intensity>0&&light.shadow.map))continue;
+   const distance=light.getWorldPosition(this.lightPosition).distanceToSquared(this.dropViewPosition);let i=active.length;
+   // Equal distances retain scene order, matching the original stable sort.
+   if(i===4){if(!(distance<distances[i-1]))continue;i--;}
+   while(i>0&&distance<distances[i-1]){if(i<4){active[i]=active[i-1];distances[i]=distances[i-1];}i--;}
+   active[i]=light;distances[i]=distance;
+  }
+  for(let i=0;i<4;i++){const light=active[i],color=uniforms.uFlashColor.value[i];if(!light){color.set(0,0,0,0);continue;}
    light.getWorldPosition(this.lightPosition);light.target.getWorldPosition(this.target);this.direction.subVectors(this.target,this.lightPosition).normalize();
    uniforms.uFlashPosition.value[i].set(this.lightPosition.x,this.lightPosition.y,this.lightPosition.z,light.distance||23);
    uniforms.uFlashDirection.value[i].set(this.direction.x,this.direction.y,this.direction.z,Math.cos(light.angle));color.set(light.color.r,light.color.g,light.color.b,light.intensity);
@@ -34789,7 +34822,7 @@ function fieldPresentationFrame(now){
  fieldFloorCard.style.opacity=String(reduced?1:Math.min(1,elapsed/.85,(duration-elapsed)/1.1));
 }
 
-function inputCanHandle(action,event,source){
+function inputCanHandle(action,event,source,knownMenu){
  if(document.hidden||typeof document.hasFocus==='function'&&!document.hasFocus())return false;
  if(action==='toggleHUD')return !!state.level&&state.mode!=='menu'&&!['loading','mp-waiting','error'].includes(state.mode);
  if(action==='voice')return mp?!mp.left:['planning','playing'].includes(state.mode);
@@ -34804,7 +34837,7 @@ function inputCanHandle(action,event,source){
  // block walking while it is open. Leave camera-look actions out of this UI.
  if(inputWheelOpen())return ['inventory','itemWheel','pause','voice','players','forward','backward','left','right'].includes(action);
  if(!active()||inventoryIsOpen()||survivalBlocked())return false;
- const menuPanel=inputMenuRoot();if(menuPanel&&inputMenuMode(menuPanel)==='modal')return false;
+ const menuPanel=knownMenu===undefined?inputMenuRoot():knownMenu;if(menuPanel&&inputMenuMode(menuPanel)==='modal')return false;
  if(mp?.dead){if(state.spectatorMap)return ['tabletFocus','tablet','zoomIn','zoomOut','primary','forward','backward','left','right'].includes(action);return ['slotPrev','slotNext','spectatePrev','spectateNext','zoomIn','zoomOut','tabletFocus','tablet','primary','lookLeft','lookRight','lookUp','lookDown','crouch','flashlight'].includes(action);}
  if(action==='primary'||action==='secondary')return !state.tabletFocus&&(source!=='mouse'||document.pointerLockElement===$('world'));
  if(action==='drop')return source!=='mouse'||document.pointerLockElement===$('world');
@@ -37434,8 +37467,13 @@ function interactionActionView(p,action){
 
 function interactionVisible(origin,point,ignore=[],foliageTile=null){
  const direction=new T.Vector3().subVectors(point,origin),length=direction.length();if(length<.02)return true;direction.multiplyScalar(1/length);
+ // All boxes share this segment. Hoist rayBox's broad-phase bounds instead
+ // of rebuilding them for every distant collider in the level.
+ const endX=origin.x+direction.x*length,endY=origin.y+direction.y*length,endZ=origin.z+direction.z*length;
+ const minX=Math.min(origin.x,endX),maxX=Math.max(origin.x,endX),minY=Math.min(origin.y,endY),maxY=Math.max(origin.y,endY),minZ=Math.min(origin.z,endZ),maxZ=Math.max(origin.z,endZ);
  for(const list of [state.level.roomColliders||[],state.level.maintenance?.colliders||[]])for(const b of list){
   if(b.enabled===false||ignore.includes(b))continue;
+  if(b.maxX<minX||b.minX>maxX||b.maxZ<minZ||b.minZ>maxZ||(b.maxY??3.55)<minY||(b.minY??0)>maxY)continue;
   if(WG.rayBox(origin,direction,b,length)<length-.10)return false;
  }
  // Fine maintenance footprints occupy only part of their coarse map tile.
