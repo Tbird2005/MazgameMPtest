@@ -17925,16 +17925,22 @@ function safeRoom(level,theme='garden'){const g=new T.Group(),s=level.safe,wide=
  return{group:g,footstepSurfaces:[{minX:Math.min(s.x,s.wing?.x??s.x)*4-2,maxX:Math.max(s.x,s.wing?.x??s.x)*4+2,minZ:Math.min(s.z,s.wing?.z??s.z)*4-2,maxZ:Math.max(s.z,s.wing?.z??s.z)*4+2,y:0,surface:'metal',source:'safe-room tread deck'}],colliders,door,interactionIgnore:[leafCollider,lockedCollider],status,arrivalLift,mirrorPose:s.arrival?{position:[-1.71,1.18,.91],yaw:Math.PI/2}:null,unlock(){if(unlocked)return;unlocked=true;setStatus('UNLOCKED · CLOSED');},setOpen,toggle(){return setOpen(!desired);},wantsOpen(){return desired===1;},isUnlocked(){return unlocked;},openAmount(){return progress;},update(dt,actors=[]){
   arrivalLift?.update(dt,actors);s.doorBlocked=false;if(!unlocked)return;
   if(!Number.isFinite(dt)||dt<=0)return;
+  // Once Goku is inside, he can reopen the entrance from its inner side.
+  // SAFE includes the arrival car and observation wing. Keep the initial
+  // latch and outside protection intact; incapacitated enemies cannot open it.
+  const enemyOpening=(desired===0||progress<1)&&actors.some(p=>livingActor(p)&&isEnemyActor(p)&&!p.sleeping&&!(p.knockdownRemaining>0)&&Number.isFinite(p.x)&&Number.isFinite(p.z)&&level.get(C.tileAt(p.x),C.tileAt(p.z))===C.SAFE);
+  const enemyOpened=enemyOpening&&setOpen(true);
   let budget=Math.min(dt,.05)/1.15;
   for(let n=0;n<64&&budget>1e-9;n++){
    const step=Math.min(Math.abs(desired-progress),budget,DOOR_MICROSTEP);if(step<1e-9)break;
    const next=progress+Math.sign(desired-progress)*step,bounds=doorBounds(g,door,-next*Math.PI*.51,1.58,.085);
-   if(!tryDoorMotion(level,[bounds],actors,[leafCollider,lockedCollider],step*1.15,next<progress)){s.doorBlocked=true;break;}
+   if(!tryDoorMotion(level,[bounds],actors,[leafCollider,lockedCollider],step*1.15,next<progress,next>progress&&enemyOpening)){s.doorBlocked=true;break;}
    progress=next;budget-=step;door.rotation.y=-progress*Math.PI*.51;door.updateMatrix();Object.assign(leafCollider,bounds);
   }
   if(Math.abs(progress-desired)<1e-7)progress=desired;
   lockedCollider.renderOpen=leafCollider.renderOpen=progress;
   lockedCollider.enabled=progress<.94;s.doorPassable=progress>=.94;s.doorOpen=progress;
+  return enemyOpened;
  },isOpen(){return unlocked&&progress>=.94;},
  snapshot(compact=false){return{progress,unlocked,desired,blocked:!!s.doorBlocked,statusText,colliders:compact?undefined:colliderSnapshot(colliders),arrival:compact?undefined:arrivalLift?.snapshot()||null};},
  applySnapshot(value){if(!value)return;progress=C.clamp(Number(value.progress)||0,0,1);unlocked=!!value.unlocked;desired=value.desired?1:0;door.rotation.y=-progress*Math.PI*.51;door.updateMatrix();refreshLeaf();lockedCollider.enabled=progress<.94;s.doorPassable=unlocked&&progress>=.94;s.doorOpen=progress;s.doorBlocked=!!value.blocked;setStatus(typeof value.statusText==='string'?value.statusText:unlocked?'UNLOCKED · CLOSED':'LATCH LOCKED');arrivalLift?.applySnapshot(value.arrival);applyColliders(colliders,value.colliders);}
@@ -35307,6 +35313,11 @@ function nearestCloset(){
  }
  return found;
 }
+function updateSafeDoor(dt,actors){
+ const progress=state.safe.openAmount();
+ if(state.safe.update(dt,actors)){doorSound(state.safe,true);state.visibilityTick=0;state.shadowTick=0;state.shadowDirty=true;interactionCache=null;}
+ if(state.safe.openAmount()!==progress)state.shadowDirty=true;
+}
 function safeDoorCanInteract(p=state.player,origin=null){
  const s=state.level?.safe,door=state.safe,view=origin||p;
  if(!p||!s||!door?.door||p.hidden||!view||!Number.isFinite(view.x)||!Number.isFinite(view.z))return false;
@@ -35595,7 +35606,7 @@ function frame(now){
   // Only moving leaves need geometry/collision updates. Buckets retain the live
   // collider objects; hidden rooms remain fully physical and navigable.
   doorActors[0]=state.player;doorActors[1]=state.enemy;
-   const safeProgress=state.safe.openAmount();state.safe.update(dt,doorActors);if(state.safe.openAmount()!==safeProgress)state.shadowDirty=true;
+   updateSafeDoor(dt,doorActors);
   for(const c of state.movingDoors){const amount=c.openAmount();c.update(dt,doorActors);if(c.openAmount()!==amount)state.shadowDirty=true;if(!c.isMoving())state.movingDoors.delete(c);}
   const oldGate=state.exit.gate,oldPhase=state.exit.phase;
   const liftResult=state.exit.update(dt,doorActors,elapsed);
@@ -36646,7 +36657,7 @@ function coopAdvance(elapsed){
  for(let n=0;mp.accumulator+MazeCoopPrediction.TIME_EPSILON>=MP_STEP&&n<limit;n++){mp.accumulator-=MP_STEP;if(mp.net.isHost)coopHostTick(MP_STEP);else coopPredictTick(MP_STEP);if(!coopLive()||n>=1&&performance.now()>=deadline)break;}
 }
 function coopHostTick(dt){
- if(mp.ending){mp.time+=dt;state.time=mp.time;state.safe.update(dt,[state.enemy]);for(const door of state.movingDoors){door.update(dt,[state.enemy]);if(!door.isMoving())state.movingDoors.delete(door);}return;}
+ if(mp.ending){mp.time+=dt;state.time=mp.time;updateSafeDoor(dt,[state.enemy]);for(const door of state.movingDoors){door.update(dt,[state.enemy]);if(!door.isMoving())state.movingDoors.delete(door);}return;}
  if(mp.transitionUntil){mp.time+=dt;if(mp.time>=mp.transitionUntil){mp.transitionUntil=0;coopHostLevel(state.score);}return;}
  mp.time+=dt;state.time=mp.time;coopPumpJoiners();
  const localInput=!mp.dead?MazeCoopPrediction.command(coopInput()):null;
@@ -36663,7 +36674,7 @@ function coopHostTick(dt){
  weaponStep(dt,[...mp.players.values()],true);if(typeof survivalStep==='function')survivalStep(dt,[...activePlayers.values()],true);if(typeof tabletTickPlayer==='function')for(const p of activePlayers.values())tabletTickPlayer(p,dt);
  state.exit.setPassengers(coopAlive());
  const pendingActions=mp.actions;mp.actions=[];for(const action of pendingActions){const id=typeof action==='string'?action:action.id,p=mp.players.get(id);if(action.received&&performance.now()-action.received>3000){if(action.survival&&p)coopProcessSurvival(action,true);if(action.inventory&&p)coopProcessInventory(action,true);if(action.weapon&&p){p.shotgunAck=Math.max(p.shotgunAck||0,action.nonce);mp.net.sendControl({type:'weapon-ack',epoch:mp.epoch,time:mp.time,nonce:action.nonce,accepted:false,weapon:MazeStateCodec.weapon(p),inventoryRevision:p.inventory?.revision||0},id);}continue;}if(p&&MazeCoopSimulation.alive(p)&&(action.seq||0)>p.lastInputSeq){mp.actions.push(action);continue;}if(action.survival)coopProcessSurvival(action);else if(action.inventory)coopProcessInventory(action);else if(action.weapon)coopProcessWeapon(action);else{coopInteract(id,action.target,action.view,action.aim);coopSendWorld();}}
- const alive=coopAlive(),bodies=[...alive,state.enemy];state.exit.setPassengers(alive);coopUpdateElevatorDeparture();state.safe.update(dt,bodies);for(const c of state.movingDoors){c.update(dt,bodies);if(!c.isMoving())state.movingDoors.delete(c);}
+ const alive=coopAlive(),bodies=[...alive,state.enemy];state.exit.setPassengers(alive);coopUpdateElevatorDeparture();updateSafeDoor(dt,bodies);for(const c of state.movingDoors){c.update(dt,bodies);if(!c.isMoving())state.movingDoors.delete(c);}
  const oldPhase=state.exit.phase,result=state.exit.update(dt,bodies,dt);if(oldPhase!==state.exit.phase){state.visibilityTick=0;state.shadowDirty=true;}
  // The solo lift already treats a sealed car containing Goku as fatal. The
  // host must resolve the same breach, or the full gate can latch forever.
